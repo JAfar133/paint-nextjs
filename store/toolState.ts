@@ -1,0 +1,25 @@
+import {makeAutoObservable} from "mobx";
+import Tool from "@/lib/tools/tool";
+import settingState from "@/store/settingState";
+
+class ToolState {
+    // @ts-ignore
+    tool: Tool;
+    constructor() {
+        makeAutoObservable(this)
+    }
+
+    setTool(tool: Tool){
+        this.tool = tool
+        this.fill()
+    }
+
+    fill(){
+        this.tool.strokeColor = settingState.strokeColor?.rgba || '#000';
+        this.tool.fillColor = settingState.fillColor?.rgba || '#000';
+        this.tool.lineWidth = settingState.strokeWidth;
+        this.tool.font = settingState.font
+    }
+}
+
+export default new ToolState();
