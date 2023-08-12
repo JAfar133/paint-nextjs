@@ -46,7 +46,7 @@ const Toolbar = observer(() => {
 
             useEffect(() => {
                 toolFactory();
-            }, [toolPressed, canvasState.canvas]);
+            }, [toolPressed, canvasState.canvas, canvasState.socket, canvasState.canvasId]);
             const toolFactory = (): void => {
                 if (!canvasState.canvas || !toolPressed) {
                     return;

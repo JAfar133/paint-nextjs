@@ -55,9 +55,9 @@ const DrawList = () => {
     return <div className="w-full pt-20 pl-10 flex flex-wrap justify-center">
                 {images &&
                     images.map((image, index) => (
-                        <div className="m-5 max-w-md">
+                        <div className="m-5 max-w-md" key={image.url} >
                             <span>№: {index} url:{image.url}</span>
-                            <div key={image.url} className="border-2 border-primary hover:bg-gray-400 transition duration-300 cursor-pointer" onClick={()=>redirectToDraw(image.url)}>
+                            <div className="border-2 border-primary hover:bg-gray-400 transition duration-300 cursor-pointer" onClick={()=>redirectToDraw(image.url)}>
                                 <NextImage src={image.src} alt="" />
                             </div>
                         </div>

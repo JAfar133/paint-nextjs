@@ -36,7 +36,7 @@ const Canvas = observer(() => {
                 })
         }
 
-    }, [canvasRef]);
+    }, [canvasRef, params.id]);
     useEffect(()=>{
         const handleKeyDown = (e: KeyboardEvent) => {
             if ((e.ctrlKey || e.metaKey) && (e.key === 'z' || e.key === 'я')) {
