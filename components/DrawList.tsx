@@ -4,6 +4,7 @@ import AuthService from "@/lib/api/AuthService";
 import userState from "@/store/userState";
 import UserService from "@/lib/api/UserService";
 import {useRouter} from "next/navigation";
+import NextImage from "next/image"
 
 interface Image {
     url: string,
@@ -57,7 +58,7 @@ const DrawList = () => {
                         <div className="m-5 max-w-md">
                             <span>№: {index} url:{image.url}</span>
                             <div key={image.url} className="border-2 border-primary hover:bg-gray-400 transition duration-300 cursor-pointer" onClick={()=>redirectToDraw(image.url)}>
-                                <img src={image.src} alt="" />
+                                <NextImage src={image.src} alt="" />
                             </div>
                         </div>
                     ))}
