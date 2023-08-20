@@ -58,7 +58,7 @@ const DrawList = () => {
                         <div className="m-5 max-w-md" key={image.url} >
                             <span>№: {index} url:{image.url}</span>
                             <div className="border-2 border-primary hover:bg-gray-400 transition duration-300 cursor-pointer" onClick={()=>redirectToDraw(image.url)}>
-                                <NextImage src={image.src} alt="" />
+                                <NextImage width={500} height={400} src={image.src} alt="" />
                             </div>
                         </div>
                     ))}

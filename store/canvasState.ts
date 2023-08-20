@@ -46,8 +46,18 @@ class CanvasState {
             this.drawByDataUrl(dataUrl);
             this.sendDataUrl(dataUrl);
         } else {
+            this.addRedo(this.canvas.toDataURL());
             this.clear();
             this.saveCanvas();
+        }
+    }
+
+    redo() {
+        if (this.redoList.length) {
+            let dataUrl = this.redoList.pop();
+            this.addUndo(this.canvas.toDataURL())
+            this.drawByDataUrl(dataUrl);
+            this.sendDataUrl(dataUrl);
         }
     }
 
@@ -59,14 +69,6 @@ class CanvasState {
         }))
     }
 
-    redo() {
-        if (this.redoList.length) {
-            let dataUrl = this.redoList.pop();
-            this.addUndo(this.canvas.toDataURL())
-            this.drawByDataUrl(dataUrl);
-            this.sendDataUrl(dataUrl);
-        }
-    }
 
     drawByDataUrl(dataUrl: string){
         let ctx = this.canvas.getContext('2d')
