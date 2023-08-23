@@ -3,7 +3,7 @@
 import React, {useEffect, useState} from 'react';
 import NavbarAvatar from "@/components/NavbarAvatar";
 import ThemeToggle from "@/components/theme-toggle";
-import {Download} from "lucide-react";
+import {Download, Save} from "lucide-react";
 import {Toggle} from "@/components/ui/toggle";
 import {Button} from "@/components/ui/button";
 import canvasState from "@/store/canvasState";
@@ -111,7 +111,7 @@ const Toolbar = observer(() => {
                     toolState.fill();
                 }
             }
-            const save = () => {
+            const savetoUser = () => {
                 if (userState._isAuth) {
                     UserService.saveDrawing(params.id)
                         .then(res => {
@@ -121,6 +121,9 @@ const Toolbar = observer(() => {
                             alert(err.response.data)
                         })
                 }
+            }
+            const saveOnServer = () => {
+                canvasState.saveCanvas()
             }
 
             return (
@@ -133,7 +136,12 @@ const Toolbar = observer(() => {
                                 <label htmlFor="" style={{fontSize: 10}} className="m-auto">Скачать</label>
                             </div>
                             <div className={toolDivClass}>
-                                <Button variant="ghost" size="sm" onClick={() => save()}><AiOutlinePlusSquare
+                                <Button variant="ghost" size="sm" onClick={() => saveOnServer()}><Save
+                                    className="h-6 w-6"/></Button>
+                                <label htmlFor="" style={{fontSize: 10}} className="m-auto">Сохранить</label>
+                            </div>
+                            <div className={toolDivClass}>
+                                <Button variant="ghost" size="sm" onClick={() => savetoUser()}><AiOutlinePlusSquare
                                     className="h-6 w-6"/></Button>
                                 <label htmlFor="" style={{fontSize: 10}} className="m-auto">Добавить к себе</label>
                             </div>
