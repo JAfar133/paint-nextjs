@@ -75,7 +75,7 @@ const figureDraw = (
     const draw: { [key: string]: (ctx: CanvasRenderingContext2D, figure: any) => void } = {
         "pencil": (ctx, figure) => PencilTool.draw(ctx, figure.x, figure.y, figure.lastCircleX, figure.lastCircleY, figure.strokeStyle, figure.strokeWidth),
         "square": (ctx, figure) => SquareTool.draw(ctx, figure.x, figure.y, figure.w, figure.h, figure.fillStyle, figure.strokeStyle, figure.strokeWidth),
-        "eraser": (ctx, figure) => EraserTool.draw(ctx, figure.x, figure.y, figure.strokeStyle, figure.strokeWidth),
+        "eraser": (ctx, figure) => EraserTool.eraser(ctx, figure.x, figure.y, figure.strokeStyle, figure.strokeWidth),
         "line": (ctx, figure) => LineTool.draw(ctx, figure.x, figure.y, figure.w, figure.h, figure.strokeStyle, figure.strokeWidth),
         "circle": (ctx, figure) => CircleTool.draw(ctx, figure.x, figure.y, figure.r, figure.fillStyle, figure.strokeStyle, figure.strokeWidth),
         "ellipse": (ctx, figure) => EllipseTool.draw(ctx, figure.x, figure.y, figure.w, figure.h, figure.fillStyle, figure.strokeStyle, figure.strokeWidth),

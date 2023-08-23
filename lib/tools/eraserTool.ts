@@ -1,7 +1,7 @@
 import PencilTool from "@/lib/tools/pencilTool";
 
 export default class EraserTool extends PencilTool {
-    static draw(ctx: CanvasRenderingContext2D, x: number, y: number, strokeStyle: string, strokeWith: number) {
+    static eraser(ctx: CanvasRenderingContext2D, x: number, y: number, strokeStyle: string, strokeWith: number) {
         ctx.strokeStyle = "white";
         ctx.lineWidth = strokeWith;
         ctx.lineTo(x, y);
