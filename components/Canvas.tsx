@@ -60,7 +60,7 @@ const Canvas = observer(() => {
         if (toolState.tool.type !== "text") canvasState.addUndo(canvasRef.current?.toDataURL())
     }
     const mouseUpHandler = () => {
-        // canvasState.saveCanvas();
+        canvasState.saveCanvas();
     }
     const mouseEnterHandler = () => {
         if(toolState.tool){
