@@ -31,6 +31,7 @@ export default class PencilTool extends Tool {
             this.socket.send(JSON.stringify({
                 method: 'draw',
                 id: this.id,
+                username: userState.user?.username,
                 figure: {
                     strokeWidth: this.ctx.lineWidth,
                     strokeStyle: this.ctx.strokeStyle,

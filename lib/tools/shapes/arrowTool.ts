@@ -2,7 +2,6 @@ import LineTool from "@/lib/tools/shapes/lineTool";
 
 
 export default class ArrowTool extends LineTool {
-    arrowHeadSize : number = 10;
     draw(x: number, y: number, w: number, h: number) {
         const img = new Image();
         img.src = this.saved;

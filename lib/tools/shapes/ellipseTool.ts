@@ -1,32 +1,9 @@
 import Shape from "@/lib/tools/shapes/Shape";
-import userState from "@/store/userState";
 
 export default class EllipseTool extends Shape {
 
     width: number = -1;
     height: number = -1;
-
-    mouseUpHandler(e: MouseEvent) {
-        super.mouseUpHandler(e);
-        this.mouseDown = false;
-        if (this.startX > -1 && this.startY > -1 && this.width !== -1 && this.height !== -1) {
-            this.socket.send(JSON.stringify({
-                method: 'draw',
-                id: this.id,
-                username: userState.user?.username,
-                figure: {
-                    fillStyle: this.ctx.fillStyle,
-                    strokeStyle: this.ctx.strokeStyle,
-                    strokeWidth: this.ctx.lineWidth,
-                    type: this.type,
-                    x: this.startX,
-                    y: this.startY,
-                    w: this.width,
-                    h: this.height,
-                }
-            }));
-        }
-    }
 
     mouseMoveHandler(e: MouseEvent) {
         if (this.mouseDown) {

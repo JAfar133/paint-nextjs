@@ -1,14 +1,16 @@
 import Shape from "@/lib/tools/shapes/Shape";
+import userState from "@/store/userState";
 
 export default class CircleTool extends Shape {
 
     radius: number = -1;
     mouseUpHandler(e: MouseEvent) {
-        this.mouseDown = false;
-        if(this.startX > -1 && this.startY > -1 && this.radius > -1) {
+        super.mouseUpHandler(e)
+        if(this.startX !== -1 && this.startY !== -1 && this.radius !== -1) {
             this.socket.send(JSON.stringify({
                 method: 'draw',
                 id: this.id,
+                username: userState.user?.username,
                 figure: {
                     fillStyle: this.ctx.fillStyle,
                     strokeStyle: this.ctx.strokeStyle,
