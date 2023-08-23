@@ -3,6 +3,8 @@ import settingState from "@/store/settingState";
 import userState from "@/store/userState";
 
 export default class PencilTool extends Tool {
+    lastCircleX: number | null = null;
+    lastCircleY: number | null = null;
 
     mouseUpHandler(e: MouseEvent) {
         this.mouseDown = false;
@@ -13,12 +15,15 @@ export default class PencilTool extends Tool {
                 type: 'finish',
             }
         }))
+        this.lastCircleX = null;
+        this.lastCircleY = null;
     }
 
     mouseDownHandler(e: MouseEvent) {
         this.mouseDown = true;
         this.ctx.beginPath();
         this.ctx.moveTo(e.offsetX, e.offsetY);
+        this.mouseMoveHandler(e);
     }
 
     mouseMoveHandler(e: MouseEvent) {
@@ -31,7 +36,9 @@ export default class PencilTool extends Tool {
                     strokeStyle: this.ctx.strokeStyle,
                     type: this.type,
                     x: e.offsetX,
-                    y: e.offsetY
+                    y: e.offsetY,
+                    lastCircleX: this.lastCircleX,
+                    lastCircleY: this.lastCircleY,
                 }
             }))
             this.draw(e.offsetX, e.offsetY)
@@ -63,23 +70,39 @@ export default class PencilTool extends Tool {
                     strokeWidth: this.ctx.lineWidth,
                     strokeStyle: this.ctx.strokeStyle,
                     type: this.type,
-                    x: x,
-                    y: y
+                    x: e.offsetX,
+                    y: e.offsetY,
+                    lastCircleX: this.lastCircleX,
+                    lastCircleY: this.lastCircleY,
                 }
             }))
             this.draw(x, y)
         }
     }
-    static draw(ctx: CanvasRenderingContext2D, x: number, y: number, strokeStyle: string, strokeWidth: number){
+    static draw(ctx: CanvasRenderingContext2D, x: number, y: number,lastCircleX: number | null, lastCircleY: number | null, strokeStyle: string, strokeWidth: number) {
         ctx.strokeStyle = strokeStyle;
         ctx.lineWidth = strokeWidth;
-        ctx.lineTo(x, y);
-        ctx.stroke();
+
+        drawCircle(ctx, x, y,lastCircleX,lastCircleY)
     }
 
     draw(x: number, y: number) {
-        this.ctx.lineTo(x, y);
-        this.ctx.stroke();
+        drawCircle(this.ctx, x, y,this.lastCircleX,this.lastCircleY);
+        this.lastCircleX = x;
+        this.lastCircleY = y;
     }
+
+}
+function drawCircle(ctx: CanvasRenderingContext2D, x: number, y: number, lastCircleX: number | null, lastCircleY: number|null) {
+    if (lastCircleX && lastCircleY) {
+        ctx.beginPath();
+        ctx.moveTo(lastCircleX, lastCircleY);
+        ctx.lineTo(x, y);
+        ctx.stroke();
+    }
+    ctx.beginPath();
+    ctx.arc(x, y, ctx.lineWidth / 2, 0, 2 * Math.PI);
+    ctx.fillStyle = ctx.strokeStyle;
+    ctx.fill();
 
 }

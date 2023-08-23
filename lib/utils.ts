@@ -1,6 +1,16 @@
 import {type ClassValue, clsx} from "clsx"
 import {twMerge} from "tailwind-merge"
-import {Circle, Eraser, Pencil, Spline, Star, Triangle, TriangleRight, Type} from "lucide-react";
+import {
+  ArrowUpRightFromCircle,
+  Circle,
+  Eraser,
+  Pencil,
+  Spline,
+  Star,
+  Triangle,
+  TriangleRight,
+  Type
+} from "lucide-react";
 import {MdOutlineRectangle, MdOutlineTimeline} from "react-icons/md";
 import PencilTool from "@/lib/tools/pencilTool";
 import SquareTool from "@/lib/tools/shapes/squareTool";
@@ -21,6 +31,7 @@ import {PiStarFour} from "react-icons/pi";
 import {FourStarTool} from "@/lib/tools/shapes/stars/fourStarTool";
 import {TbJewishStar} from "react-icons/tb";
 import {SixStarTool} from "@/lib/tools/shapes/stars/SixStarTool";
+import EllipseTool from "@/lib/tools/shapes/ellipseTool";
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
@@ -51,6 +62,14 @@ export const tools: ClientTool[] = [
     icon: Circle,
     name: "circle",
     description: "Круг",
+    fillColor: true,
+    strokeColor: true,
+    strokeWidth: true,
+  },
+  {
+    icon: ArrowUpRightFromCircle,
+    name: "ellipse",
+    description: "Эллипс",
     fillColor: true,
     strokeColor: true,
     strokeWidth: true,
@@ -157,6 +176,7 @@ export const toolClasses: { [key: string]: new (canvas: HTMLCanvasElement, socke
   "pencil": PencilTool,
   "square": SquareTool,
   "circle": CircleTool,
+  "ellipse": EllipseTool,
   "straight-triangle": StraightTriangleTool,
   "right-triangle": RightTriangleTool,
   "line": LineTool,
@@ -169,31 +189,6 @@ export const toolClasses: { [key: string]: new (canvas: HTMLCanvasElement, socke
   "six_star": SixStarTool,
   "shit": ShitTool,
 };
-
-export const figureDraw = (
-    ctx: CanvasRenderingContext2D,
-    figure: any
-) => {
-  const draw: { [key: string]: (ctx: CanvasRenderingContext2D, figure: any) => void } = {
-    "pencil": (ctx, figure) => PencilTool.draw(ctx, figure.x, figure.y, figure.strokeStyle, figure.strokeWidth),
-    "square": (ctx, figure) => SquareTool.draw(ctx, figure.x, figure.y, figure.w, figure.h, figure.fillStyle, figure.strokeStyle, figure.strokeWidth),
-    "eraser": (ctx, figure) => EraserTool.draw(ctx, figure.x, figure.y, figure.strokeStyle, figure.strokeWidth),
-    "line": (ctx, figure) => LineTool.draw(ctx, figure.x, figure.y, figure.w, figure.h, figure.strokeStyle, figure.strokeWidth),
-    "circle": (ctx, figure) => CircleTool.draw(ctx, figure.x, figure.y, figure.r, figure.fillStyle, figure.strokeStyle, figure.strokeWidth),
-    "right-triangle": (ctx, figure) => RightTriangleTool.draw(ctx, figure.x, figure.y, figure.w, figure.h, figure.fillStyle, figure.strokeStyle, figure.strokeWidth),
-    "straight-triangle": (ctx, figure) => StraightTriangleTool.draw(ctx, figure.x, figure.y, figure.w, figure.h, figure.fillStyle, figure.strokeStyle, figure.strokeWidth),
-    "text": (ctx, figure) => TextTool.draw(ctx, figure.text, figure.startX, figure.startY, figure.fillStyle, figure.font),
-    "arc": (ctx, figure) => ArcTool.draw(ctx, figure.startPoint, figure.endPoint, figure.controlPoint, figure.strokeStyle, figure.strokeWidth),
-    "arrow": (ctx, figure) => ArrowTool.draw(ctx, figure.x, figure.y, figure.w, figure.h, figure.strokeStyle, figure.strokeWidth),
-    "shit": (ctx, figure) => ShitTool.draw(ctx, figure.x, figure.y, figure.w, figure.h, figure.fillStyle, figure.strokeStyle, figure.strokeWidth),
-    "five_star": (ctx, figure) => FiveStarTool.draw(ctx, figure.x, figure.y, figure.w, figure.h, figure.fillStyle, figure.strokeStyle, figure.strokeWidth),
-    "four_star": (ctx, figure) => FourStarTool.draw(ctx, figure.x, figure.y, figure.w, figure.h, figure.fillStyle, figure.strokeStyle, figure.strokeWidth),
-    "six_star": (ctx, figure) => SixStarTool.draw(ctx, figure.x, figure.y, figure.w, figure.h, figure.fillStyle, figure.strokeStyle, figure.strokeWidth),
-    "finish": (ctx, figure) => ctx.beginPath(),
-  };
-
-  return draw[figure.type](ctx, figure);
-}
 
 export const fonts: string[] = [
     'Arial',

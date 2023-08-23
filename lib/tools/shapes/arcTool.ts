@@ -1,7 +1,7 @@
 import Tool from "@/lib/tools/tool";
 import userState from "@/store/userState";
 
-interface Point {
+export interface Point {
     x: number;
     y: number;
 }
