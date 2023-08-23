@@ -1,6 +1,7 @@
 import Tool from "@/lib/tools/tool";
 import settingState from "@/store/settingState";
 import canvasState from "@/store/canvasState";
+import userState from "@/store/userState";
 
 class PrevKey {
 
@@ -55,9 +56,11 @@ export default class TextTool extends Tool {
             this.prevKeyArray.push(new PrevKey(this.prevKey.key, this.prevKey.x, this.prevKey.y));
 
             this.startX += prevKeyLength;
+            this.print(e.key, this.startX, this.startY + Number(px) * 0.2)
             this.socket.send(JSON.stringify({
                 method: 'draw',
                 id: this.id,
+                username: userState.user?.username,
                 figure: {
                     fillStyle: this.ctx.fillStyle,
                     font: this.ctx.font,
@@ -77,6 +80,9 @@ export default class TextTool extends Tool {
             this.prevKey.y = this.startY;
         }
     };
+    print(text: string, startX: number, startY: number) {
+        this.ctx.fillText(text, startX, startY);
+    }
 
 
     mouseDownHandler(e: MouseEvent) {
