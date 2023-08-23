@@ -21,42 +21,53 @@ import {SixStarTool} from "@/lib/tools/shapes/stars/SixStarTool";
 import EllipseTool from "@/lib/tools/shapes/ellipseTool";
 
 export const websocketWorker = (params: Params, setConnectionCount: React.Dispatch<React.SetStateAction<number>>) => {
-    const socket = new WebSocket(BASE_SOCKET_URL)
-    canvasState.setSocket(socket)
-    canvasState.setCanvasId(params.id)
+    const socket = new WebSocket(BASE_SOCKET_URL);
+    canvasState.setSocket(socket);
+    canvasState.setCanvasId(params.id);
 
-    if (!userState.loading) {
-        socket.onopen = () => {
-            socket.send(JSON.stringify({
-                id: params.id,
-                email: userState.user?.username || `Гость${(+new Date).toString(16)}`,
-                method: "connection"
-            }))
+    socket.onerror = (error: Event) => {
+        toast({
+            title : 'Ошибка',
+            description: 'соединение по вебсокет недоступно',
+        });
+    };
+
+    socket.onopen = () => {
+        if (!userState.loading) {
+            socket.send(
+                JSON.stringify({
+                    id: params.id,
+                    email: userState.user?.username || `Гость${(+new Date).toString(16)}`,
+                    method: "connection",
+                })
+            );
         }
-    }
+    };
+
     socket.onmessage = (event) => {
-        let msg = JSON.parse(event.data)
+        let msg = JSON.parse(event.data);
         if (msg.username != userState.user?.username) {
             switch (msg.method) {
                 case "connection":
-                    setConnectionCount(msg.count)
+                    setConnectionCount(msg.count);
                     toast({
-                        description: `Пользователь ${msg.email} присоеденился`
-                    })
+                        description: `Пользователь ${msg.email} присоединился`,
+                    });
                     break;
                 case "draw":
-                    drawHandler(msg)
+                    drawHandler(msg);
                     break;
                 case "clear":
-                    canvasState.clear()
+                    canvasState.clear();
                     break;
                 case "draw_url":
-                    canvasState.drawByDataUrl(msg.dataUrl)
+                    canvasState.drawByDataUrl(msg.dataUrl);
                     break;
             }
         }
-    }
-}
+    };
+};
+
 
 const drawHandler = (msg: any) => {
     if (canvasState.canvas) {

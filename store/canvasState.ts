@@ -1,5 +1,6 @@
 import {makeAutoObservable} from "mobx";
 import UserService from "@/lib/api/UserService";
+import {log} from "util";
 
 class CanvasState {
     // @ts-ignore
@@ -93,6 +94,7 @@ class CanvasState {
     saveCanvas(){
         UserService.saveImage(this.canvasId, this.canvas.toDataURL())
             .then(res => console.log(res.data))
+            .catch(e=>console.log(e))
     }
 
     clear() {
