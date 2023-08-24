@@ -39,7 +39,7 @@ export function cn(...inputs: ClassValue[]) {
 
 export type ButtonVariant = "link" | "default" | "destructive" | "outline" | "secondary" | "ghost" | "premium" | "golden";
 
-export const canvasSize = {height: 800, width: 1200}
+export const canvasSize = {height: 600, width: 1200}
 
 export interface ClientTool {
   icon: any;

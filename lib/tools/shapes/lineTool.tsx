@@ -13,6 +13,7 @@ export default class LineTool extends Shape {
     }
     handleGlobalMouseMove(e: MouseEvent) {
         if (this.mouseDown) {
+
             if ((e.pageY < (this.offsetTop + this.canvas.height)) && e.pageY > this.offsetTop) {
                 this.width = e.offsetX - this.offsetLeft;
                 this.height = e.offsetY;

@@ -1,0 +1,46 @@
+.canvas__container {
+}
+.canvas {
+  background: white;
+  margin: 180px auto;
+}
+.circle-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  border: 1px solid rgba(0,0,0,0.7);
+  box-shadow: 0 0 0 1px rgba(255,255,255,0.7);
+  border-radius: 50%;
+  pointer-events: none;
+  background: rgba(255,255,255,0.1);
+}
+.user-cursor {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  width: 20px;
+  height: 20px;
+  pointer-events: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  color: #a8a7a7;
+  white-space: nowrap;
+
+}
+
+
+.user-cursor::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 50%;
+  width: 0;
+  height: 0;
+  margin-left: -5px;
+  border-left: 5px solid transparent;
+  border-right: 5px solid transparent;
+  border-bottom: 10px solid rgba(0, 0, 0, 0.3); /* Цвет курсора */
+}
+

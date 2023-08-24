@@ -1,5 +1,4 @@
 import Tool from "@/lib/tools/tool";
-import settingState from "@/store/settingState";
 import userState from "@/store/userState";
 
 export default class PencilTool extends Tool {
@@ -71,8 +70,8 @@ export default class PencilTool extends Tool {
                     strokeWidth: this.ctx.lineWidth,
                     strokeStyle: this.ctx.strokeStyle,
                     type: this.type,
-                    x: e.offsetX,
-                    y: e.offsetY,
+                    x: x,
+                    y: y,
                     lastCircleX: this.lastCircleX,
                     lastCircleY: this.lastCircleY,
                 }
@@ -80,21 +79,23 @@ export default class PencilTool extends Tool {
             this.draw(x, y)
         }
     }
-    static draw(ctx: CanvasRenderingContext2D, x: number, y: number,lastCircleX: number | null, lastCircleY: number | null, strokeStyle: string, strokeWidth: number) {
+
+    static draw(ctx: CanvasRenderingContext2D, x: number, y: number, lastCircleX: number | null, lastCircleY: number | null, strokeStyle: string, strokeWidth: number) {
         ctx.strokeStyle = strokeStyle;
         ctx.lineWidth = strokeWidth;
 
-        drawCircle(ctx, x, y,lastCircleX,lastCircleY)
+        drawCircle(ctx, x, y, lastCircleX, lastCircleY)
     }
 
     draw(x: number, y: number) {
-        drawCircle(this.ctx, x, y,this.lastCircleX,this.lastCircleY);
+        drawCircle(this.ctx, x, y, this.lastCircleX, this.lastCircleY);
         this.lastCircleX = x;
         this.lastCircleY = y;
     }
 
 }
-function drawCircle(ctx: CanvasRenderingContext2D, x: number, y: number, lastCircleX: number | null, lastCircleY: number|null) {
+
+function drawCircle(ctx: CanvasRenderingContext2D, x: number, y: number, lastCircleX: number | null, lastCircleY: number | null) {
     if (lastCircleX && lastCircleY) {
         ctx.beginPath();
         ctx.moveTo(lastCircleX, lastCircleY);

@@ -22,7 +22,6 @@ import InputColor, {Color} from "react-input-color";
 
 const toolDivClass = "ml-3 flex flex-col content-center";
 
-
 const Toolbar = observer(() => {
 
             const params = useParams();
@@ -53,7 +52,7 @@ const Toolbar = observer(() => {
                 }
 
                 const ToolClass = toolClasses[toolPressed.name];
-                if (ToolClass) {
+                if (ToolClass && canvasState.socket) {
                     toolState.setTool(new ToolClass(canvasState.canvas, canvasState.socket, canvasState.canvasId, toolPressed.name));
                 }
             }
@@ -114,7 +113,7 @@ const Toolbar = observer(() => {
             const savetoUser = () => {
                 if (userState._isAuth) {
                     UserService.saveDrawing(params.id)
-                        .then(res => {
+                        .then(() => {
                             alert("Сохранено")
                         })
                         .catch(err => {
@@ -184,7 +183,7 @@ const Toolbar = observer(() => {
                             {toolPressed?.strokeWidth && <div className={cn(toolDivClass, "gap-2")}>
                               <CustomSelect id="width" classname="w-12 m-auto h-7"
                                             value={strokeWidth}
-                                            options={[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 20, 30, 40, 50, 100, 200]}
+                                            options={[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100, 150, 200]}
                                             onChange={handleStrokeWidthTool}/>
                               <label htmlFor="width" style={{fontSize: 10}} className="ml-1 m-auto">Толщина</label>
                             </div>}

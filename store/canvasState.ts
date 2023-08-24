@@ -1,13 +1,11 @@
 import {makeAutoObservable} from "mobx";
 import UserService from "@/lib/api/UserService";
-import {log} from "util";
 
 class CanvasState {
     // @ts-ignore
     canvas: HTMLCanvasElement;
     canvas_id: string | string[];
-    // @ts-ignore
-    socket: WebSocket;
+    socket: WebSocket | null = null;
     undoList: any = [];
     redoList: any = [];
 
@@ -63,11 +61,13 @@ class CanvasState {
     }
 
     private sendDataUrl(dataUrl: string){
-        this.socket.send(JSON.stringify({
-            method: "draw_url",
-            id: this.canvasId,
-            dataUrl: dataUrl
-        }))
+        if(this.socket){
+            this.socket.send(JSON.stringify({
+                method: "draw_url",
+                id: this.canvasId,
+                dataUrl: dataUrl
+            }))
+        }
     }
 
 
@@ -85,10 +85,12 @@ class CanvasState {
     clearCanvas() {
         this.clear()
         this.saveCanvas();
-        this.socket.send(JSON.stringify({
-            method: "clear",
-            id: this.canvasId,
-        }))
+        if(this.socket) {
+            this.socket.send(JSON.stringify({
+                method: "clear",
+                id: this.canvasId,
+            }))
+        }
     }
 
     saveCanvas(){

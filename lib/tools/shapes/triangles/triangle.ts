@@ -6,7 +6,7 @@ export default abstract class Triangle extends Shape {
 
             this.width = e.offsetX;
             this.height = e.offsetY;
-
+            console.log("width", this.width)
             this.draw(this.startX, this.startY, this.width, this.height)
         }
         document.onmousemove = null;
@@ -14,7 +14,6 @@ export default abstract class Triangle extends Shape {
 
     handleGlobalMouseMove(e: MouseEvent) {
         if (this.mouseDown) {
-
             if ((e.pageY < (this.offsetTop + this.canvas.height)) && e.pageY > this.offsetTop) {
                 this.width = e.offsetX - this.offsetLeft;
                 this.height = e.offsetY;
@@ -27,7 +26,6 @@ export default abstract class Triangle extends Shape {
                 this.width = e.pageX - this.offsetLeft;
                 this.height = e.pageY - this.offsetTop;
             }
-
             this.draw(this.startX, this.startY, this.width, this.height)
         }
     }

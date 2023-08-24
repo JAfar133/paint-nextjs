@@ -5,7 +5,6 @@ export default abstract class Shape extends Tool {
 
     startX: number = -1;
     startY: number = -1;
-    saved: string = "";
     width: number = -1;
     height: number = -1;
 

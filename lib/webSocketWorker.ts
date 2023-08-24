@@ -25,7 +25,7 @@ export const websocketWorker = (params: Params, setConnectionCount: React.Dispat
     canvasState.setSocket(socket);
     canvasState.setCanvasId(params.id);
 
-    socket.onerror = (error: Event) => {
+    socket.onerror = () => {
         toast({
             title : 'Ошибка',
             description: 'соединение по вебсокет недоступно',
@@ -63,10 +63,37 @@ export const websocketWorker = (params: Params, setConnectionCount: React.Dispat
                 case "draw_url":
                     canvasState.drawByDataUrl(msg.dataUrl);
                     break;
+                case "user_cursor":
+                    cursorHandler(msg);
+                    break;
             }
         }
     };
 };
+
+const cursorHandler = (msg: any) => {
+    if (msg.point && canvasState.canvas) {
+        const cursorElementId = `cursor-${msg.username}`;
+        let cursorElement = document.getElementById(cursorElementId);
+
+        if (!cursorElement) {
+            const newCursorElement = document.createElement("div");
+            newCursorElement.id = cursorElementId;
+            newCursorElement.classList.add("user-cursor");
+            document.body.appendChild(newCursorElement);
+            cursorElement = newCursorElement;
+            const randomColor = `rgb(${Math.floor(Math.random() * 256)}, ${Math.floor(Math.random() * 256)}, ${Math.floor(Math.random() * 256)})`;
+            cursorElement.style.color = randomColor;
+            console.log(randomColor)
+        }
+
+        const cursorX = msg.point.x;
+        const cursorY = msg.point.y;
+        cursorElement.textContent = msg.username;
+
+        cursorElement.style.transform = `translate(${cursorX}px, ${cursorY}px)`;
+    }
+}
 
 
 const drawHandler = (msg: any) => {
@@ -99,7 +126,7 @@ const figureDraw = (
         "five_star": (ctx, figure) => FiveStarTool.draw(ctx, figure.x, figure.y, figure.w, figure.h, figure.fillStyle, figure.strokeStyle, figure.strokeWidth),
         "four_star": (ctx, figure) => FourStarTool.draw(ctx, figure.x, figure.y, figure.w, figure.h, figure.fillStyle, figure.strokeStyle, figure.strokeWidth),
         "six_star": (ctx, figure) => SixStarTool.draw(ctx, figure.x, figure.y, figure.w, figure.h, figure.fillStyle, figure.strokeStyle, figure.strokeWidth),
-        "finish": (ctx, figure) => ctx.beginPath(),
+        "finish": (ctx) => ctx.beginPath(),
     };
 
     return draw[figure.type](ctx, figure);

@@ -20,6 +20,7 @@ export default class EllipseTool extends Shape {
         if (this.mouseDown) {
             let width;
             let height;
+
             if (e.pageY < this.offsetTop){
                 width = e.pageX - this.startX - this.offsetLeft;
                 height = e.offsetY - this.startY - this.offsetTop;
@@ -29,8 +30,7 @@ export default class EllipseTool extends Shape {
             }
             this.width = Math.abs(width);
             this.height = Math.abs(height);
-
-            this.draw(this.startX, this.startY, this.width, this.width)
+            this.draw(this.startX, this.startY, this.width, this.height)
         }
     }
 
