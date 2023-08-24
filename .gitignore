@@ -7,7 +7,7 @@
 
 # testing
 /coverage
-/lib/config.ts
+lib/config.ts
 # next.js
 /.next/
 /out/
