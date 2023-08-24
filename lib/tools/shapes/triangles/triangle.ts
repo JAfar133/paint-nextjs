@@ -6,7 +6,6 @@ export default abstract class Triangle extends Shape {
 
             this.width = e.offsetX;
             this.height = e.offsetY;
-            console.log("width", this.width)
             this.draw(this.startX, this.startY, this.width, this.height)
         }
         document.onmousemove = null;

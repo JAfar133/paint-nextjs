@@ -95,7 +95,6 @@ class CanvasState {
 
     saveCanvas(){
         UserService.saveImage(this.canvasId, this.canvas.toDataURL())
-            .then(res => console.log(res.data))
             .catch(e=>console.log(e))
     }
 

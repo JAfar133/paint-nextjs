@@ -84,7 +84,6 @@ const cursorHandler = (msg: any) => {
             cursorElement = newCursorElement;
             const randomColor = `rgb(${Math.floor(Math.random() * 256)}, ${Math.floor(Math.random() * 256)}, ${Math.floor(Math.random() * 256)})`;
             cursorElement.style.color = randomColor;
-            console.log(randomColor)
         }
 
         const cursorX = msg.point.x;

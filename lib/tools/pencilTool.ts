@@ -22,7 +22,6 @@ export default class PencilTool extends Tool {
         this.mouseDown = true;
         this.ctx.beginPath();
         this.ctx.moveTo(e.offsetX, e.offsetY);
-        this.mouseMoveHandler(e);
     }
 
     mouseMoveHandler(e: MouseEvent) {
@@ -96,13 +95,12 @@ export default class PencilTool extends Tool {
 }
 
 function drawCircle(ctx: CanvasRenderingContext2D, x: number, y: number, lastCircleX: number | null, lastCircleY: number | null) {
+    ctx.beginPath();
     if (lastCircleX && lastCircleY) {
-        ctx.beginPath();
         ctx.moveTo(lastCircleX, lastCircleY);
         ctx.lineTo(x, y);
         ctx.stroke();
     }
-    ctx.beginPath();
     ctx.arc(x, y, ctx.lineWidth / 2, 0, 2 * Math.PI);
     ctx.fillStyle = ctx.strokeStyle;
     ctx.fill();
