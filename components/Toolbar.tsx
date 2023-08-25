@@ -227,6 +227,14 @@ const Toolbar = observer(() => {
                                     </TooltipTrigger>
                                     <TooltipContent>
                                         <p>подключенные пользователи</p>
+                                        {
+                                            canvasState.users!==null && canvasState.users.map((user,idx)=>
+                                                <p key={user}
+                                                   style={{color: user === userState.user?.username ? 'green' : 'secondary'}}>
+                                                    {idx+1}. {user} {user === userState.user?.username ? '<- Ты' : ''}
+                                                </p>
+                                            )
+                                        }
                                     </TooltipContent>
                                 </Tooltip>
                             </TooltipProvider>

@@ -9,6 +9,7 @@ class UserState {
     _isAuth: boolean;
     _user: User | null;
     _loading: boolean = true;
+    _color: string = "foreground"
 
     constructor() {
         this._isAuth = false;
@@ -18,6 +19,9 @@ class UserState {
 
     setIsAuth(isAuth: boolean){
         this._isAuth = isAuth;
+    }
+    setColor(color: string) {
+        this._color = color;
     }
     setUser(user: User | null){
         this._user = user;
@@ -31,6 +35,9 @@ class UserState {
     }
     get user(){
         return this._user;
+    }
+    get color(){
+        return this._color;
     }
 
     get loading(){

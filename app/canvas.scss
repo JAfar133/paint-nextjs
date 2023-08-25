@@ -1,8 +1,10 @@
 .canvas__container {
+  display: flex;
+  justify-content: center;
+  margin-top: 180px;
 }
 .canvas {
   background: white;
-  margin: 180px auto;
 }
 .circle-overlay {
   position: absolute;
@@ -27,7 +29,7 @@
   font-size: 12px;
   color: #a8a7a7;
   white-space: nowrap;
-
+z-index: 99999;
 }
 
 

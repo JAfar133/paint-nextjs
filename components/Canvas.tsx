@@ -2,7 +2,7 @@
 
 import React, {useEffect, useRef, useState} from 'react';
 import '../app/canvas.scss'
-import {canvasSize} from "@/lib/utils";
+import {canvasSize, cn} from "@/lib/utils";
 import {observer} from "mobx-react-lite";
 
 import canvasState from "../store/canvasState";
@@ -11,12 +11,19 @@ import {useParams} from "next/navigation";
 import UserService from "@/lib/api/UserService";
 import toolState from "@/store/toolState";
 import {websocketWorker} from "@/lib/webSocketWorker";
+import {Popover, PopoverContent, PopoverTrigger} from "@/components/ui/popover";
+import {Button} from "@/components/ui/button";
+import {Input} from "@/components/ui/input";
+import {MessageSquare, Terminal} from "lucide-react";
+import {Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle} from "@/components/ui/card";
+import {Alert, AlertDescription, AlertTitle} from "@/components/ui/alert";
 
 
 const Canvas = observer(() => {
 
     const mainCanvasRef = useRef<HTMLCanvasElement>(null);
     const circleOverlayRef = useRef<HTMLDivElement>(null);
+    const [message, setMessage] = useState<string>();
     const params = useParams();
 
     useEffect(() => {
@@ -55,7 +62,7 @@ const Canvas = observer(() => {
         const handleMove = (e: MouseEvent) => {
             if (canvasState.socket) {
                 const centerX = window.innerWidth / 2;
-
+                console.log(userState.color)
                 const offsetX = e.pageX - centerX;
                 canvasState.socket.send(JSON.stringify({
                     method: "user_cursor",
@@ -68,18 +75,18 @@ const Canvas = observer(() => {
                     screen: {
                         height: window.innerHeight,
                         width: window.innerWidth
-                    }
+                    },
+                    color: userState.color
                 }));
             }
         }
 
         window.addEventListener('mousemove', handleMove)
-        window.addEventListener('mouseup', mouseUpHandler)
         return () => {
             window.removeEventListener('mousemove', handleMove)
             window.removeEventListener('mouseup', mouseUpHandler)
         }
-    }, [canvasState.socket])
+    }, [userState.color, canvasState.socket])
     useEffect(() => {
         websocketWorker(params)
     }, [userState.loading])
@@ -98,10 +105,12 @@ const Canvas = observer(() => {
         }
     }
     const mouseDownHandler = () => {
+        window.addEventListener('mouseup', mouseUpHandler)
         if (toolState.tool.type !== "text") canvasState.addUndo(mainCanvasRef.current?.toDataURL())
     }
     const mouseUpHandler = () => {
         canvasState.saveCanvas();
+        window.removeEventListener('mouseup', mouseUpHandler)
     }
     const mouseEnterHandler = () => {
         if (toolState.tool) {
@@ -120,20 +129,90 @@ const Canvas = observer(() => {
         mainCanvasRef.current?.classList.remove('cursor-text')
         mainCanvasRef.current?.classList.remove('cursor-cell')
     }
+
+    const sendMessage = () => {
+        if (canvasState.socket) {
+            canvasState.socket.send(JSON.stringify({
+                method: "message",
+                id: canvasState.canvasId,
+                username: userState.user?.username,
+                message: message,
+                color: userState.color
+            }))
+            setMessage("")
+        }
+    }
+
     return (
-        <div className="canvas__container">
-            <canvas className="canvas main_canvas"
-                    width={canvasSize.width}
-                    height={canvasSize.height}
-                    ref={mainCanvasRef}
-                    onMouseDown={() => mouseDownHandler()}
-                    onMouseMove={(e: React.MouseEvent<HTMLCanvasElement, MouseEvent>) => mouseMoveHandler(e)}
-                    onMouseEnter={() => mouseEnterHandler()}
-                    onMouseLeave={() => mouseLeaveHandler()}
-            >
-            </canvas>
-            <div ref={circleOverlayRef} className="circle-overlay"></div>
-        </div>
+        <>
+            <div className="canvas__container">
+                <canvas className="canvas main_canvas"
+                        width={canvasSize.width}
+                        height={canvasSize.height}
+                        ref={mainCanvasRef}
+                        onMouseDown={() => mouseDownHandler()}
+                        onMouseMove={(e: React.MouseEvent<HTMLCanvasElement, MouseEvent>) => mouseMoveHandler(e)}
+                        onMouseEnter={() => mouseEnterHandler()}
+                        onMouseLeave={() => mouseLeaveHandler()}
+                >
+                </canvas>
+                <div ref={circleOverlayRef} className="circle-overlay"></div>
+            </div>
+            <div className="fixed right-2 bottom-2 z-[200]">
+                <Popover>
+                    <PopoverTrigger asChild>
+                        <Button variant="outline" size="sm"><MessageSquare/></Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-80 bg-transparent">
+                            <Card className="w-[350px] right-10 absolute border-black bottom-0 bg-transparent">
+                                <CardHeader className="bg-card">
+                                    <CardTitle>Чат</CardTitle>
+                                    <CardDescription>Напиши что-нибудь!</CardDescription>
+                                </CardHeader>
+                                <CardContent className="h-[360px] gap-3 flex flex-col overflow-auto py-5 backdrop-blur-md">
+                                    {
+                                        canvasState.messages.map(message =>
+                                            <div
+                                                className={cn("w-full flex justify-end ",
+                                                    message.username === userState.user?.username ? "justify-end" : "justify-start")}
+                                                key={message.id}>
+                                                <Alert className="max-w-[230px] border-none"
+                                                       variant={message.username === userState.user?.username ? "test" : "toolbar"}>
+                                                    <Terminal className="h-4 w-4"/>
+                                                    <AlertTitle>{message.text}</AlertTitle>
+                                                    <AlertDescription style={{fontSize: 12}}
+                                                                      className="flex justify-between">
+                                                        <p style={{color: message.color}}>{message.username}</p>
+                                                        <p>{new Date(message.date).toLocaleTimeString()}</p>
+                                                    </AlertDescription>
+                                                </Alert>
+                                            </div>
+                                        )
+                                    }
+
+                                </CardContent>
+                                <CardFooter className="flex flex-col gap-6 py-4 end bg-card">
+                                    <Input
+                                        id="name"
+                                        value={message}
+                                        onChange={(e) => {
+                                            setMessage(e.target.value)
+                                        }
+                                        }
+                                        onKeyDown={(e) => {
+                                            if (e.key === 'Enter') {
+                                                e.preventDefault();
+                                                sendMessage();
+                                            }
+                                        }}
+                                    />
+                                    <Button className="w-full" onClick={() => sendMessage()}>Оправить</Button>
+                                </CardFooter>
+                            </Card>
+                    </PopoverContent>
+                </Popover>
+            </div>
+        </>
     );
 });
 

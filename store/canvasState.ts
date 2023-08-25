@@ -1,6 +1,13 @@
 import {makeAutoObservable} from "mobx";
 import UserService from "@/lib/api/UserService";
 
+interface Message {
+    id: string,
+    username: string,
+    text: string,
+    date: Date,
+    color: string
+}
 class CanvasState {
     // @ts-ignore
     canvas: HTMLCanvasElement;
@@ -9,6 +16,8 @@ class CanvasState {
     undoList: any = [];
     redoList: any = [];
     userCount: number = 0;
+    users: string[] | null = null;
+    messages: Message[] = []
 
     constructor() {
         this.canvas_id = `f${(+new Date).toString(16)}`
@@ -21,6 +30,13 @@ class CanvasState {
 
     setCanvasId(id: string | string[]) {
         this.canvas_id = id;
+    }
+    setMessages(messages: Message[]){
+        this.messages = messages;
+    }
+
+    setUsers(users: string[] | null) {
+        this.users = users;
     }
 
     setUserCount(count: number) {

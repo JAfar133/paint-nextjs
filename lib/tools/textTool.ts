@@ -24,10 +24,18 @@ export default class TextTool extends Tool {
         this.startY = e.offsetY;
         this.prevKeyArray = [];
         this.prevKey = new PrevKey("", -1, -1);
-        window.onkeydown = this.inputEventHandler.bind(this);
+        document.onkeydown = this.inputEventHandler.bind(this);
+        document.onmousedown = this.handleGlobalMouseDown.bind(this);
     }
-
+    handleGlobalMouseDown(e: MouseEvent) {
+        const canvas = this.canvas as Node;
+        if (e.target && !canvas.contains(e.target as Node)) {
+            document.onkeydown = null;
+            document.onmousedown = null;
+        }
+    }
     inputEventHandler = (e: KeyboardEvent) => {
+        e.preventDefault()
         const px = (this.ctx.font.match(/\d+(?=px)/) || [0])[0];
         if ((e.ctrlKey || e.metaKey) && (e.key === 'z' || e.key === 'я')) {
             if (this.prevKeyArray?.length) {

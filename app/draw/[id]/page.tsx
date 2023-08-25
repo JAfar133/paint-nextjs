@@ -33,21 +33,15 @@ const DrawPage = observer(() => {
             .finally(() => {
                 localStorage.setItem("username", userState.user?.username ?? `Гость${(+new Date).toString(16)}`)
                 userState.setLoading(false)
-
             })
-        document.addEventListener("keydown", (event) => {
-            if (event.key === " ") {
-                event.preventDefault();
-            }
-        });
     }, [])
 
 
     return (
         <div className="">
+            <Toaster/>
             <Toolbar/>
             <Canvas/>
-            <Toaster/>
         </div>
     );
 });

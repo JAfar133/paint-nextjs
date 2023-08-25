@@ -35,7 +35,6 @@ export const websocketWorker = (params: Params) => {
 
     socket.onopen = () => {
         if (!userState.loading) {
-            console.log("worker")
             socket.send(
                 JSON.stringify({
                     id: params.id,
@@ -48,8 +47,15 @@ export const websocketWorker = (params: Params) => {
 
     socket.onmessage = (event) => {
         let msg = JSON.parse(event.data);
-        console.log(msg)
         if(msg.count) canvasState.setUserCount(msg.count);
+        if(msg.users) canvasState.setUsers(msg.users);
+        if(msg.method === "connection" && msg.username === userState.user?.username && msg.color) {
+            console.log(msg)
+            userState.setColor(msg.color);
+        }
+        if (msg.method === "message") {
+            canvasState.setMessages([...canvasState.messages, msg.message])
+        }
         if (msg.username != userState.user?.username) {
             switch (msg.method) {
                 case "connection":
@@ -74,6 +80,7 @@ export const websocketWorker = (params: Params) => {
                 case "user_cursor":
                     cursorHandler(msg);
                     break;
+
             }
         }
     };
@@ -90,10 +97,9 @@ const cursorHandler = (msg: any) => {
             newCursorElement.classList.add("user-cursor");
             document.body.appendChild(newCursorElement);
             cursorElement = newCursorElement;
-            const randomColor = `rgb(${Math.floor(Math.random() * 256)}, ${Math.floor(Math.random() * 256)}, ${Math.floor(Math.random() * 256)})`;
-            cursorElement.style.color = randomColor;
-        }
 
+        }
+        cursorElement.style.color = msg.color;
         const cursorX = msg.point.x;
         const cursorY = msg.point.y;
         cursorElement.textContent = msg.username;

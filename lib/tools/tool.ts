@@ -48,7 +48,9 @@ export default abstract class Tool {
         }
     }
     handleGlobalMouseUp(e: MouseEvent) {
-        this.mouseUpHandler(e);
+        if(this.mouseDown){
+            this.mouseUpHandler(e);
+        }
     }
     set fillColor(color: string) {
         this.ctx.fillStyle = color;
@@ -67,7 +69,7 @@ export default abstract class Tool {
     }
 
     destroyEvents() {
-        window.onkeydown = null;
+        document.onkeydown = null;
         document.onmousemove = null;
         document.onmouseup = null;
         this.canvas.onmousemove = null;
