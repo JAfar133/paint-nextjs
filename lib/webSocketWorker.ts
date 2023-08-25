@@ -48,12 +48,18 @@ export const websocketWorker = (params: Params) => {
 
     socket.onmessage = (event) => {
         let msg = JSON.parse(event.data);
+        console.log(msg)
         if(msg.count) canvasState.setUserCount(msg.count);
         if (msg.username != userState.user?.username) {
             switch (msg.method) {
                 case "connection":
                     toast({
                         description: `Пользователь ${msg.username} присоединился`,
+                    });
+                    break;
+                case "disconnect":
+                    toast({
+                        description: `Пользователь ${msg.username} отключился`,
                     });
                     break;
                 case "draw":
