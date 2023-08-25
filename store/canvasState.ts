@@ -8,6 +8,7 @@ class CanvasState {
     socket: WebSocket | null = null;
     undoList: any = [];
     redoList: any = [];
+    userCount: number = 0;
 
     constructor() {
         this.canvas_id = `f${(+new Date).toString(16)}`
@@ -20,6 +21,10 @@ class CanvasState {
 
     setCanvasId(id: string | string[]) {
         this.canvas_id = id;
+    }
+
+    setUserCount(count: number) {
+        this.userCount = count;
     }
 
     setSocket(socket: WebSocket) {

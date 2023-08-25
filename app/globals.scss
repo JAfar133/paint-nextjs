@@ -11,11 +11,14 @@ a:hover {
   color: #005fc7;
 }
 .color-input {
+  position: relative;
   input[type=text] {
     background-color: azure;
   }
+  div {
+    z-index: 1000;
+  }
 }
-
 @layer base {
   :root {
     --background: 0 0% 100%;

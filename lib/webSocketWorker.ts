@@ -20,7 +20,8 @@ import {FourStarTool} from "@/lib/tools/shapes/stars/fourStarTool";
 import {SixStarTool} from "@/lib/tools/shapes/stars/SixStarTool";
 import EllipseTool from "@/lib/tools/shapes/ellipseTool";
 
-export const websocketWorker = (params: Params, setConnectionCount: React.Dispatch<React.SetStateAction<number>>) => {
+export const websocketWorker = (params: Params) => {
+
     const socket = new WebSocket(BASE_SOCKET_URL);
     canvasState.setSocket(socket);
     canvasState.setCanvasId(params.id);
@@ -34,10 +35,11 @@ export const websocketWorker = (params: Params, setConnectionCount: React.Dispat
 
     socket.onopen = () => {
         if (!userState.loading) {
+            console.log("worker")
             socket.send(
                 JSON.stringify({
                     id: params.id,
-                    email: userState.user?.username || `Гость${(+new Date).toString(16)}`,
+                    username: localStorage.getItem("username"),
                     method: "connection",
                 })
             );
@@ -46,12 +48,12 @@ export const websocketWorker = (params: Params, setConnectionCount: React.Dispat
 
     socket.onmessage = (event) => {
         let msg = JSON.parse(event.data);
+        if(msg.count) canvasState.setUserCount(msg.count);
         if (msg.username != userState.user?.username) {
             switch (msg.method) {
                 case "connection":
-                    setConnectionCount(msg.count);
                     toast({
-                        description: `Пользователь ${msg.email} присоединился`,
+                        description: `Пользователь ${msg.username} присоединился`,
                     });
                     break;
                 case "draw":

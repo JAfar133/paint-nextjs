@@ -12,7 +12,6 @@ const DrawPage = observer(() => {
 
 
     useEffect(() => {
-
         AuthService.check()
             .then(response => {
                 const user = response.data.user;
@@ -20,16 +19,28 @@ const DrawPage = observer(() => {
                 userState.setIsAuth(true)
             })
             .catch(() => {
-                userState.setUser({_id: 142124,username: `Гость${(+new Date).toString(16)}`, email: `Гость${(+new Date).toString(16)}`})
+                const user = {
+                    _id: (+new Date()),
+                    username: `Гость${(+new Date).toString(16)}`,
+                    email: `email${(+new Date).toString(16)}`
+                }
+                if (localStorage.getItem("username")) {
+                    // @ts-ignore
+                    user.username = localStorage.getItem("username")
+                }
+                userState.setUser(user)
             })
-            .finally(() => userState.setLoading(false))
+            .finally(() => {
+                localStorage.setItem("username", userState.user?.username ?? `Гость${(+new Date).toString(16)}`)
+                userState.setLoading(false)
+
+            })
         document.addEventListener("keydown", (event) => {
             if (event.key === " ") {
                 event.preventDefault();
             }
         });
     }, [])
-
 
 
     return (

@@ -3,7 +3,7 @@
 import React, {useEffect, useState} from 'react';
 import NavbarAvatar from "@/components/NavbarAvatar";
 import ThemeToggle from "@/components/theme-toggle";
-import {Download, Save} from "lucide-react";
+import {Download, Save, Users} from "lucide-react";
 import {Toggle} from "@/components/ui/toggle";
 import {Button} from "@/components/ui/button";
 import canvasState from "@/store/canvasState";
@@ -19,6 +19,7 @@ import {IoReturnUpBackOutline, IoReturnUpForward} from "react-icons/io5";
 import _ from 'lodash'
 import {ClientTool, cn, fonts, fontWeights, toolClasses, tools} from "@/lib/utils";
 import InputColor, {Color} from "react-input-color";
+import {Tooltip, TooltipContent, TooltipProvider, TooltipTrigger} from "@/components/ui/tooltip";
 
 const toolDivClass = "ml-3 flex flex-col content-center";
 
@@ -126,40 +127,115 @@ const Toolbar = observer(() => {
             }
 
             return (
-                <div className={"fixed w-full m-0 flex justify-between top-0 py-3 px-7 items-center bg-toolbar"}>
-                    <div className="flex items-center gap-10">
-                        <div className="flex items-center ">
-                            <div className={toolDivClass}>
-                                <Button variant="ghost" size="sm" onClick={() => download()}><Download
-                                    className="h-6 w-6"/></Button>
-                                <label htmlFor="" style={{fontSize: 10}} className="m-auto">Скачать</label>
+                <>
+                    <div className={"fixed w-full m-0 flex justify-between top-0 py-3 px-7 items-center bg-toolbar z-[100]"}>
+                        <div className="flex items-center gap-10">
+                            <div className="flex items-center ">
+                                <div className={toolDivClass}>
+                                    <Button variant="ghost" size="sm" onClick={() => download()}><Download
+                                        className="h-6 w-6"/></Button>
+                                    <label htmlFor="" style={{fontSize: 10}} className="m-auto">Скачать</label>
+                                </div>
+                                <div className={toolDivClass}>
+                                    <Button variant="ghost" size="sm" onClick={() => saveOnServer()}><Save
+                                        className="h-6 w-6"/></Button>
+                                    <label htmlFor="" style={{fontSize: 10}} className="m-auto">Сохранить</label>
+                                </div>
+                                <div className={toolDivClass}>
+                                    <Button variant="ghost" size="sm" onClick={() => savetoUser()}><AiOutlinePlusSquare
+                                        className="h-6 w-6"/></Button>
+                                    <label htmlFor="" style={{fontSize: 10}} className="m-auto">Добавить к себе</label>
+                                </div>
+                                <div className={toolDivClass}>
+                                    <Button variant="ghost" size="sm" onClick={() => canvasState.clearCanvas()}><AiOutlineClear
+                                        className="h-6 w-6"/></Button>
+                                    <label htmlFor="" style={{fontSize: 10}} className="m-auto">Очистить</label>
+                                </div>
+                                <div className={toolDivClass}>
+                                    <Button variant="ghost" size="sm" onClick={() => canvasState.undo()}><IoReturnUpBackOutline
+                                        className="h-6 w-6"/></Button>
+                                    <label htmlFor="" style={{fontSize: 10}} className="m-auto">Отменить</label>
+                                </div>
+                                <div className={toolDivClass}>
+                                    <Button variant="ghost" size="sm" onClick={() => canvasState.redo()}><IoReturnUpForward
+                                        className="h-6 w-6"/></Button>
+                                    <label htmlFor="" style={{fontSize: 10}} className="m-auto">Вернуть</label>
+                                </div>
                             </div>
-                            <div className={toolDivClass}>
-                                <Button variant="ghost" size="sm" onClick={() => saveOnServer()}><Save
-                                    className="h-6 w-6"/></Button>
-                                <label htmlFor="" style={{fontSize: 10}} className="m-auto">Сохранить</label>
-                            </div>
-                            <div className={toolDivClass}>
-                                <Button variant="ghost" size="sm" onClick={() => savetoUser()}><AiOutlinePlusSquare
-                                    className="h-6 w-6"/></Button>
-                                <label htmlFor="" style={{fontSize: 10}} className="m-auto">Добавить к себе</label>
-                            </div>
-                            <div className={toolDivClass}>
-                                <Button variant="ghost" size="sm" onClick={() => canvasState.clearCanvas()}><AiOutlineClear
-                                    className="h-6 w-6"/></Button>
-                                <label htmlFor="" style={{fontSize: 10}} className="m-auto">Очистить</label>
-                            </div>
-                            <div className={toolDivClass}>
-                                <Button variant="ghost" size="sm" onClick={() => canvasState.undo()}><IoReturnUpBackOutline
-                                    className="h-6 w-6"/></Button>
-                                <label htmlFor="" style={{fontSize: 10}} className="m-auto">Отменить</label>
-                            </div>
-                            <div className={toolDivClass}>
-                                <Button variant="ghost" size="sm" onClick={() => canvasState.redo()}><IoReturnUpForward
-                                    className="h-6 w-6"/></Button>
-                                <label htmlFor="" style={{fontSize: 10}} className="m-auto">Вернуть</label>
+
+                            <div className="flex items-center">
+                                {toolPressed?.strokeWidth && <div className={cn(toolDivClass, "gap-2")}>
+                                  <CustomSelect id="width" classname="w-12 m-auto h-7"
+                                                value={strokeWidth}
+                                                options={[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100, 150, 200]}
+                                                onChange={handleStrokeWidthTool}/>
+                                  <label htmlFor="width" style={{fontSize: 10}} className="ml-1 m-auto">Толщина</label>
+                                </div>}
+                                {toolPressed?.name === 'text'
+                                    && <>
+                                    <div className={cn(toolDivClass, "gap-2")}>
+                                      <CustomSelect id="width" classname="w-12 m-auto h-7"
+                                                    value={textSize}
+                                                    options={[8, 9, 10, 12, 14, 16, 18, 20, 24, 26, 30, 36, 40, 50, 100, 200]}
+                                                    onChange={handleTextSizeTool}/>
+                                      <label htmlFor="width" style={{fontSize: 10}} className="m-auto">Размер текста</label>
+                                    </div>
+                                    <div className={cn(toolDivClass, "gap-2")}>
+                                      <CustomSelect id="width" classname="w-20 m-auto h-7"
+                                                    value={textFont}
+                                                    options={fonts}
+                                                    onChange={handleTextFontTool}/>
+                                      <label htmlFor="width" style={{fontSize: 10}} className="m-auto">Шрифт</label>
+                                    </div>
+                                    <div className={cn(toolDivClass, "gap-2")}>
+                                      <CustomSelect id="width" classname="w-20 m-auto h-7"
+                                                    value={fontWeight}
+                                                    options={fontWeights}
+                                                    onChange={handleTextWeightTool}/>
+                                      <label htmlFor="width" style={{fontSize: 10}} className="m-auto">Насыщенность</label>
+                                    </div>
+                                  </>
+                                }
+                                {toolPressed?.fillColor && <>
+                                  <div className={cn(toolDivClass, "gap-3 color-input")}>
+                                    <InputColor
+                                      initialValue={fillColor?.hex || '#000'}
+                                      onChange={handleFillColorTool}
+                                      placement="right"
+                                    />
+                                    <label htmlFor="fill" style={{fontSize: 10}} className="m-auto">Заливка</label>
+                                  </div>
+                                </>}
+                                {toolPressed?.strokeColor && <div className={cn(toolDivClass, "gap-3 color-input")}>
+                                  <InputColor
+                                    initialValue={strokeColor?.hex || '#000'}
+                                    onChange={handleStrokeColorTool}
+                                    placement="right"
+                                  />
+                                  <label htmlFor="stroke" style={{fontSize: 10}} className="m-auto">Цвет</label>
+                                </div>}
                             </div>
                         </div>
+                        <div className="flex gap-7 items-center">
+                            <TooltipProvider>
+                                <Tooltip>
+                                    <TooltipTrigger>
+                                        <div className="flex gap-1">
+                                            <span>{canvasState.userCount}</span>
+                                            <Users/>
+                                        </div>
+                                    </TooltipTrigger>
+                                    <TooltipContent>
+                                        <p>подключенные пользователи</p>
+                                    </TooltipContent>
+                                </Tooltip>
+                            </TooltipProvider>
+
+                            <ThemeToggle/>
+                            <NavbarAvatar/>
+                        </div>
+                    </div>
+                    <div className={"fixed border-t-2 w-full m-0 flex py-3 px-7 items-center bg-toolbar"} style={{top: 75}}>
                         <div className="items-center flex flex-wrap">
                             {
                                 tools.map((tool) =>
@@ -179,65 +255,8 @@ const Toolbar = observer(() => {
                                 )
                             }
                         </div>
-                        <div className="flex items-center">
-                            {toolPressed?.strokeWidth && <div className={cn(toolDivClass, "gap-2")}>
-                              <CustomSelect id="width" classname="w-12 m-auto h-7"
-                                            value={strokeWidth}
-                                            options={[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100, 150, 200]}
-                                            onChange={handleStrokeWidthTool}/>
-                              <label htmlFor="width" style={{fontSize: 10}} className="ml-1 m-auto">Толщина</label>
-                            </div>}
-                            {toolPressed?.name === 'text'
-                                && <>
-                                <div className={cn(toolDivClass, "gap-2")}>
-                                  <CustomSelect id="width" classname="w-12 m-auto h-7"
-                                                value={textSize}
-                                                options={[8, 9, 10, 12, 14, 16, 18, 20, 24, 26, 30, 36, 40, 50, 100, 200]}
-                                                onChange={handleTextSizeTool}/>
-                                  <label htmlFor="width" style={{fontSize: 10}} className="m-auto">Размер текста</label>
-                                </div>
-                                <div className={cn(toolDivClass, "gap-2")}>
-                                  <CustomSelect id="width" classname="w-20 m-auto h-7"
-                                                value={textFont}
-                                                options={fonts}
-                                                onChange={handleTextFontTool}/>
-                                  <label htmlFor="width" style={{fontSize: 10}} className="m-auto">Шрифт</label>
-                                </div>
-                                <div className={cn(toolDivClass, "gap-2")}>
-                                  <CustomSelect id="width" classname="w-20 m-auto h-7"
-                                                value={fontWeight}
-                                                options={fontWeights}
-                                                onChange={handleTextWeightTool}/>
-                                  <label htmlFor="width" style={{fontSize: 10}} className="m-auto">Насыщенность</label>
-                                </div>
-                              </>
-                            }
-                            {toolPressed?.fillColor && <>
-                              <div className={cn(toolDivClass, "gap-3 color-input")}>
-                                <InputColor
-                                  initialValue={fillColor?.hex || '#000'}
-                                  onChange={handleFillColorTool}
-                                  placement="right"
-                                />
-                                <label htmlFor="fill" style={{fontSize: 10}} className="m-auto">Заливка</label>
-                              </div>
-                            </>}
-                            {toolPressed?.strokeColor && <div className={cn(toolDivClass, "gap-3 color-input")}>
-                              <InputColor
-                                initialValue={strokeColor?.hex || '#000'}
-                                onChange={handleStrokeColorTool}
-                                placement="right"
-                              />
-                              <label htmlFor="stroke" style={{fontSize: 10}} className="m-auto">Цвет</label>
-                            </div>}
-                        </div>
                     </div>
-                    <div className="flex gap-7 items-center">
-                        <ThemeToggle/>
-                        <NavbarAvatar/>
-                    </div>
-
-                </div>
+                </>
             );
         }
     )

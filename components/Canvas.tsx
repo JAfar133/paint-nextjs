@@ -15,7 +15,6 @@ import {websocketWorker} from "@/lib/webSocketWorker";
 
 const Canvas = observer(() => {
 
-    const [connectionCount, setConnectionCount] = useState(0)
     const mainCanvasRef = useRef<HTMLCanvasElement>(null);
     const circleOverlayRef = useRef<HTMLDivElement>(null);
     const params = useParams();
@@ -75,14 +74,15 @@ const Canvas = observer(() => {
         }
 
         window.addEventListener('mousemove', handleMove)
-
+        window.addEventListener('mouseup', mouseUpHandler)
         return () => {
             window.removeEventListener('mousemove', handleMove)
+            window.removeEventListener('mouseup', mouseUpHandler)
         }
     }, [canvasState.socket])
     useEffect(() => {
-        websocketWorker(params, setConnectionCount)
-    }, [userState.user, userState.loading])
+        websocketWorker(params)
+    }, [userState.loading])
 
     const mouseMoveHandler = (e: React.MouseEvent<HTMLCanvasElement, MouseEvent>) => {
         const canvas = mainCanvasRef.current;
@@ -127,13 +127,11 @@ const Canvas = observer(() => {
                     height={canvasSize.height}
                     ref={mainCanvasRef}
                     onMouseDown={() => mouseDownHandler()}
-                    onMouseUp={() => mouseUpHandler()}
                     onMouseMove={(e: React.MouseEvent<HTMLCanvasElement, MouseEvent>) => mouseMoveHandler(e)}
                     onMouseEnter={() => mouseEnterHandler()}
                     onMouseLeave={() => mouseLeaveHandler()}
             >
             </canvas>
-            <span>Пользователей на холсте: {connectionCount}</span>
             <div ref={circleOverlayRef} className="circle-overlay"></div>
         </div>
     );
