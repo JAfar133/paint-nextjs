@@ -18,7 +18,8 @@ class CanvasState {
     userCount: number = 0;
     users: string[] | null = null;
     messages: Message[] = []
-
+    isFill: boolean = false;
+    isStroke: boolean = true;
     constructor() {
         this.canvas_id = `f${(+new Date).toString(16)}`
         makeAutoObservable(this);

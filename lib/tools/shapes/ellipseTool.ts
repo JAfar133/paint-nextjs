@@ -1,4 +1,5 @@
 import Shape from "@/lib/tools/shapes/Shape";
+import canvasState from "@/store/canvasState";
 
 export default class EllipseTool extends Shape {
 
@@ -53,21 +54,22 @@ export default class EllipseTool extends Shape {
         img.onload = () => {
             this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
             this.ctx.drawImage(img, 0, 0);
-            drawEllipse(this.ctx, x, y, w, h);
+            drawEllipse(this.ctx, x, y, w, h, canvasState.isFill, canvasState.isStroke);
         };
     }
     static draw(ctx: CanvasRenderingContext2D, x: number, y: number, w: number,
-                h: number, fillStyle: string, strokeStyle: string, strokeWidth: number) {
+                h: number, fillStyle: string, strokeStyle: string, strokeWidth: number,
+                isFill: boolean, isStroke: boolean) {
         ctx.strokeStyle = strokeStyle;
         ctx.fillStyle = fillStyle;
         ctx.lineWidth = strokeWidth;
-        drawEllipse(ctx, x, y, w, h)
+        drawEllipse(ctx, x, y, w, h, isFill,isStroke)
     }
 }
 
-function drawEllipse(ctx: CanvasRenderingContext2D, x: number, y: number, w: number, h: number) {
+function drawEllipse(ctx: CanvasRenderingContext2D, x: number, y: number, w: number, h: number, isFill: boolean, isStroke: boolean) {
     ctx.beginPath();
     ctx.ellipse(x, y, w, h, 0, 0, 2 * Math.PI);
-    ctx.fill();
-    ctx.stroke();
+    isFill && ctx.fill();
+    isStroke && ctx.stroke();
 }

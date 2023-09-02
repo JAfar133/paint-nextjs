@@ -75,6 +75,7 @@ export default abstract class Tool {
         this.ctx.lineWidth = width;
     }
 
+
     set font(font: string) {
         this.ctx.font = font
     }

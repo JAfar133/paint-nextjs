@@ -1,5 +1,6 @@
 import Tool from "@/lib/tools/tool";
 import userState from "@/store/userState";
+import canvasState from "@/store/canvasState";
 
 export default abstract class Shape extends Tool {
 
@@ -31,6 +32,8 @@ export default abstract class Shape extends Tool {
                     fillStyle: this.ctx.fillStyle,
                     strokeStyle: this.ctx.strokeStyle,
                     strokeWidth: this.ctx.lineWidth,
+                    isFill: canvasState.isFill,
+                    isStroke: canvasState.isStroke,
                     type: this.type,
                     x: this.startX,
                     y: this.startY,

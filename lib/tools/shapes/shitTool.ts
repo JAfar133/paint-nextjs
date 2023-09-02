@@ -1,4 +1,5 @@
 import SquareTool from "@/lib/tools/shapes/squareTool";
+import canvasState from "@/store/canvasState";
 
 export class ShitTool extends SquareTool {
     draw(x: number, y: number, w: number, h: number) {
@@ -7,20 +8,20 @@ export class ShitTool extends SquareTool {
         img.onload = () => {
             this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
             this.ctx.drawImage(img, 0, 0);
-            drawSheet(this.ctx, x, y, w, h)
+            drawSheet(this.ctx, x, y, w, h, canvasState.isFill, canvasState.isStroke)
         }
     }
 
     static draw(ctx: CanvasRenderingContext2D, x: number, y: number, w: number,
-                h: number, fillStyle: string, strokeStyle: string, strokeWidth: number) {
+                h: number, fillStyle: string, strokeStyle: string, strokeWidth: number, isFill: boolean, isStroke: boolean) {
         ctx.strokeStyle = strokeStyle;
         ctx.fillStyle = fillStyle;
         ctx.lineWidth = strokeWidth;
-        drawSheet(ctx, x, y, w, h)
+        drawSheet(ctx, x, y, w, h, isFill, isStroke)
     }
 }
 
-function drawSheet(ctx: CanvasRenderingContext2D, x0: number, y0: number, w: number, h: number) {
+function drawSheet(ctx: CanvasRenderingContext2D, x0: number, y0: number, w: number, h: number, isFill: boolean, isStroke: boolean) {
     const numPoints = 5;
     const angleIncrement = (Math.PI * 2) / numPoints;
 
@@ -45,6 +46,6 @@ function drawSheet(ctx: CanvasRenderingContext2D, x0: number, y0: number, w: num
     }
 
     ctx.closePath();
-    ctx.fill()
-    ctx.stroke();
+    isFill && ctx.fill()
+    isStroke && ctx.stroke();
 }
