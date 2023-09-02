@@ -51,7 +51,6 @@ class WebsocketService {
             if(msg.count) canvasState.setUserCount(msg.count);
             if(msg.users) canvasState.setUsers(msg.users);
             if(msg.method === "connection" && msg.username === userState.user?.username && msg.color) {
-                console.log(msg)
                 userState.setColor(msg.color);
             }
             if (msg.method === "message") {
