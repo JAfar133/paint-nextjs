@@ -213,10 +213,8 @@ const Canvas = observer(() => {
             </div>
             <input type="text" id="text-input" style={{
                 position: 'absolute',
-                top: -100,
-                left: -100,
-                width: 1,
-                height: 1,
+                top: 400,
+                left: 0
             }}/>
 
         </>

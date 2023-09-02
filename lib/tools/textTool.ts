@@ -115,14 +115,14 @@ export default class TextTool extends Tool {
         this.mouseDown = false;
         this.prevKeyArray = [];
         this.prevKey = new PrevKey("", -1, -1);
-        document.onkeydown = this.inputEventHandler.bind(this);
+
     }
 
     touchMoveHandler(e: TouchEvent): void {
     }
 
     touchStartHandler(e: TouchEvent): void {
-        e.preventDefault(); // Предотвратить действия по умолчанию для касания на текстовом поле
+        e.preventDefault();
         document.onkeydown = null;
         this.mouseDown = true;
         this.startX = e.touches[0].clientX - this.offsetLeft;
@@ -135,7 +135,7 @@ export default class TextTool extends Tool {
             const textInput = document.getElementById("text-input") as HTMLInputElement;
             textInput.focus();
         }, 200);
-
+        document.onkeydown = this.inputEventHandler.bind(this);
     }
 
 }
