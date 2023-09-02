@@ -36,7 +36,8 @@ export default class TextTool extends Tool {
         }
     }
     inputEventHandler = (e: KeyboardEvent) => {
-        console.log(e)
+        // @ts-ignore
+        console.log(e.target.value)
         // @ts-ignore
         const key = e.key || e.target.value.slice(-1)
         const px = (this.ctx.font.match(/\d+(?=px)/) || [0])[0];
