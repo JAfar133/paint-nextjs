@@ -36,8 +36,7 @@ export default class TextTool extends Tool {
         }
     }
     inputEventHandler = (e: KeyboardEvent) => {
-        console.log(e.key)
-        // e.preventDefault()
+        console.log(e)
         const px = (this.ctx.font.match(/\d+(?=px)/) || [0])[0];
         if ((e.ctrlKey || e.metaKey) && (e.key === 'z' || e.key === 'я')) {
             if (this.prevKeyArray?.length) {
