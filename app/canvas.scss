@@ -1,9 +1,8 @@
 .canvas__container {
-  display: flex;
-  justify-content: center;
-  margin-top: 180px;
+  margin: 180px auto;
 }
 .canvas {
+  margin: 0 auto;
   background: white;
 }
 .circle-overlay {
