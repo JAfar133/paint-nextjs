@@ -124,9 +124,12 @@ export default class TextTool extends Tool {
         this.ctx.beginPath();
         this.ctx.moveTo(e.touches[0].clientX - this.offsetLeft, e.touches[0].clientY - this.offsetTop);
 
-        // Активируйте невидимое текстовое поле при нажатии на канвас на мобильных устройствах
-        const textInput = document.getElementById("text-input") as HTMLInputElement;
-        textInput.focus();
+        // Добавьте задержку перед активацией текстового поля
+        setTimeout(() => {
+            const textInput = document.getElementById("text-input") as HTMLInputElement;
+            textInput.focus();
+        }, 100); // Здесь 100 миллисекунд - это пример задержки, вы можете настроить ее по вашему усмотрению
+
     }
 
 }
