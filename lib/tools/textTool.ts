@@ -124,6 +124,8 @@ export default class TextTool extends Tool {
     }
 
     touchStartHandler(e: TouchEvent): void {
+        e.preventDefault(); // Предотвратить действия по умолчанию для касания на текстовом поле
+
         this.mouseDown = true;
         this.prevKey.key = "";
         this.ctx.font = settingState.font;
