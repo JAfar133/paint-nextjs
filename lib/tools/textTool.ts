@@ -40,6 +40,7 @@ export default class TextTool extends Tool {
         console.log(e.target.value)
         // @ts-ignore
         const key = e.key || e.target.value.slice(-1)
+        console.log(key)
         const px = (this.ctx.font.match(/\d+(?=px)/) || [0])[0];
         if ((e.ctrlKey || e.metaKey) && (key === 'z' || key === 'я')) {
             if (this.prevKeyArray?.length) {
