@@ -86,7 +86,7 @@ class WebsocketService {
             }
         };
     };
-    handleMove(e: MouseEvent){
+    handleMouseMove(e: MouseEvent){
         if (canvasState.socket) {
             const centerX = window.innerWidth / 2;
             const offsetX = e.pageX - centerX;
@@ -97,6 +97,26 @@ class WebsocketService {
                 point: {
                     x: offsetX,
                     y: e.pageY
+                },
+                screen: {
+                    height: window.innerHeight,
+                    width: window.innerWidth
+                },
+                color: userState.color
+            }));
+        }
+    }
+    handleTouchMove(e: TouchEvent){
+        if (canvasState.socket) {
+            const centerX = window.innerWidth / 2;
+            const offsetX = e.touches[0].pageX - centerX-10;
+            canvasState.socket.send(JSON.stringify({
+                method: "user_cursor",
+                id: canvasState.canvasId,
+                username: userState.user?.username,
+                point: {
+                    x: offsetX,
+                    y: e.touches[0].clientY
                 },
                 screen: {
                     height: window.innerHeight,

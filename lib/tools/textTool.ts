@@ -122,7 +122,7 @@ export default class TextTool extends Tool {
     }
 
     touchStartHandler(e: TouchEvent): void {
-        // e.preventDefault(); // Предотвратить действия по умолчанию для касания на текстовом поле
+        e.preventDefault(); // Предотвратить действия по умолчанию для касания на текстовом поле
         document.onkeydown = null;
         this.mouseDown = true;
         this.startX = e.touches[0].clientX - this.offsetLeft;

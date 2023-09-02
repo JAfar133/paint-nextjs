@@ -82,9 +82,11 @@ const Canvas = observer(() => {
     }, [canvasState.canvasId]);
 
     useEffect(() => {
-        window.addEventListener('mousemove', websocketService.handleMove)
+        window.addEventListener('mousemove', websocketService.handleMouseMove)
+        window.addEventListener('touchmove', websocketService.handleTouchMove)
         return () => {
-            window.removeEventListener('mousemove', websocketService.handleMove)
+            window.removeEventListener('mousemove', websocketService.handleMouseMove)
+            window.removeEventListener('touchmove', websocketService.handleTouchMove)
             window.removeEventListener('mouseup', mouseUpHandler)
         }
     }, [userState.color, canvasState.socket])
