@@ -134,8 +134,8 @@ export default class TextTool extends Tool {
         setTimeout(() => {
             const textInput = document.getElementById("text-input") as HTMLInputElement;
             textInput.focus();
+            textInput.onkeydown = this.inputEventHandler.bind(this);
         }, 200);
-        document.onkeydown = this.inputEventHandler.bind(this);
     }
 
 }
