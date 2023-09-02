@@ -112,6 +112,14 @@ export default class TextTool extends Tool {
     }
 
     touchEndHandler(e: TouchEvent): void {
+        this.mouseDown = false;
+        this.startX = e.touches[0].clientX - this.offsetLeft;
+        this.startY = e.touches[0].clientY - this.offsetTop;
+        this.prevKeyArray = [];
+        this.prevKey = new PrevKey("", -1, -1);
+        document.onkeydown = this.inputEventHandler.bind(this);
+        const textInput = document.getElementById("text-input") as HTMLInputElement;
+        textInput.focus();
     }
 
     touchMoveHandler(e: TouchEvent): void {
@@ -123,12 +131,6 @@ export default class TextTool extends Tool {
         this.ctx.font = settingState.font;
         this.ctx.beginPath();
         this.ctx.moveTo(e.touches[0].clientX - this.offsetLeft, e.touches[0].clientY - this.offsetTop);
-
-        // Добавьте задержку перед активацией текстового поля
-        setTimeout(() => {
-            const textInput = document.getElementById("text-input") as HTMLInputElement;
-            textInput.focus();
-        }, 100); // Здесь 100 миллисекунд - это пример задержки, вы можете настроить ее по вашему усмотрению
 
     }
 
