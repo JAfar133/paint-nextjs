@@ -99,10 +99,6 @@ export default class TextTool extends Tool {
         this.ctx.font = settingState.font;
         this.ctx.beginPath();
         this.ctx.moveTo(e.offsetX, e.offsetY);
-
-        // Активируйте невидимое текстовое поле при нажатии на канвас
-        const textInput = document.getElementById("text-input") as HTMLInputElement;
-        textInput.focus();
     }
 
     mouseMoveHandler(e: MouseEvent) {
