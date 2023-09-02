@@ -39,6 +39,8 @@ export default class CircleTool extends Shape {
                     fillStyle: this.ctx.fillStyle,
                     strokeStyle: this.ctx.strokeStyle,
                     strokeWidth: this.ctx.lineWidth,
+                    isFill: canvasState.isFill,
+                    isStroke: canvasState.isStroke,
                     type: this.type,
                     x: this.startX,
                     y: this.startY,
