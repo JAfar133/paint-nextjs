@@ -116,6 +116,8 @@ export default class TextTool extends Tool {
         this.prevKeyArray = [];
         this.prevKey = new PrevKey("", -1, -1);
         document.onkeydown = this.inputEventHandler.bind(this);
+        const textInput = document.getElementById("text-input") as HTMLInputElement;
+        textInput.focus();
     }
 
     touchMoveHandler(e: TouchEvent): void {
@@ -134,7 +136,7 @@ export default class TextTool extends Tool {
         setTimeout(() => {
             const textInput = document.getElementById("text-input") as HTMLInputElement;
             textInput.focus();
-        }, 100);
+        }, 200);
 
     }
 
