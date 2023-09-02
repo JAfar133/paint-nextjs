@@ -118,8 +118,6 @@ export default class TextTool extends Tool {
         this.prevKeyArray = [];
         this.prevKey = new PrevKey("", -1, -1);
         document.onkeydown = this.inputEventHandler.bind(this);
-        const textInput = document.getElementById("text-input") as HTMLInputElement;
-        textInput.focus();
     }
 
     touchMoveHandler(e: TouchEvent): void {
@@ -131,6 +129,10 @@ export default class TextTool extends Tool {
         this.ctx.font = settingState.font;
         this.ctx.beginPath();
         this.ctx.moveTo(e.touches[0].clientX - this.offsetLeft, e.touches[0].clientY - this.offsetTop);
+        setTimeout(() => {
+            const textInput = document.getElementById("text-input") as HTMLInputElement;
+            textInput.focus();
+        }, 100);
 
     }
 
