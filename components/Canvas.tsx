@@ -42,7 +42,6 @@ const Canvas = observer(() => {
                 .then(response => {
                     const img = new Image();
                     img.src = response.data;
-                    console.log(img.src)
                     const ctx = canvas.getContext('2d')
                     img.onload = () => {
                         ctx?.clearRect(0, 0, canvas.width, canvas.height);
