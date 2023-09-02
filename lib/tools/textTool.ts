@@ -4,7 +4,6 @@ import canvasState from "@/store/canvasState";
 import userState from "@/store/userState";
 
 class PrevKey {
-
     constructor(public key: string, public x: number, public y: number) {
         this.key = key;
         this.x = x;
@@ -17,8 +16,10 @@ export default class TextTool extends Tool {
     startY: number = 0;
     prevKey: PrevKey = new PrevKey("", -1, -1);
     prevKeyArray: PrevKey[] = [];
+    textInput = document.getElementById("text-input") as HTMLInputElement;
 
     mouseUpHandler(e: MouseEvent) {
+        e.preventDefault();
         this.mouseDown = false;
         this.startX = e.offsetX;
         this.startY = e.offsetY;
@@ -35,7 +36,8 @@ export default class TextTool extends Tool {
         }
     }
     inputEventHandler = (e: KeyboardEvent) => {
-        e.preventDefault()
+        console.log(e.key)
+        // e.preventDefault()
         const px = (this.ctx.font.match(/\d+(?=px)/) || [0])[0];
         if ((e.ctrlKey || e.metaKey) && (e.key === 'z' || e.key === 'я')) {
             if (this.prevKeyArray?.length) {
@@ -115,7 +117,7 @@ export default class TextTool extends Tool {
         this.mouseDown = false;
         this.prevKeyArray = [];
         this.prevKey = new PrevKey("", -1, -1);
-
+        this.textInput.onkeydown = null;
     }
 
     touchMoveHandler(e: TouchEvent): void {
@@ -123,7 +125,6 @@ export default class TextTool extends Tool {
 
     touchStartHandler(e: TouchEvent): void {
         e.preventDefault();
-        document.onkeydown = null;
         this.mouseDown = true;
         this.startX = e.touches[0].clientX - this.offsetLeft;
         this.startY = e.touches[0].clientY - this.offsetTop;
@@ -132,9 +133,8 @@ export default class TextTool extends Tool {
         this.ctx.beginPath();
         this.ctx.moveTo(e.touches[0].clientX - this.offsetLeft, e.touches[0].clientY - this.offsetTop);
         setTimeout(() => {
-            const textInput = document.getElementById("text-input") as HTMLInputElement;
-            textInput.focus();
-            textInput.onkeydown = this.inputEventHandler.bind(this);
+            this.textInput.focus();
+            this.textInput.onkeydown = this.inputEventHandler.bind(this);
         }, 200);
     }
 
