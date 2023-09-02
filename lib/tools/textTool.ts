@@ -36,11 +36,18 @@ export default class TextTool extends Tool {
         }
     }
     inputEventHandler = (e: KeyboardEvent) => {
+        var ev = e;
         // @ts-ignore
-        console.log(e.target.value)
+        var key = e.key!==undefined ? e.key : e.target.value.toString().slice(-1)
+        console.log("key", key)
         // @ts-ignore
-        const key = e.key!==undefined ? e.key : e.target.value.toString().slice(-1)
-        console.log(key)
+        console.log("e.target.value", e.target.value)
+        // @ts-ignore
+        console.log("e.target.value.toString()", e.target.value.toString())
+        // @ts-ignore
+        console.log("e.target.value.toString().slice()", e.target.value.toString().slice(-1))
+        // @ts-ignore
+        console.log("e.target.value.toString().charAt()", e.target.value.toString().charAt(e.target.value.toString().length-1))
         const px = (this.ctx.font.match(/\d+(?=px)/) || [0])[0];
         if ((e.ctrlKey || e.metaKey) && (key === 'z' || key === 'я')) {
             if (this.prevKeyArray?.length) {
