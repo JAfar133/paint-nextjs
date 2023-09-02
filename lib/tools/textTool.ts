@@ -37,8 +37,10 @@ export default class TextTool extends Tool {
     }
     inputEventHandler = (e: KeyboardEvent) => {
         console.log(e)
+        // @ts-ignore
+        const key = e.key || e.target.value.slice(-1)
         const px = (this.ctx.font.match(/\d+(?=px)/) || [0])[0];
-        if ((e.ctrlKey || e.metaKey) && (e.key === 'z' || e.key === 'я')) {
+        if ((e.ctrlKey || e.metaKey) && (key === 'z' || key === 'я')) {
             if (this.prevKeyArray?.length) {
                 const prevKey = this.prevKeyArray.pop();
                 this.startX = prevKey?.x || this.startX;
@@ -46,7 +48,7 @@ export default class TextTool extends Tool {
             }
             return
         }
-        if (e.key === "Backspace") {
+        if (key === "Backspace") {
             e.preventDefault();
             if (this.prevKeyArray.length) {
                 const prevKey = this.prevKeyArray.pop();
@@ -55,17 +57,17 @@ export default class TextTool extends Tool {
                 canvasState.undo();
             }
         }
-        if (e.key.length === 1) {
+        if (key.length === 1) {
             canvasState.addUndo(this.canvas.toDataURL())
             const prevKeyLength = this.prevKey ? this.ctx.measureText(this.prevKey.key).width : 0;
-            this.prevKey.key = e.key;
+            this.prevKey.key = key;
 
             this.prevKey.x = this.startX;
             this.prevKey.y = this.startY;
             this.prevKeyArray.push(new PrevKey(this.prevKey.key, this.prevKey.x, this.prevKey.y));
 
             this.startX += prevKeyLength;
-            this.print(e.key, this.startX, this.startY + Number(px) * 0.2)
+            this.print(key, this.startX, this.startY + Number(px) * 0.2)
             this.socket.send(JSON.stringify({
                 method: 'draw',
                 id: this.id,
@@ -74,14 +76,14 @@ export default class TextTool extends Tool {
                     fillStyle: this.ctx.fillStyle,
                     font: this.ctx.font,
                     type: this.type,
-                    text: e.key,
+                    text: key,
                     startX: this.startX,
                     startY: this.startY + Number(px) * 0.2
                 }
             }));
 
 
-        } else if (e.key === "Enter") {
+        } else if (key === "Enter") {
             this.startX = this.prevKeyArray[0].x || this.startX;
             this.startY = this.prevKeyArray[this.prevKeyArray.length - 1].y + Number(px) || this.startY + Number(px)
             this.prevKey.key = "";
