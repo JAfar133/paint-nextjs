@@ -10,6 +10,17 @@ export default abstract class Triangle extends Shape {
         }
         document.onmousemove = null;
     }
+    touchMoveHandler(e: TouchEvent) {
+        if (this.mouseDown) {
+            const touch = e.touches[0];
+            const x = touch.clientX - this.offsetLeft;
+            const y = touch.clientY - this.offsetTop;
+            this.width = x;
+            this.height = y;
+            this.draw(this.startX, this.startY, this.width, this.height);
+        }
+        document.ontouchmove = null;
+    }
 
     handleGlobalMouseMove(e: MouseEvent) {
         if (this.mouseDown) {

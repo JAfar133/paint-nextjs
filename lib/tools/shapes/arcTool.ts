@@ -68,10 +68,18 @@ export default class ArcTool extends Tool {
     }
 
     mouseMoveHandler(e: MouseEvent): void {
-        // Какой же паттерн применить ;_)
+
     }
 
     mouseUpHandler(e: MouseEvent): void {
         super.mouseUpHandler(e)
+    }
+    touchEndHandler(e: TouchEvent): void {
+    }
+
+    touchMoveHandler(e: TouchEvent): void {
+    }
+
+    touchStartHandler(e: TouchEvent): void {
     }
 }

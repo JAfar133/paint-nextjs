@@ -5,27 +5,35 @@ import '../app/canvas.scss'
 import {canvasSize, cn} from "@/lib/utils";
 import {observer} from "mobx-react-lite";
 
-import canvasState from "../store/canvasState";
+import canvasState, {Message} from "../store/canvasState";
 import userState from "@/store/userState";
 import {useParams} from "next/navigation";
 import UserService from "@/lib/api/UserService";
 import toolState from "@/store/toolState";
-import {websocketWorker} from "@/lib/webSocketWorker";
 import {Popover, PopoverContent, PopoverTrigger} from "@/components/ui/popover";
 import {Button} from "@/components/ui/button";
 import {Input} from "@/components/ui/input";
 import {MessageSquare, Terminal} from "lucide-react";
 import {Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle} from "@/components/ui/card";
 import {Alert, AlertDescription, AlertTitle} from "@/components/ui/alert";
+import websocketService from "@/lib/api/WebsocketService";
 
 
 const Canvas = observer(() => {
 
     const mainCanvasRef = useRef<HTMLCanvasElement>(null);
     const circleOverlayRef = useRef<HTMLDivElement>(null);
-    const [message, setMessage] = useState<string>();
+    const [message, setMessage] = useState<string>("");
     const params = useParams();
-
+    const messagesRef = useRef<HTMLDivElement>(null);
+    const scrollToBottom = () => {
+        if (messagesRef.current) {
+            messagesRef.current.scrollTop = messagesRef.current.scrollHeight;
+        }
+    };
+    useEffect(() => {
+        scrollToBottom();
+    }, [canvasState.messages]);
     useEffect(() => {
         if (mainCanvasRef.current) {
             const canvas = mainCanvasRef.current;
@@ -34,13 +42,14 @@ const Canvas = observer(() => {
                 .then(response => {
                     const img = new Image();
                     img.src = response.data;
+                    console.log(img.src)
                     const ctx = canvas.getContext('2d')
                     img.onload = () => {
                         ctx?.clearRect(0, 0, canvas.width, canvas.height);
                         ctx?.drawImage(img, 0, 0);
                         ctx?.stroke();
                     }
-                })
+                }).catch(e=>console.log(e))
         }
 
     }, [mainCanvasRef, params.id]);
@@ -59,36 +68,29 @@ const Canvas = observer(() => {
         };
     }, [])
     useEffect(() => {
-        const handleMove = (e: MouseEvent) => {
-            if (canvasState.socket) {
-                const centerX = window.innerWidth / 2;
-                console.log(userState.color)
-                const offsetX = e.pageX - centerX;
-                canvasState.socket.send(JSON.stringify({
-                    method: "user_cursor",
-                    id: canvasState.canvasId,
-                    username: userState.user?.username,
-                    point: {
-                        x: offsetX,
-                        y: e.pageY
-                    },
-                    screen: {
-                        height: window.innerHeight,
-                        width: window.innerWidth
-                    },
-                    color: userState.color
-                }));
+        const fetchData = async () => {
+            if (canvasState.canvasId) {
+                try {
+                    const messages = await UserService.getMessages(canvasState.canvasId);
+                    canvasState.setMessages(messages);
+                } catch (error) {
+                    console.error("An error occurred while fetching messages:", error);
+                }
             }
-        }
+        };
 
-        window.addEventListener('mousemove', handleMove)
+        fetchData();
+    }, [canvasState.canvasId]);
+
+    useEffect(() => {
+        window.addEventListener('mousemove', websocketService.handleMove)
         return () => {
-            window.removeEventListener('mousemove', handleMove)
+            window.removeEventListener('mousemove', websocketService.handleMove)
             window.removeEventListener('mouseup', mouseUpHandler)
         }
     }, [userState.color, canvasState.socket])
     useEffect(() => {
-        websocketWorker(params)
+        websocketService.websocketWorker(params)
     }, [userState.loading])
 
     const mouseMoveHandler = (e: React.MouseEvent<HTMLCanvasElement, MouseEvent>) => {
@@ -96,7 +98,7 @@ const Canvas = observer(() => {
         const ctx = canvas?.getContext('2d');
         const circleOverlay = circleOverlayRef.current;
         if (circleOverlay && ctx && (toolState.tool.type === "pencil" || toolState.tool.type === "eraser")) {
-            circleOverlay.style.display = 'block'
+            circleOverlay.style.display = 'block';
             const x = e.pageX - circleOverlay.clientWidth / 2 - 1 + 'px';
             const y = e.pageY - circleOverlay.clientHeight / 2 - 1 + 'px';
             circleOverlay.style.transform = `translate(${x}, ${y})`;
@@ -105,42 +107,36 @@ const Canvas = observer(() => {
         }
     }
     const mouseDownHandler = () => {
-        window.addEventListener('mouseup', mouseUpHandler)
-        if (toolState.tool.type !== "text") canvasState.addUndo(mainCanvasRef.current?.toDataURL())
+        window.addEventListener('mouseup', mouseUpHandler);
+        window.addEventListener('touchend', mouseUpHandler);
+        if (toolState.tool.type !== "text") canvasState.addUndo(mainCanvasRef.current?.toDataURL());
     }
     const mouseUpHandler = () => {
         canvasState.saveCanvas();
-        window.removeEventListener('mouseup', mouseUpHandler)
+        window.removeEventListener('mouseup', mouseUpHandler);
+        window.removeEventListener('touchend', mouseUpHandler);
     }
     const mouseEnterHandler = () => {
         if (toolState.tool) {
             if (toolState.tool.type === "text") {
-                mainCanvasRef.current?.classList.add('cursor-text')
+                mainCanvasRef.current?.classList.add('cursor-text');
             } else if (toolState.tool.type === "arc") {
-                mainCanvasRef.current?.classList.add('cursor-cell')
+                mainCanvasRef.current?.classList.add('cursor-cell');
             } else {
-                mainCanvasRef.current?.classList.add('cursor-crosshair')
+                mainCanvasRef.current?.classList.add('cursor-crosshair');
             }
         }
     }
     const mouseLeaveHandler = () => {
         if (circleOverlayRef.current) circleOverlayRef.current.style.display = 'none';
-        mainCanvasRef.current?.classList.remove('cursor-crosshair')
-        mainCanvasRef.current?.classList.remove('cursor-text')
-        mainCanvasRef.current?.classList.remove('cursor-cell')
+        mainCanvasRef.current?.classList.remove('cursor-crosshair');
+        mainCanvasRef.current?.classList.remove('cursor-text');
+        mainCanvasRef.current?.classList.remove('cursor-cell');
     }
 
     const sendMessage = () => {
-        if (canvasState.socket) {
-            canvasState.socket.send(JSON.stringify({
-                method: "message",
-                id: canvasState.canvasId,
-                username: userState.user?.username,
-                message: message,
-                color: userState.color
-            }))
-            setMessage("")
-        }
+        websocketService.sendWebsocketMessage(message);
+        setMessage("");
     }
 
     return (
@@ -151,6 +147,7 @@ const Canvas = observer(() => {
                         height={canvasSize.height}
                         ref={mainCanvasRef}
                         onMouseDown={() => mouseDownHandler()}
+                        onTouchStart={() => mouseDownHandler()}
                         onMouseMove={(e: React.MouseEvent<HTMLCanvasElement, MouseEvent>) => mouseMoveHandler(e)}
                         onMouseEnter={() => mouseEnterHandler()}
                         onMouseLeave={() => mouseLeaveHandler()}
@@ -164,54 +161,63 @@ const Canvas = observer(() => {
                         <Button variant="outline" size="sm"><MessageSquare/></Button>
                     </PopoverTrigger>
                     <PopoverContent className="w-80 bg-transparent">
-                            <Card className="w-[350px] right-10 absolute border-black bottom-0 bg-transparent">
-                                <CardHeader className="bg-card">
-                                    <CardTitle>Чат</CardTitle>
-                                    <CardDescription>Напиши что-нибудь!</CardDescription>
-                                </CardHeader>
-                                <CardContent className="h-[360px] gap-3 flex flex-col overflow-auto py-5 backdrop-blur-md">
-                                    {
-                                        canvasState.messages.map(message =>
-                                            <div
-                                                className={cn("w-full flex justify-end ",
-                                                    message.username === userState.user?.username ? "justify-end" : "justify-start")}
-                                                key={message.id}>
-                                                <Alert className="max-w-[230px] border-none"
-                                                       variant={message.username === userState.user?.username ? "test" : "toolbar"}>
-                                                    <Terminal className="h-4 w-4"/>
-                                                    <AlertTitle>{message.text}</AlertTitle>
-                                                    <AlertDescription style={{fontSize: 12}}
-                                                                      className="flex justify-between">
-                                                        <p style={{color: message.color}}>{message.username}</p>
-                                                        <p>{new Date(message.date).toLocaleTimeString()}</p>
-                                                    </AlertDescription>
-                                                </Alert>
-                                            </div>
-                                        )
-                                    }
+                        <Card className="w-[350px] right-10 absolute border-black bottom-0 bg-transparent">
+                            <CardHeader className="bg-card">
+                                <CardTitle>Чат</CardTitle>
+                                <CardDescription>Напиши что-нибудь!</CardDescription>
+                            </CardHeader>
+                            <CardContent className="h-[360px] gap-3 flex flex-col overflow-auto py-5 backdrop-blur-md"
+                                         ref={messagesRef}>
+                                {
+                                    canvasState.messages.map(message =>
+                                        <div
+                                            className={cn("w-full flex justify-end ",
+                                                message.username === userState.user?.username ? "justify-end" : "justify-start")}
+                                            key={message.id}>
+                                            <Alert className="max-w-[230px] border-none"
+                                                   variant={message.username === userState.user?.username ? "test" : "toolbar"}>
+                                                <Terminal className="h-4 w-4"/>
+                                                <AlertTitle>{message.text}</AlertTitle>
+                                                <AlertDescription style={{fontSize: 12}}
+                                                                  className="flex justify-between">
+                                                    <p style={{color: message.color}}>{message.username}</p>
+                                                    <p>{new Date(message.date).toLocaleTimeString()}</p>
+                                                </AlertDescription>
+                                            </Alert>
+                                        </div>
+                                    )
+                                }
 
-                                </CardContent>
-                                <CardFooter className="flex flex-col gap-6 py-4 end bg-card">
-                                    <Input
-                                        id="name"
-                                        value={message}
-                                        onChange={(e) => {
-                                            setMessage(e.target.value)
+                            </CardContent>
+                            <CardFooter className="flex flex-col gap-6 py-4 end bg-card">
+                                <Input
+                                    id="name"
+                                    value={message}
+                                    onChange={(e) => {
+                                        setMessage(e.target.value)
+                                    }
+                                    }
+                                    onKeyDown={(e) => {
+                                        if (e.key === 'Enter') {
+                                            e.preventDefault();
+                                            sendMessage();
                                         }
-                                        }
-                                        onKeyDown={(e) => {
-                                            if (e.key === 'Enter') {
-                                                e.preventDefault();
-                                                sendMessage();
-                                            }
-                                        }}
-                                    />
-                                    <Button className="w-full" onClick={() => sendMessage()}>Оправить</Button>
-                                </CardFooter>
-                            </Card>
+                                    }}
+                                />
+                                <Button className="w-full" onClick={() => sendMessage()}>Оправить</Button>
+                            </CardFooter>
+                        </Card>
                     </PopoverContent>
                 </Popover>
             </div>
+            <input type="text" id="text-input" style={{
+                position: 'absolute',
+                top: -100,
+                left: -100,
+                width: 1,
+                height: 1,
+            }}/>
+
         </>
     );
 });

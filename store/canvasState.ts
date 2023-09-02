@@ -1,7 +1,7 @@
 import {makeAutoObservable} from "mobx";
 import UserService from "@/lib/api/UserService";
 
-interface Message {
+export interface Message {
     id: string,
     username: string,
     text: string,
@@ -11,7 +11,7 @@ interface Message {
 class CanvasState {
     // @ts-ignore
     canvas: HTMLCanvasElement;
-    canvas_id: string | string[];
+    canvas_id: string;
     socket: WebSocket | null = null;
     undoList: any = [];
     redoList: any = [];
@@ -28,7 +28,7 @@ class CanvasState {
         return this.canvas_id;
     }
 
-    setCanvasId(id: string | string[]) {
+    setCanvasId(id: string) {
         this.canvas_id = id;
     }
     setMessages(messages: Message[]){

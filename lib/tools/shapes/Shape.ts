@@ -18,6 +18,10 @@ export default abstract class Shape extends Tool {
     mouseUpHandler(e: MouseEvent) {
         super.mouseUpHandler(e)
         this.mouseDown = false;
+        this.sendSocketDraw();
+
+    }
+    sendSocketDraw(){
         if(this.startX > -1 && this.startY > -1 && this.width !== -1){
             this.socket.send(JSON.stringify({
                 method: 'draw',
@@ -32,9 +36,37 @@ export default abstract class Shape extends Tool {
                     y: this.startY,
                     w: this.width,
                     h: this.height,
-            }}))
+                }}))
         }
+    }
+    touchEndHandler(e: TouchEvent): void {
+        this.mouseDown = false;
+        this.sendSocketDraw();
+    }
 
+    touchMoveHandler(e: TouchEvent): void {
+        if (this.mouseDown) {
+            const touch = e.touches[0];
+            const x = touch.clientX - this.offsetLeft;
+            const y = touch.clientY - this.offsetTop;
+            this.width = x - this.startX;
+            this.height = y - this.startY;
+
+            this.draw(this.startX, this.startY, this.width, this.height);
+        }
+        document.ontouchmove = null;
+    }
+
+    touchStartHandler(e: TouchEvent): void {
+        this.mouseDown = true;
+        this.ctx.beginPath();
+        const touch = e.touches[0];
+        const x = touch.clientX - this.offsetLeft;
+        const y = touch.clientY - this.offsetTop;
+        this.startX = x;
+        this.startY = y;
+        this.saved = this.canvas.toDataURL()
+        e.preventDefault();
     }
     abstract draw(x: number, y: number, w: number, h: number): void
 }

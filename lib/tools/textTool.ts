@@ -99,6 +99,10 @@ export default class TextTool extends Tool {
         this.ctx.font = settingState.font;
         this.ctx.beginPath();
         this.ctx.moveTo(e.offsetX, e.offsetY);
+
+        // Активируйте невидимое текстовое поле при нажатии на канвас
+        const textInput = document.getElementById("text-input") as HTMLInputElement;
+        textInput.focus();
     }
 
     mouseMoveHandler(e: MouseEvent) {
@@ -109,6 +113,24 @@ export default class TextTool extends Tool {
         ctx.font = font;
         ctx.fillStyle = fillStyle;
         ctx.fillText(text, startX, startY);
+    }
+
+    touchEndHandler(e: TouchEvent): void {
+    }
+
+    touchMoveHandler(e: TouchEvent): void {
+    }
+
+    touchStartHandler(e: TouchEvent): void {
+        this.mouseDown = true;
+        this.prevKey.key = "";
+        this.ctx.font = settingState.font;
+        this.ctx.beginPath();
+        this.ctx.moveTo(e.touches[0].clientX - this.offsetLeft, e.touches[0].clientY - this.offsetTop);
+
+        // Активируйте невидимое текстовое поле при нажатии на канвас на мобильных устройствах
+        const textInput = document.getElementById("text-input") as HTMLInputElement;
+        textInput.focus();
     }
 
 }

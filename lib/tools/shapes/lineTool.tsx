@@ -11,6 +11,16 @@ export default class LineTool extends Shape {
         }
         document.onmousemove = null;
     }
+    touchMoveHandler(e: TouchEvent) {
+        if (this.mouseDown) {
+            const touch = e.touches[0];
+            this.width = touch.clientX - this.offsetLeft;
+            this.height = touch.clientY - this.offsetTop;
+            this.draw(this.startX, this.startY, this.width, this.height)
+        }
+        document.ontouchmove = null;
+    }
+
     handleGlobalMouseMove(e: MouseEvent) {
         if (this.mouseDown) {
 

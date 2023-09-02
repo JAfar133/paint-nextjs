@@ -6,6 +6,26 @@ export default class CircleTool extends Shape {
     radius: number = -1;
     mouseUpHandler(e: MouseEvent) {
         super.mouseUpHandler(e)
+        this.sendSocketDraw();
+    }
+    touchEndHandler(e: TouchEvent) {
+        super.touchEndHandler(e);
+        this.sendSocketDraw();
+    }
+    touchMoveHandler(e: TouchEvent) {
+        if (this.mouseDown) {
+            const touch = e.touches[0];
+            const x = touch.clientX - this.offsetLeft;
+            const y = touch.clientY - this.offsetTop;
+            let width = x - this.startX;
+            let height = y - this.startY;
+            this.radius = Math.sqrt(width**2 + height**2)
+            this.draw(this.startX, this.startY, this.radius)
+        }
+        document.onmousemove = null;
+    }
+
+    sendSocketDraw() {
         if(this.startX !== -1 && this.startY !== -1 && this.radius !== -1) {
             this.socket.send(JSON.stringify({
                 method: 'draw',
@@ -23,6 +43,7 @@ export default class CircleTool extends Shape {
             }))
         }
     }
+
     mouseMoveHandler(e: MouseEvent) {
         if (this.mouseDown) {
             let width = e.offsetX - this.startX;

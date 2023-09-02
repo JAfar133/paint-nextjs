@@ -15,6 +15,19 @@ export default class EllipseTool extends Shape {
         }
         document.onmousemove = null;
     }
+    touchMoveHandler(e: TouchEvent) {
+        if (this.mouseDown) {
+            const touch = e.touches[0];
+            const x = touch.clientX - this.offsetLeft;
+            const y = touch.clientY - this.offsetTop;
+            let width = x - this.startX;
+            let height = y - this.startY;
+            this.width = Math.abs(width);
+            this.height = Math.abs(height);
+            this.draw(this.startX, this.startY, this.width, this.height);
+        }
+        document.onmousemove = null;
+    }
 
     handleGlobalMouseMove(e: MouseEvent) {
         if (this.mouseDown) {

@@ -7,13 +7,7 @@ export default class PencilTool extends Tool {
 
     mouseUpHandler(e: MouseEvent) {
         this.mouseDown = false;
-        this.socket.send(JSON.stringify({
-            method: 'draw',
-            id: this.id,
-            figure: {
-                type: 'finish',
-            }
-        }))
+        this.sendSocketFinish();
         this.lastCircleX = null;
         this.lastCircleY = null;
     }
@@ -26,20 +20,7 @@ export default class PencilTool extends Tool {
 
     mouseMoveHandler(e: MouseEvent) {
         if (this.mouseDown) {
-            this.socket.send(JSON.stringify({
-                method: 'draw',
-                id: this.id,
-                username: userState.user?.username,
-                figure: {
-                    strokeWidth: this.ctx.lineWidth,
-                    strokeStyle: this.ctx.strokeStyle,
-                    type: this.type,
-                    x: e.offsetX,
-                    y: e.offsetY,
-                    lastCircleX: this.lastCircleX,
-                    lastCircleY: this.lastCircleY,
-                }
-            }))
+            this.sendSocketDraw(e.offsetX, e.offsetY);
             this.draw(e.offsetX, e.offsetY)
         }
         document.onmousemove = null;
@@ -52,32 +33,73 @@ export default class PencilTool extends Tool {
             if ((e.pageY < (this.offsetTop + this.canvas.height)) && e.pageY > this.offsetTop) {
                 x = e.offsetX - this.offsetLeft;
                 y = e.offsetY;
-            }
-            else if(e.pageY < this.offsetTop) {
+            } else if (e.pageY < this.offsetTop) {
                 x = e.offsetX - this.offsetLeft;
                 y = e.offsetY - this.offsetTop;
-            }
-            else {
+            } else {
                 x = e.offsetX - this.offsetLeft;
                 y = e.offsetY + this.offsetTop;
             }
-            this.socket.send(JSON.stringify({
-                method: 'draw',
-                id: this.id,
-                username: userState.user?.username,
-                figure: {
-                    strokeWidth: this.ctx.lineWidth,
-                    strokeStyle: this.ctx.strokeStyle,
-                    type: this.type,
-                    x: x,
-                    y: y,
-                    lastCircleX: this.lastCircleX,
-                    lastCircleY: this.lastCircleY,
-                }
-            }))
+            this.sendSocketDraw(x, y);
             this.draw(x, y)
         }
     }
+
+    touchMoveHandler(e: TouchEvent) {
+        if (this.mouseDown) {
+            const touch = e.touches[0];
+            const x = touch.clientX - this.offsetLeft;
+            const y = touch.clientY - this.offsetTop;
+            this.sendSocketDraw(x, y);
+            this.draw(x, y);
+        }
+        e.preventDefault();
+    }
+
+    sendSocketDraw(x: number, y: number) {
+        this.socket.send(JSON.stringify({
+            method: 'draw',
+            id: this.id,
+            username: userState.user?.username,
+            figure: {
+                strokeWidth: this.ctx.lineWidth,
+                strokeStyle: this.ctx.strokeStyle,
+                type: this.type,
+                x: x,
+                y: y,
+                lastCircleX: this.lastCircleX,
+                lastCircleY: this.lastCircleY,
+            }
+        }));
+    }
+    sendSocketFinish(){
+        this.socket.send(JSON.stringify({
+            method: 'draw',
+            id: this.id,
+            figure: {
+                type: 'finish',
+            }
+        }));
+    }
+
+    touchStartHandler(e: TouchEvent) {
+        const touch = e.touches[0];
+        const x = touch.clientX - this.offsetLeft;
+        const y = touch.clientY - this.offsetTop;
+        this.mouseDown = true;
+        this.ctx.beginPath();
+        this.ctx.moveTo(x, y);
+        e.preventDefault();
+    }
+
+    touchEndHandler(e: TouchEvent) {
+        this.mouseDown = false;
+        this.sendSocketFinish();
+        this.lastCircleX = null;
+        this.lastCircleY = null;
+        e.preventDefault();
+    }
+
 
     static draw(ctx: CanvasRenderingContext2D, x: number, y: number, lastCircleX: number | null, lastCircleY: number | null, strokeStyle: string, strokeWidth: number) {
         ctx.strokeStyle = strokeStyle;
