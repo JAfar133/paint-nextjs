@@ -3,7 +3,7 @@ import {twMerge} from "tailwind-merge"
 import {
   ArrowUpRightFromCircle,
   Circle,
-  Eraser,
+  Eraser, PaintBucket,
   Pencil,
   Spline,
   Star,
@@ -32,6 +32,7 @@ import {FourStarTool} from "@/lib/tools/shapes/stars/fourStarTool";
 import {TbJewishStar} from "react-icons/tb";
 import {SixStarTool} from "@/lib/tools/shapes/stars/SixStarTool";
 import EllipseTool from "@/lib/tools/shapes/ellipseTool";
+import FillingTool from "@/lib/tools/fillingTool";
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
@@ -170,6 +171,14 @@ export const tools: ClientTool[] = [
     strokeColor: false,
     strokeWidth: true,
   },
+  {
+    icon: PaintBucket,
+    name: "filling",
+    description: "Заливка цветом",
+    fillColor: true,
+    strokeColor: false,
+    strokeWidth: false,
+  },
 ]
 
 export const toolClasses: { [key: string]: new (canvas: HTMLCanvasElement, socket: WebSocket, id: string | string[], type: string) => Tool } = {
@@ -188,6 +197,7 @@ export const toolClasses: { [key: string]: new (canvas: HTMLCanvasElement, socke
   "five_star": FiveStarTool,
   "six_star": SixStarTool,
   "shit": ShitTool,
+  "filling": FillingTool,
 };
 
 export const fonts: string[] = [

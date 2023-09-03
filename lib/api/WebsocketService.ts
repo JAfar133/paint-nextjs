@@ -19,6 +19,7 @@ import {ShitTool} from "@/lib/tools/shapes/shitTool";
 import {FiveStarTool} from "@/lib/tools/shapes/stars/fiveStarTool";
 import {FourStarTool} from "@/lib/tools/shapes/stars/fourStarTool";
 import {SixStarTool} from "@/lib/tools/shapes/stars/SixStarTool";
+import FillingTool from "@/lib/tools/fillingTool";
 
 class WebsocketService {
     websocketWorker(params: Params) {
@@ -193,6 +194,7 @@ class WebsocketService {
             "five_star": (ctx, figure) => FiveStarTool.draw(ctx, figure.x, figure.y, figure.w, figure.h, figure.fillStyle, figure.strokeStyle, figure.strokeWidth, figure.isFill, figure.isStroke),
             "four_star": (ctx, figure) => FourStarTool.draw(ctx, figure.x, figure.y, figure.w, figure.h, figure.fillStyle, figure.strokeStyle, figure.strokeWidth, figure.isFill, figure.isStroke),
             "six_star": (ctx, figure) => SixStarTool.draw(ctx, figure.x, figure.y, figure.w, figure.h, figure.fillStyle, figure.strokeStyle, figure.strokeWidth, figure.isFill, figure.isStroke),
+            "filling": (ctx, figure) => FillingTool.draw(ctx, figure.x, figure.y, figure.fillStyle),
             "finish": (ctx) => ctx.beginPath(),
         };
 

@@ -18,7 +18,7 @@ const CustomSelect = <T extends number | string>({value, options, onChange, clas
     >
         {
             options.map((b) =>
-                <option value={b} key={b}>{b}</option>
+                <option value={b} key={b}>{typeof b === 'number' ? b-1 : b}</option>
             )
         }
 

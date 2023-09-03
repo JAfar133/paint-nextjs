@@ -31,6 +31,7 @@ import {
     SelectValue
 } from "@/components/ui/select";
 import LineTool from "@/lib/tools/shapes/lineTool";
+import {Popover, PopoverContent, PopoverTrigger} from "@/components/ui/popover";
 
 const toolDivClass = "ml-3 flex flex-col content-center";
 
@@ -182,7 +183,7 @@ const Toolbar = observer(() => {
                                     {toolPressed?.strokeWidth && <div className={cn(toolDivClass, "gap-2")}>
                                       <CustomSelect id="width" classname="w-12 m-auto h-7"
                                                     value={strokeWidth}
-                                                    options={[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100, 150, 200]}
+                                                    options={[2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 21, 31, 41, 51, 61, 71, 81, 91, 101, 151, 201]}
                                                     onChange={handleStrokeWidthTool}/>
                                       <label htmlFor="width" style={{fontSize: 10}} className="ml-1 m-auto">Толщина</label>
                                     </div>}
@@ -230,14 +231,13 @@ const Toolbar = observer(() => {
                                       <label htmlFor="stroke" style={{fontSize: 10}} className="m-auto">Цвет</label>
                                     </div>}
                                     {toolPressed?.fillColor && toolPressed.strokeColor &&
-                                      <div className="ml-5 flex flex-col gap-1">
+                                      <div className="ml-5 flex flex-col gap-1 text-sm">
                                         <div>
                                           <span style={{fontSize: 11, marginRight: 5}}>Заливка</span>
                                           <select value={canvasState.isFill.toString()}
                                                   onChange={(e) => {
                                                       canvasState.isFill = e.target.value === 'true'
                                                   }}>
-                                            <option value="" disabled>Заливка</option>
                                             <option value="true">Сплошной цвет</option>
                                             <option value="false">Без заливки</option>
                                           </select>
@@ -248,7 +248,6 @@ const Toolbar = observer(() => {
                                                   onChange={(e) => {
                                                       canvasState.isStroke = e.target.value === 'true'
                                                   }}>
-                                            <option value="" disabled>Контур</option>
                                             <option value="true">Сплошной цвет</option>
                                             <option value="false">Без контура</option>
                                           </select>
@@ -258,28 +257,25 @@ const Toolbar = observer(() => {
                                 </div>
                             </div>
                             <div className="flex gap-7 items-center">
-                                <TooltipProvider>
-                                    <Tooltip>
-                                        <TooltipTrigger>
-                                            <div className="flex gap-1">
-                                                <span>{canvasState.userCount}</span>
-                                                <Users/>
-                                            </div>
-                                        </TooltipTrigger>
-                                        <TooltipContent>
-                                            <p>подключенные пользователи</p>
-                                            {
-                                                canvasState.users !== null && canvasState.users.map((user, idx) =>
-                                                    <p key={user}
-                                                       style={{color: user === userState.user?.username ? 'green' : 'secondary'}}>
-                                                        {idx + 1}. {user} {user === userState.user?.username ? '<- Ты' : ''}
-                                                    </p>
-                                                )
-                                            }
-                                        </TooltipContent>
-                                    </Tooltip>
-                                </TooltipProvider>
-
+                                <Popover>
+                                    <PopoverTrigger>
+                                        <div className="flex gap-1">
+                                            <span>{canvasState.userCount}</span>
+                                            <Users/>
+                                        </div>
+                                    </PopoverTrigger>
+                                    <PopoverContent>
+                                        <p>подключенные пользователи</p>
+                                        {
+                                            canvasState.users !== null && canvasState.users.map((user, idx) =>
+                                                <p key={user}
+                                                   style={{color: user === userState.user?.username ? 'green' : 'secondary'}}>
+                                                    {idx + 1}. {user} {user === userState.user?.username ? '<- Ты' : ''}
+                                                </p>
+                                            )
+                                        }
+                                    </PopoverContent>
+                                </Popover>
                                 <ThemeToggle/>
                                 <NavbarAvatar/>
                             </div>
