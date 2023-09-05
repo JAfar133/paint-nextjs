@@ -7,6 +7,7 @@ import userState from "@/store/userState";
 import {observer} from "mobx-react-lite";
 import Toolbar from "@/components/Toolbar";
 import {Toaster} from "@/components/ui/toaster";
+import canvasState from "@/store/canvasState";
 
 const DrawPage = observer(() => {
 
@@ -19,11 +20,7 @@ const DrawPage = observer(() => {
                 userState.setIsAuth(true)
             })
             .catch(() => {
-                const user = {
-                    _id: (+new Date()),
-                    username: `Гость${(+new Date).toString(16)}`,
-                    email: `email${(+new Date).toString(16)}`
-                }
+                const user = userState.randomUser;
                 if (localStorage.getItem("username")) {
                     // @ts-ignore
                     user.username = localStorage.getItem("username")

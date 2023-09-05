@@ -43,9 +43,16 @@ class UserState {
     get loading(){
         return this._loading;
     }
+    get randomUser(): User{
+        return {
+            _id: (+new Date()),
+            username: `Гость${(+new Date).toString(16)}`,
+            email: `email${(+new Date).toString(16)}`
+        }
+    }
 
     logout(){
-        this.setUser(null);
+        this.setUser(this.randomUser);
         this.setIsAuth(false);
         localStorage.removeItem('token');
     }

@@ -121,11 +121,12 @@ function floodFill(ctx: CanvasRenderingContext2D, startX: number, startY: number
 }
 
 function colorsMatch(color1: { r: number; g: number; b: number; a: number }, color2: { r: number; g: number; b: number; a: number }): boolean {
+    const tolerance = 5;
     return (
-        color1.r === color2.r &&
-        color1.g === color2.g &&
-        color1.b === color2.b &&
-        color1.a === color2.a
+        Math.abs(color1.r - color2.r) <= tolerance &&
+        Math.abs(color1.g - color2.g) <= tolerance &&
+        Math.abs(color1.b - color2.b) <= tolerance &&
+        Math.abs(color1.a - color2.a) <= tolerance
     );
 }
 

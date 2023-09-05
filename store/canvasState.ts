@@ -1,5 +1,6 @@
 import {makeAutoObservable} from "mobx";
 import UserService from "@/lib/api/UserService";
+import {Point} from "@/lib/tools/shapes/arcTool";
 
 export interface Message {
     id: string,
@@ -20,9 +21,49 @@ class CanvasState {
     messages: Message[] = []
     isFill: boolean = false;
     isStroke: boolean = true;
+    scale: number = 1;
+    scaleMultiplier: number = 1.1;
+    offsetX: number = 0;
+    offsetY: number = 0;
+    mouse = { x: 0, y: 0 };
     constructor() {
         this.canvas_id = `f${(+new Date).toString(16)}`
         makeAutoObservable(this);
+    }
+    trackMouse(event: MouseEvent) {
+        this.mouse.x = event.clientX - this.canvas.offsetLeft;
+        this.mouse.y = event.clientY - this.canvas.offsetTop;
+    }
+
+    wheelHandler(e: WheelEvent) {
+        e.preventDefault();
+        // const scaleFactor = this.scaleMultiplier;
+        // const delta = e.deltaY > 0 ? 1 / scaleFactor : scaleFactor;
+        // const minScale = 1;
+        // const maxScale = 10;
+        //
+        // const prevScale = this.scale;
+        //
+        // this.scale *= delta;
+        // if (this.scale < minScale) this.scale = minScale;
+        // if (this.scale > maxScale) this.scale = maxScale;
+        // this.offsetX = e.offsetX - (e.offsetX - this.offsetX) * (this.scale / prevScale);
+        // this.offsetY = e.offsetY - (e.offsetY - this.offsetY) * (this.scale / prevScale);
+        //
+        // this.draw(this.scale, { x: this.offsetX, y: this.offsetY });
+    }
+
+
+    draw(scale: number, translatePos: Point) {
+        const img = new Image();
+        const ctx = this.canvas.getContext('2d');
+        img.src = this.canvas.toDataURL();
+        img.onload = () => {
+            ctx?.clearRect(0, 0, this.canvas.width, this.canvas.height);
+            ctx?.translate(translatePos.x, translatePos.y);
+            ctx?.scale(scale, scale);
+            ctx?.drawImage(img, 0, 0);
+        };
     }
 
     get canvasId() {
@@ -50,6 +91,10 @@ class CanvasState {
 
     setCanvas(canvas: HTMLCanvasElement) {
         this.canvas = canvas;
+        this.clear();
+        this.canvas.onwheel = this.wheelHandler.bind(this);
+        this.canvas.onmousemove = this.trackMouse.bind(this);
+
     }
 
     addUndo(data: any) {
@@ -122,7 +167,10 @@ class CanvasState {
 
     clear() {
         let ctx = this.canvas.getContext('2d')
-        ctx?.clearRect(0, 0, this.canvas.width, this.canvas.height)
+        if(ctx){
+            ctx.fillStyle = 'rgba(255,255,255,1)';
+            ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+        }
     }
 }
 

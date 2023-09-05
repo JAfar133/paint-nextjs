@@ -19,7 +19,7 @@ const Page = () => {
             const response = await AuthService.login({ email, password });
             userState.setUser(response.data.user)
             userState.setIsAuth(true)
-            router.push('/')
+            router.push(localStorage.getItem("current_draw_url") ||  "/")
         }catch (e: any) {
             if(e.response.data.errors){
                 alert(e.response.data.errors.errors[0].msg)

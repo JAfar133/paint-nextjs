@@ -54,10 +54,16 @@ const NavbarAvatar = observer(() => {
                         </DropdownMenuItem>
                     </>
                     : <DropdownMenuGroup>
-                        <DropdownMenuItem className="cursor-pointer" onClick={() => router.push('/login')}>
+                        <DropdownMenuItem className="cursor-pointer" onClick={() => {
+                            localStorage.setItem("current_draw_url", window.location.pathname)
+                            router.push('/login')
+                        }}>
                             Войти
                         </DropdownMenuItem>
-                        <DropdownMenuItem className="cursor-pointer" onClick={() => router.push('/signup')}>
+                        <DropdownMenuItem className="cursor-pointer" onClick={() => {
+                            localStorage.setItem("current_draw_url", window.location.pathname)
+                            router.push('/signup')
+                        }}>
                             Зарегестрироваться
                         </DropdownMenuItem>
                     </DropdownMenuGroup>

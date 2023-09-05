@@ -12,6 +12,7 @@ export default abstract class Tool {
     offsetLeft: number;
     saved: string = "";
 
+
     constructor(canvas: HTMLCanvasElement, socket: WebSocket, id: string | string[], type: string) {
         this.canvas = canvas;
         this.socket = socket;
@@ -34,7 +35,6 @@ export default abstract class Tool {
         this.canvas.onmousedown = this.mouseDownHandler.bind(this);
         this.canvas.onmouseup = this.mouseUpHandler.bind(this);
         this.canvas.onmouseout = this.mouseOutHandler.bind(this);
-
         // Добавьте обработчики событий касания
         this.canvas.ontouchmove = this.touchMoveHandler.bind(this);
         this.canvas.ontouchstart = this.touchStartHandler.bind(this);
@@ -45,6 +45,7 @@ export default abstract class Tool {
         document.onmousemove = null;
         document.onmouseup = null;
     }
+
 
     abstract touchMoveHandler(e: TouchEvent): void;
     abstract touchStartHandler(e: TouchEvent): void;
@@ -79,7 +80,6 @@ export default abstract class Tool {
     set font(font: string) {
         this.ctx.font = font
     }
-
     destroyEvents() {
         document.onkeydown = null;
         document.onmousemove = null;
