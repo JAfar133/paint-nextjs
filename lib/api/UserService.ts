@@ -21,6 +21,12 @@ export default class UserService {
     static getImages(){
         return $authHost.get('/drawing')
     }
+    static getGalleryImages(){
+        return $host.get('/gallery')
+    }
+    static getGalleryImage(id: string | string[]){
+        return $host.get(`/gallery/get-image?id=${id}`);
+    }
     static async getMessages(canvas_id: string) {
         const response = await $host.get(`/message/get/${canvas_id}`);
         const messages: ResponseMessage[] = response.data;

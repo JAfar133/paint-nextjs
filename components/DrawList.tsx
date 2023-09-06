@@ -5,7 +5,7 @@ import userState from "@/store/userState";
 import UserService from "@/lib/api/UserService";
 import {useRouter} from "next/navigation";
 import NextImage from "next/image"
-
+import Loader from "react-js-loader";
 interface Image {
     url: string,
     src: string,
@@ -15,6 +15,7 @@ const DrawList = () => {
         const [drawings, setDrawings] = useState<string[]>();
         const [images, setImages] = useState<Image[]>();
         const router = useRouter();
+        const [loading, setLoading] = useState<boolean>(true);
 
         useEffect(() => {
             AuthService.check()
@@ -25,7 +26,7 @@ const DrawList = () => {
                     UserService.getImages()
                         .then(res => {
                             setDrawings(res.data);
-                        });
+                        }).finally(()=>setLoading(false));
                 })
                 .finally(() => userState.setLoading(false));
         }, []);
@@ -60,7 +61,10 @@ const DrawList = () => {
         }
 
         return <div className="w-full pt-20 pl-10 flex flex-wrap justify-center">
-            {images &&
+            {loading && <div className="absolute top-1/2 left-1/2 translate-x-[-50%]">
+              <Loader type="bubble-scale" bgColor={"#FFFFFF"} title={"Загружаем ваши работы"} color={'#FFFFFF'} size={100} />
+            </div>}
+            {!loading && images &&
                 images.map((image, index) => (
                     < div className="m-5 max-w-md" key={image.url}>
                         <span>№: {index} url:{image.url}</span>
@@ -71,8 +75,10 @@ const DrawList = () => {
                     </div>
                 ))
             }
-        </div>
-            ;
+            {!loading && !images &&
+                <div className="text-center">У вас пока нет работ</div>
+            }
+        </div>;
     }
 ;
 

@@ -9,6 +9,7 @@ export interface Message {
     date: Date,
     color: string
 }
+
 class CanvasState {
     // @ts-ignore
     canvas: HTMLCanvasElement;
@@ -25,11 +26,13 @@ class CanvasState {
     scaleMultiplier: number = 1.1;
     offsetX: number = 0;
     offsetY: number = 0;
-    mouse = { x: 0, y: 0 };
+    mouse = {x: 0, y: 0};
+
     constructor() {
         this.canvas_id = `f${(+new Date).toString(16)}`
         makeAutoObservable(this);
     }
+
     trackMouse(event: MouseEvent) {
         this.mouse.x = event.clientX - this.canvas.offsetLeft;
         this.mouse.y = event.clientY - this.canvas.offsetTop;
@@ -73,7 +76,8 @@ class CanvasState {
     setCanvasId(id: string) {
         this.canvas_id = id;
     }
-    setMessages(messages: Message[]){
+
+    setMessages(messages: Message[]) {
         this.messages = messages;
     }
 
@@ -127,8 +131,8 @@ class CanvasState {
         }
     }
 
-    private sendDataUrl(dataUrl: string){
-        if(this.socket){
+    private sendDataUrl(dataUrl: string) {
+        if (this.socket) {
             this.socket.send(JSON.stringify({
                 method: "draw_url",
                 id: this.canvasId,
@@ -138,7 +142,7 @@ class CanvasState {
     }
 
 
-    drawByDataUrl(dataUrl: string){
+    drawByDataUrl(dataUrl: string) {
         let ctx = this.canvas.getContext('2d')
         let img = new Image();
         img.src = dataUrl;
@@ -152,7 +156,7 @@ class CanvasState {
     clearCanvas() {
         this.clear()
         this.saveCanvas();
-        if(this.socket) {
+        if (this.socket) {
             this.socket.send(JSON.stringify({
                 method: "clear",
                 id: this.canvasId,
@@ -160,14 +164,16 @@ class CanvasState {
         }
     }
 
-    saveCanvas(){
-        UserService.saveImage(this.canvasId, this.canvas.toDataURL())
-            .catch(e=>console.log(e))
+    saveCanvas() {
+        setTimeout(()=>{
+            UserService.saveImage(this.canvasId, this.canvas.toDataURL())
+                .catch(e => console.log(e))
+        },100)
     }
 
     clear() {
         let ctx = this.canvas.getContext('2d')
-        if(ctx){
+        if (ctx) {
             ctx.fillStyle = 'rgba(255,255,255,1)';
             ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
         }

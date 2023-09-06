@@ -23,6 +23,9 @@ const Navbar = observer(() => {
                 <Link href={`/draw/${canvasState.canvasId}`}>
                     <Button variant="premium" className="pl-5">Начать рисовать<Flame className="ml-2 w-5 text-amber-500 fill-amber-300"/></Button>
                 </Link>
+                <Link href={`/gallery`}>
+                    <Button variant="ghost" className="pl-5">Галлерея</Button>
+                </Link>
                     <ThemeToggle />
                 { !userState._isAuth ?  <>
                                 <Link href="/login">Login</Link>

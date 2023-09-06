@@ -38,17 +38,19 @@ const Canvas = observer(() => {
         if (mainCanvasRef.current) {
             const canvas = mainCanvasRef.current;
             canvasState.setCanvas(mainCanvasRef.current);
-            UserService.getImage(params.id)
-                .then(response => {
-                    const img = new Image();
-                    img.src = response.data;
-                    const ctx = canvas.getContext('2d')
-                    img.onload = () => {
-                        ctx?.clearRect(0, 0, canvas.width, canvas.height);
-                        ctx?.drawImage(img, 0, 0);
-                        ctx?.stroke();
-                    }
-                }).catch(e=>console.log(e))
+            const image = localStorage.getItem("image");
+            if (image){
+                UserService.getGalleryImage(image)
+                    .then(response => {
+                        canvasState.drawByDataUrl(response.data)
+                    })
+                    .catch(e=>console.log(e))
+            }
+            else {
+                UserService.getImage(params.id)
+                    .then(response => canvasState.drawByDataUrl(response.data))
+                    .catch(e=>console.log(e))
+            }
         }
 
     }, [mainCanvasRef, params.id]);

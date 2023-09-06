@@ -183,7 +183,7 @@ const Toolbar = observer(() => {
                                     {toolPressed?.strokeWidth && <div className={cn(toolDivClass, "gap-2")}>
                                       <CustomSelect id="width" classname="w-12 m-auto h-7"
                                                     value={strokeWidth}
-                                                    options={[2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 21, 31, 41, 51, 61, 71, 81, 91, 101, 151, 201]}
+                                                    options={[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 12, 14, 16, 18, 20, 30, 40, 50, 60, 70, 80, 90, 100, 150, 200]}
                                                     onChange={handleStrokeWidthTool}/>
                                       <label htmlFor="width" style={{fontSize: 10}} className="ml-1 m-auto">Толщина</label>
                                     </div>}
