@@ -23,13 +23,16 @@ const Page = observer(() => {
                 const user = response.data.user;
                 userState.setUser({_id: user._id, username: user.username, email: user.email});
                 userState.setIsAuth(true);
-                UserService.getGalleryImages()
-                    .then(res => {
-                        setDrawings(res.data);
-                    })
-                    .finally(()=>setLoading(false));
+
             })
-            .finally(() => userState.setLoading(false));
+            .finally(() => {
+                userState.setLoading(false);
+            });
+        UserService.getGalleryImages()
+            .then(res => {
+                setDrawings(res.data);
+            })
+            .finally(()=>setLoading(false));
     }, []);
 
     const redirectToDraw = (image: string) => {
