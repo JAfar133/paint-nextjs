@@ -169,6 +169,7 @@ class CanvasState {
             UserService.saveImage(this.canvasId, this.canvas.toDataURL())
                 .catch(e => console.log(e))
         },100)
+        localStorage.removeItem("image")
     }
 
     clear() {

@@ -1,9 +1,9 @@
 "use client";
 
-import React, {useEffect, useState} from 'react';
+import React, {ChangeEvent, FormEventHandler, useEffect, useState} from 'react';
 import NavbarAvatar from "@/components/NavbarAvatar";
 import ThemeToggle from "@/components/theme-toggle";
-import {Download, Save, Users} from "lucide-react";
+import {Download, Save, Upload, Users} from "lucide-react";
 import {Toggle} from "@/components/ui/toggle";
 import {Button} from "@/components/ui/button";
 import canvasState from "@/store/canvasState";
@@ -19,18 +19,6 @@ import {IoReturnUpBackOutline, IoReturnUpForward} from "react-icons/io5";
 import _ from 'lodash'
 import {ClientTool, cn, fonts, fontWeights, toolClasses, tools} from "@/lib/utils";
 import InputColor, {Color} from "react-input-color";
-import {Tooltip, TooltipContent, TooltipProvider, TooltipTrigger} from "@/components/ui/tooltip";
-import Shape from "@/lib/tools/shapes/Shape";
-import {
-    Select,
-    SelectContent,
-    SelectGroup,
-    SelectItem,
-    SelectLabel,
-    SelectTrigger,
-    SelectValue
-} from "@/components/ui/select";
-import LineTool from "@/lib/tools/shapes/lineTool";
 import {Popover, PopoverContent, PopoverTrigger} from "@/components/ui/popover";
 
 const toolDivClass = "ml-3 flex flex-col content-center";
@@ -137,7 +125,22 @@ const Toolbar = observer(() => {
             const saveOnServer = () => {
                 canvasState.saveCanvas()
             }
+            const imageUpload = (e: ChangeEvent<HTMLInputElement>) => {
+                const target = e.target as HTMLInputElement;
+                const file = target.files?.[0]
+                if (file) {
+                    const reader = new FileReader();
 
+                    reader.onload = (event) => {
+                        if (event.target) {
+                            const dataUrl = event.target.result as string;
+                            canvasState.drawByDataUrl(dataUrl);
+                        }
+                    };
+                    reader.readAsDataURL(file);
+
+                }
+            };
             return (
                 <>
                     <div className="fixed bg-toolbar top-0 w-full">
@@ -149,6 +152,13 @@ const Toolbar = observer(() => {
                                         <Button variant="ghost" size="sm" onClick={() => download()}><Download
                                             className="h-6 w-6"/></Button>
                                         <label htmlFor="" style={{fontSize: 10}} className="m-auto">Скачать</label>
+                                    </div>
+                                    <div className={toolDivClass}>
+                                        <input id="picture" type="file" onChange={imageUpload} accept="image/*,.png"/>
+                                        <label htmlFor="picture" className="upload_label">
+                                            <Upload className="text-center h-6 w-6"/>
+                                        </label>
+                                        <label style={{fontSize: 10}} className="m-auto ">Загрузить</label>
                                     </div>
                                     <div className={toolDivClass}>
                                         <Button variant="ghost" size="sm" onClick={() => saveOnServer()}><Save
