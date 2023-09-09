@@ -1,5 +1,6 @@
 import Tool from "@/lib/tools/tool";
 import userState from "@/store/userState";
+import settingState from "@/store/settingState";
 
 export default class FillingTool extends Tool {
     pixelColor: string = '';
@@ -46,14 +47,12 @@ export default class FillingTool extends Tool {
     touchMoveHandler(e: TouchEvent): void {
     }
 
-
-
     draw(x: number, y: number, fillColor: string) {
-        floodFill(this.ctx,x, y, fillColor)
+        floodFill(this.ctx,x, y, fillColor, settingState.fillingTolerance)
     }
 
-    static draw(ctx: CanvasRenderingContext2D, x: number, y: number, fillColor: string) {
-        floodFill(ctx,x, y, fillColor)
+    static draw(ctx: CanvasRenderingContext2D, x: number, y: number, fillColor: string, tolerance: number = 5) {
+        floodFill(ctx,x, y, fillColor, tolerance)
     }
     getPixelColor(x: number, y: number): string {
         const imageData = this.ctx.getImageData(x, y, 1, 1);
@@ -65,7 +64,7 @@ export default class FillingTool extends Tool {
 }
 
 
-function floodFill(ctx: CanvasRenderingContext2D, startX: number, startY: number, newColor: string): void {
+function floodFill(ctx: CanvasRenderingContext2D, startX: number, startY: number, newColor: string, tolerance: number = 5): void {
     const width = ctx.canvas.width;
     const height = ctx.canvas.height;
 
@@ -104,7 +103,7 @@ function floodFill(ctx: CanvasRenderingContext2D, startX: number, startY: number
             b: casData.data[currentIndex + 2],
             a: casData.data[currentIndex + 3]
         };
-        if (colorsMatch(currentColor, targetColor)) {
+        if (colorsMatch(currentColor, targetColor, tolerance)) {
             casData.data[currentIndex] = replacementColor.r;
             casData.data[currentIndex + 1] = replacementColor.g;
             casData.data[currentIndex + 2] = replacementColor.b;
@@ -119,9 +118,13 @@ function floodFill(ctx: CanvasRenderingContext2D, startX: number, startY: number
 
     ctx.putImageData(casData, 0, 0);
 }
-
-function colorsMatch(color1: { r: number; g: number; b: number; a: number }, color2: { r: number; g: number; b: number; a: number }): boolean {
-    const tolerance = 5;
+interface Color {
+    r: number;
+    g: number;
+    b: number;
+    a: number;
+}
+function colorsMatch(color1: Color, color2: Color, tolerance: number = 5): boolean {
     return (
         Math.abs(color1.r - color2.r) <= tolerance &&
         Math.abs(color1.g - color2.g) <= tolerance &&

@@ -34,6 +34,7 @@ const Toolbar = observer(() => {
             const [textSize, setTextSize] = useState<number>(settingState.textSize);
             const [textFont, setTextFont] = useState<string>(settingState.textFont);
             const [fontWeight, setFontWeight] = useState<string>(settingState.textFont);
+            const [fillingTolerance, setFillingTolerance] = useState<number>(settingState.fillingTolerance);
 
             const findToolByName = (name: string): ClientTool | null => {
                 const tool = _.find(tools, {name: name})
@@ -102,6 +103,12 @@ const Toolbar = observer(() => {
                 if (toolState.tool) {
                     settingState.setTextFont(font);
                     toolState.fill();
+                }
+            }
+            const handleFillingTolerance = (tolerance: number) => {
+                setFillingTolerance(tolerance)
+                if (toolState.tool) {
+                    settingState.setFillingTolerance(tolerance);
                 }
             }
             const handleTextWeightTool = (weight: string) => {
@@ -262,6 +269,15 @@ const Toolbar = observer(() => {
                                             <option value="false">Без контура</option>
                                           </select>
                                         </div>
+                                      </div>
+                                    }
+                                    { toolPressed?.name === "filling" &&
+                                      <div className={cn(toolDivClass, "gap-2")}>
+                                        <CustomSelect id="width" classname="w-12 m-auto h-7"
+                                                      value={settingState.fillingTolerance}
+                                                      options={[0, 5, 25, 50, 75, 100, 125, 150, 175, 200, 225, 250]}
+                                                      onChange={handleFillingTolerance}/>
+                                        <label htmlFor="width" style={{fontSize: 10}} className="ml-1 m-auto">Допуск</label>
                                       </div>
                                     }
                                 </div>

@@ -9,6 +9,7 @@ class SettingState {
     textSize: number = 40;
     textFont: string = 'Arial';
     fontWeight: string = 'normal';
+    fillingTolerance: number = 5;
     constructor() {
         makeAutoObservable(this)
     }
@@ -16,7 +17,9 @@ class SettingState {
     get font(){
         return `${this.fontWeight} ${this.textSize}px ${this.textFont}`
     }
-
+    setFillingTolerance(tolerance: number) {
+        this.fillingTolerance = tolerance;
+    }
     setFillColor(color: Color){
         this.fillColor = color;
     }

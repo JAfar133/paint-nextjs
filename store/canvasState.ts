@@ -146,6 +146,7 @@ class CanvasState {
         let ctx = this.canvas.getContext('2d')
         let img = new Image();
         img.src = dataUrl;
+        this.addUndo(dataUrl);
         img.onload = () => {
             ctx?.clearRect(0, 0, this.canvas.width, this.canvas.height)
             ctx?.drawImage(img, 0, 0, this.canvas.width, this.canvas.height)
@@ -165,10 +166,8 @@ class CanvasState {
     }
 
     saveCanvas() {
-        setTimeout(()=>{
-            UserService.saveImage(this.canvasId, this.canvas.toDataURL())
-                .catch(e => console.log(e))
-        },100)
+        UserService.saveImage(this.canvasId, this.canvas.toDataURL())
+            .catch(e => console.log(e))
         localStorage.removeItem("image")
     }
 

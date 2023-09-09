@@ -66,6 +66,9 @@ const NavbarAvatar = observer(() => {
                         }}>
                             Зарегестрироваться
                         </DropdownMenuItem>
+                        <DropdownMenuItem className="cursor-pointer" onClick={()=>newDraw()}>
+                            Новый рисунок
+                        </DropdownMenuItem>
                     </DropdownMenuGroup>
                 }
             </DropdownMenuContent>
