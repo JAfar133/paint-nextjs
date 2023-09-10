@@ -108,6 +108,9 @@ class CanvasState {
     addRedo(data: any) {
         this.redoList.push(data);
     }
+    addCurrentContextToUndo(){
+        this.undoList.push(this.canvas.toDataURL())
+    }
 
     undo() {
         if (this.undoList.length) {
@@ -146,7 +149,6 @@ class CanvasState {
         let ctx = this.canvas.getContext('2d')
         let img = new Image();
         img.src = dataUrl;
-        this.addUndo(dataUrl);
         img.onload = () => {
             ctx?.clearRect(0, 0, this.canvas.width, this.canvas.height)
             ctx?.drawImage(img, 0, 0, this.canvas.width, this.canvas.height)

@@ -42,13 +42,15 @@ const Canvas = observer(() => {
             if (image){
                 UserService.getGalleryImage(image)
                     .then(response => {
-                        canvasState.drawByDataUrl(response.data)
+                        canvasState.drawByDataUrl(response.data);
                     })
                     .catch(e=>console.log(e))
             }
             else {
                 UserService.getImage(params.id)
-                    .then(response => canvasState.drawByDataUrl(response.data))
+                    .then(response => {
+                        canvasState.drawByDataUrl(response.data);
+                    })
                     .catch(e=>console.log(e))
             }
         }

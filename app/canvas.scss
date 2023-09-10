@@ -44,4 +44,22 @@ z-index: 99999;
   border-right: 5px solid transparent;
   border-bottom: 10px solid rgba(0, 0, 0, 0.3); /* Цвет курсора */
 }
-
+input[type="color"] {
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+  width: 40px;
+  height: 26px;
+  padding: 0;
+  border-radius: 3px;
+  background-color: white;
+  cursor: pointer;
+  &::-webkit-color-swatch {
+    border-radius: 3px;
+    border: none;
+  }
+  &::-moz-color-swatch {
+    border-radius: 3px;
+    border: none;
+  }
+}

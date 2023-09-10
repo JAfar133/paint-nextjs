@@ -93,7 +93,7 @@ function floodFill(ctx: CanvasRenderingContext2D, startX: number, startY: number
     stack.push([startX, startY]);
 
     const isOutOfBounds = (x: number, y: number) => x < 0 || x >= width || y < 0 || y >= height;
-
+    let stackCount = 0;
     while (stack.length > 0) {
         const [x, y] = stack.pop() as [number, number];
         const currentIndex = (y * width + x) * 4;
@@ -103,19 +103,29 @@ function floodFill(ctx: CanvasRenderingContext2D, startX: number, startY: number
             b: casData.data[currentIndex + 2],
             a: casData.data[currentIndex + 3]
         };
-        if (colorsMatch(currentColor, targetColor, tolerance)) {
+        if(stackCount > (width + 2) * (height + 2)) break;
+        if (colorsMatchWithTolerance(currentColor, targetColor, tolerance)) {
+            if(colorsMatch(currentColor, replacementColor)) continue;
+            stackCount++;
             casData.data[currentIndex] = replacementColor.r;
             casData.data[currentIndex + 1] = replacementColor.g;
             casData.data[currentIndex + 2] = replacementColor.b;
             casData.data[currentIndex + 3] = replacementColor.a;
 
-            if (!isOutOfBounds(x + 1, y)) stack.push([x + 1, y]);
-            if (!isOutOfBounds(x - 1, y)) stack.push([x - 1, y]);
-            if (!isOutOfBounds(x, y + 1)) stack.push([x, y + 1]);
-            if (!isOutOfBounds(x, y - 1)) stack.push([x, y - 1]);
+            if (!isOutOfBounds(x + 1, y)) {
+                stack.push([x + 1, y]);
+            }
+            if (!isOutOfBounds(x - 1, y)) {
+                stack.push([x - 1, y]);
+            }
+            if (!isOutOfBounds(x, y + 1)) {
+                stack.push([x, y + 1]);
+            }
+            if (!isOutOfBounds(x, y - 1)) {
+                stack.push([x, y - 1]);
+            }
         }
     }
-
     ctx.putImageData(casData, 0, 0);
 }
 interface Color {
@@ -124,12 +134,20 @@ interface Color {
     b: number;
     a: number;
 }
-function colorsMatch(color1: Color, color2: Color, tolerance: number = 5): boolean {
+function colorsMatchWithTolerance(color1: Color, color2: Color, tolerance: number = 5): boolean {
     return (
         Math.abs(color1.r - color2.r) <= tolerance &&
         Math.abs(color1.g - color2.g) <= tolerance &&
         Math.abs(color1.b - color2.b) <= tolerance &&
         Math.abs(color1.a - color2.a) <= tolerance
+    );
+}
+function colorsMatch(color1: Color, color2: Color): boolean {
+    return (
+        color1.r === color2.r &&
+        color1.g === color2.g &&
+        color1.b === color2.b &&
+        color1.a === color2.a
     );
 }
 

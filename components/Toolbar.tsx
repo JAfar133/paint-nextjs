@@ -29,12 +29,9 @@ const Toolbar = observer(() => {
 
             const [toolPressed, setToolPressed] = useState<ClientTool | null>(tools[0])
             const [strokeWidth, setStrokeWidth] = useState(settingState.strokeWidth);
-            const [fillColor, setFillColor] = useState<Color | null>(settingState.fillColor);
-            const [strokeColor, setStrokeColor] = useState<Color | null>(settingState.strokeColor);
             const [textSize, setTextSize] = useState<number>(settingState.textSize);
             const [textFont, setTextFont] = useState<string>(settingState.textFont);
             const [fontWeight, setFontWeight] = useState<string>(settingState.textFont);
-            const [fillingTolerance, setFillingTolerance] = useState<number>(settingState.fillingTolerance);
 
             const findToolByName = (name: string): ClientTool | null => {
                 const tool = _.find(tools, {name: name})
@@ -69,15 +66,13 @@ const Toolbar = observer(() => {
                 document.body.removeChild(a);
             }
 
-            const handleFillColorTool = (color: Color) => {
-                setFillColor(color);
+            const handleFillColorTool = (color: string) => {
                 if (toolState.tool) {
                     settingState.setFillColor(color);
                     toolState.fill();
                 }
             }
-            const handleStrokeColorTool = (color: Color) => {
-                setStrokeColor(color);
+            const handleStrokeColorTool = (color: string) => {
                 if (toolState.tool) {
                     settingState.setStrokeColor(color);
                     toolState.fill();
@@ -106,7 +101,6 @@ const Toolbar = observer(() => {
                 }
             }
             const handleFillingTolerance = (tolerance: number) => {
-                setFillingTolerance(tolerance)
                 if (toolState.tool) {
                     settingState.setFillingTolerance(tolerance);
                 }
@@ -141,6 +135,7 @@ const Toolbar = observer(() => {
                     reader.onload = (event) => {
                         if (event.target) {
                             const dataUrl = event.target.result as string;
+                            canvasState.addCurrentContextToUndo();
                             canvasState.drawByDataUrl(dataUrl);
                         }
                     };
@@ -231,21 +226,27 @@ const Toolbar = observer(() => {
                                     }
                                     {toolPressed?.fillColor && <>
                                       <div className={cn(toolDivClass, "gap-3 color-input")}>
-                                        <InputColor
-                                          initialValue={fillColor?.hex || '#000'}
-                                          onChange={handleFillColorTool}
-                                          placement="right"
-                                        />
+                                        {/*<InputColor*/}
+                                        {/*  initialValue={fillColor?.hex || '#000'}*/}
+                                        {/*  onChange={handleFillColorTool}*/}
+                                        {/*  placement="right"*/}
+                                        {/*/>*/}
+                                        <input type="color" value={settingState.fillColor}
+                                               onChange={e=>handleFillColorTool(e.target.value)}
+                                               name="fill" id="fill"/>
                                         <label htmlFor="fill" style={{fontSize: 10}} className="m-auto">Заливка</label>
                                       </div>
                                     </>}
                                     {toolPressed?.strokeColor && <div className={cn(toolDivClass, "gap-3 color-input")}>
-                                      <InputColor
-                                        initialValue={strokeColor?.hex || '#000'}
-                                        onChange={handleStrokeColorTool}
-                                        placement="right"
-                                      />
-                                      <label htmlFor="stroke" style={{fontSize: 10}} className="m-auto">Цвет</label>
+                                      {/*<InputColor*/}
+                                      {/*  initialValue={strokeColor?.hex || '#000'}*/}
+                                      {/*  onChange={handleStrokeColorTool}*/}
+                                      {/*  placement="right"*/}
+                                      {/*/>*/}
+                                      <input type="color" value={settingState.strokeColor}
+                                             onChange={e=>handleStrokeColorTool(e.target.value)}
+                                             name="stroke" id="stroke"/>
+                                        <label htmlFor="stroke" style={{fontSize: 10}} className="m-auto">Цвет</label>
                                     </div>}
                                     {toolPressed?.fillColor && toolPressed.strokeColor &&
                                       <div className="ml-5 flex flex-col gap-1 text-sm">
@@ -275,7 +276,7 @@ const Toolbar = observer(() => {
                                       <div className={cn(toolDivClass, "gap-2")}>
                                         <CustomSelect id="width" classname="w-12 m-auto h-7"
                                                       value={settingState.fillingTolerance}
-                                                      options={[0, 5, 25, 50, 75, 100, 125, 150, 175, 200, 225, 250]}
+                                                      options={[0, 5, 25, 50, 75, 100, 125, 150, 175, 200, 225, 255]}
                                                       onChange={handleFillingTolerance}/>
                                         <label htmlFor="width" style={{fontSize: 10}} className="ml-1 m-auto">Допуск</label>
                                       </div>

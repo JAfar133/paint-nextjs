@@ -3,8 +3,8 @@ import toolState from "@/store/toolState";
 import {Color} from "react-input-color";
 
 class SettingState {
-    fillColor: Color | null = null;
-    strokeColor: Color | null = null;
+    fillColor: string = '#000';
+    strokeColor: string = '#000';
     strokeWidth: number = 1;
     textSize: number = 40;
     textFont: string = 'Arial';
@@ -20,10 +20,10 @@ class SettingState {
     setFillingTolerance(tolerance: number) {
         this.fillingTolerance = tolerance;
     }
-    setFillColor(color: Color){
+    setFillColor(color: string){
         this.fillColor = color;
     }
-    setStrokeColor(color: Color){
+    setStrokeColor(color: string){
         this.strokeColor = color;
     }
     setWidth(width: number){

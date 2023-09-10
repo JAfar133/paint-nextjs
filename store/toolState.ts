@@ -15,8 +15,8 @@ class ToolState {
     }
 
     fill(){
-        this.tool.strokeColor = settingState.strokeColor?.rgba || '#000';
-        this.tool.fillColor = settingState.fillColor?.rgba || '#000';
+        this.tool.strokeColor = settingState.strokeColor || '#000';
+        this.tool.fillColor = settingState.fillColor || '#000';
         this.tool.lineWidth = settingState.strokeWidth;
         this.tool.font = settingState.font
     }

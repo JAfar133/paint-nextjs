@@ -44,6 +44,9 @@ const NavbarAvatar = observer(() => {
                             <DropdownMenuItem className="cursor-pointer" onClick={()=>router.push('/user/drawing')}>
                                 Мои работы
                             </DropdownMenuItem>
+                            <DropdownMenuItem className="cursor-pointer" onClick={()=>router.push('/gallery')}>
+                                Примеры
+                            </DropdownMenuItem>
                             <DropdownMenuItem className="cursor-pointer">
                                 Настройки
                             </DropdownMenuItem>
@@ -68,6 +71,9 @@ const NavbarAvatar = observer(() => {
                         </DropdownMenuItem>
                         <DropdownMenuItem className="cursor-pointer" onClick={()=>newDraw()}>
                             Новый рисунок
+                        </DropdownMenuItem>
+                        <DropdownMenuItem className="cursor-pointer" onClick={()=>router.push('/gallery')}>
+                            Примеры
                         </DropdownMenuItem>
                     </DropdownMenuGroup>
                 }
