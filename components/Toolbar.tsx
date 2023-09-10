@@ -137,6 +137,7 @@ const Toolbar = observer(() => {
                             const dataUrl = event.target.result as string;
                             canvasState.addCurrentContextToUndo();
                             canvasState.drawByDataUrl(dataUrl);
+                            canvasState.saveCanvas();
                         }
                     };
                     reader.readAsDataURL(file);
