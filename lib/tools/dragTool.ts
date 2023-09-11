@@ -2,6 +2,7 @@ import Tool, {ImageForEdit} from "@/lib/tools/tool";
 import toolState from "@/store/toolState";
 import canvasState from "@/store/canvasState";
 
+type dragAngle = "leftTop" | "leftBottom" | "rightTop" | "rightBottom"
 
 export default class DragTool extends Tool {
 
@@ -9,6 +10,8 @@ export default class DragTool extends Tool {
     startY: number = 0;
     startWidth: number = 0;
     startHeight: number = 0;
+    dragAngle: dragAngle = 'leftTop';
+
     constructor(canvas: HTMLCanvasElement, socket: WebSocket, id: string | string[], type: string) {
         super(canvas, socket, id, type);
         const img = new Image();
@@ -64,15 +67,25 @@ export default class DragTool extends Tool {
             this.startWidth = toolState.imageForEdit.img.width;
             this.startHeight = toolState.imageForEdit.img.height;
             this.saved = this.canvas.toDataURL();
-
-            if (this.isMouseOnResizingLeftTop(mouseX, mouseY) ||
-                this.isMouseOnResizingLeftBottom(mouseX, mouseY) ||
-                this.isMouseOnResizingRightTop(mouseX, mouseY) ||
-                this.isMouseOnResizingRightBottom(mouseX, mouseY)
-            ) {
-                toolState.imageForEdit.isResizing = true;
-                toolState.imageForEdit.offsetX = mouseX - toolState.imageForEdit.imageX;
-                toolState.imageForEdit.offsetY = mouseY - toolState.imageForEdit.imageY;
+            const initDrag = () => {
+                if (toolState.imageForEdit) {
+                    toolState.imageForEdit.isResizing = true;
+                    toolState.imageForEdit.offsetX = mouseX - toolState.imageForEdit.imageX;
+                    toolState.imageForEdit.offsetY = mouseY - toolState.imageForEdit.imageY;
+                }
+            }
+            if (this.isMouseOnResizingLeftTop(mouseX, mouseY)) {
+                this.dragAngle = "leftTop"
+                initDrag();
+            } else if (this.isMouseOnResizingLeftBottom(mouseX, mouseY)) {
+                this.dragAngle = "leftBottom"
+                initDrag();
+            } else if (this.isMouseOnResizingRightTop(mouseX, mouseY)) {
+                this.dragAngle = "rightTop"
+                initDrag();
+            } else if (this.isMouseOnResizingRightBottom(mouseX, mouseY)) {
+                this.dragAngle = "rightBottom"
+                initDrag();
             } else if (this.isMouseOnImage(mouseX, mouseY)) {
                 toolState.imageForEdit.isDragging = true;
                 toolState.imageForEdit.offsetX = mouseX - toolState.imageForEdit.imageX;
@@ -107,20 +120,17 @@ export default class DragTool extends Tool {
                 this.drugImage(mouseX, mouseY)
             }
 
-
-            if (this.isMouseOnResizingLeftTop(mouseX, mouseY) || this.isMouseOnResizingRightBottom(mouseX,mouseY)) {
+            if (this.isMouseOnResizingLeftTop(mouseX, mouseY) || this.isMouseOnResizingRightBottom(mouseX, mouseY)) {
                 this.canvas.classList.remove('cursor-move')
                 this.canvas.classList.remove('cursor-grab')
                 this.canvas.classList.remove('cursor-grubbing')
                 this.canvas.classList.add('cursor-nwse-resize')
-            }
-            else if (this.isMouseOnResizingRightTop(mouseX, mouseY) || this.isMouseOnResizingLeftBottom(mouseX,mouseY)) {
+            } else if (this.isMouseOnResizingRightTop(mouseX, mouseY) || this.isMouseOnResizingLeftBottom(mouseX, mouseY)) {
                 this.canvas.classList.remove('cursor-move')
                 this.canvas.classList.remove('cursor-grab')
                 this.canvas.classList.remove('cursor-grubbing')
                 this.canvas.classList.add('cursor-nesw-resize')
-            }
-            else if (this.isMouseOnImage(mouseX, mouseY)) {
+            } else if (this.isMouseOnImage(mouseX, mouseY)) {
                 if (!toolState.imageForEdit.isDragging) {
                     this.canvas.classList.remove('cursor-move')
                     this.canvas.classList.remove('cursor-nwse-resize')
@@ -146,27 +156,39 @@ export default class DragTool extends Tool {
         const ctx = this.canvas.getContext('2d');
         if (ctx && toolState.imageForEdit && toolState.imageForEdit.isResizing) {
             let newWidth: number, newHeight: number,
-                newX: number = 0, newY: number= 0, x = 0, y = 0;
-            if(this.isMouseOnResizingLeftTop(mouseX, mouseY)){
-                newX = this.startX + this.startWidth - mouseX;
-                newY = this.startY + this.startHeight - mouseY;
+                newX: number = 0, newY: number = 0, x = 0, y = 0;
+            if(this.dragAngle==="leftTop"){
+                newX = this.startX - mouseX + this.startWidth;
+                newY = this.startY - mouseY + this.startHeight;
                 x = mouseX;
                 y = mouseY;
             }
-            else if (this.isMouseOnResizingRightTop(mouseX, mouseY)){
-                newX = mouseX;
-                newY = mouseY;
-                x = this.startX - this.startWidth;
-                y = this.startY - this.startHeight;
+            else if (this.dragAngle==="rightTop"){
+                newX = this.startX - mouseX - this.startWidth;
+                newY = this.startY - mouseY + this.startHeight;
+                x = mouseX;
+                y = mouseY;
             }
 
+            else if (this.dragAngle==="rightBottom"){
+                newX = this.startX - mouseX - this.startWidth;
+                newY = this.startY - mouseY - this.startHeight;
+                x = mouseX;
+                y = mouseY;
+            }
+            else if (this.dragAngle==="leftBottom"){
+                newX = this.startX - mouseX + this.startWidth;
+                newY = this.startY - mouseY - this.startHeight;
+                x = mouseX;
+                y = mouseY;
+            }
             const img = new Image()
             img.src = canvasState.savedCanvasWithoutImage;
-            img.onload = () =>{
+            img.onload = () => {
                 ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
                 ctx.drawImage(img, 0, 0)
                 canvasState.savedCanvasWithoutImage = this.canvas.toDataURL();
-                if(toolState.imageForEdit){
+                if (toolState.imageForEdit) {
                     ctx.drawImage(
                         toolState.imageForEdit.img,
                         x,
@@ -177,13 +199,11 @@ export default class DragTool extends Tool {
                 }
             }
 
-            // Обновляем размеры и положение изображения
             toolState.imageForEdit.img.width = Math.abs(newX);
             toolState.imageForEdit.img.height = Math.abs(newY);
-            toolState.imageForEdit.imageX = newX <0 ? mouseX - Math.abs(newX) : mouseX;
+            toolState.imageForEdit.imageX = newX < 0 ? mouseX - Math.abs(newX) : mouseX;
             toolState.imageForEdit.imageY = newY < 0 ? mouseY - Math.abs(newY) : mouseY;
 
-            // Перерисовываем рамку и другие элементы
             canvasState.deleteBorder();
             canvasState.drawBorder();
         }

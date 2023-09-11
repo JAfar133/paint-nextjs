@@ -44,10 +44,9 @@ class CanvasState {
     }
     drawBorder(){
         const ctx = this.canvas.getContext('2d')
-        if (!this.imageContainer) {
-            this.imageContainer = document.createElement('div');
-            this.imageContainer.classList.add("image-container")
-        }
+
+        this.imageContainer = document.createElement('div');
+        this.imageContainer.classList.add("image-container")
         if(ctx && toolState.imageForEdit && this.imageContainer){
             this.imageContainer.style.display = 'block';
             this.imageContainer.style.width = `${toolState.imageForEdit.img.width}px`; // Установите желаемую ширину
@@ -58,8 +57,10 @@ class CanvasState {
     }
     deleteBorder(){
         if (this.imageContainer){
-            this.imageContainer.style.display = 'none';
+            this.imageContainer?.remove();
+            this.imageContainer = null;
         }
+        document.querySelector('.image-container')?.remove();
     }
     wheelHandler(e: WheelEvent) {
         e.preventDefault();
