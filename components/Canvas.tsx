@@ -39,19 +39,18 @@ const Canvas = observer(() => {
             const canvas = mainCanvasRef.current;
             canvasState.setCanvas(mainCanvasRef.current);
             const image = localStorage.getItem("image");
-            if (image){
+            if (image) {
                 UserService.getGalleryImage(image)
                     .then(response => {
                         canvasState.drawByDataUrl(response.data);
                     })
-                    .catch(e=>console.log(e))
-            }
-            else {
+                    .catch(e => console.log(e))
+            } else {
                 UserService.getImage(params.id)
                     .then(response => {
                         canvasState.drawByDataUrl(response.data);
                     })
-                    .catch(e=>console.log(e))
+                    .catch(e => console.log(e))
             }
         }
 
@@ -127,18 +126,13 @@ const Canvas = observer(() => {
                 mainCanvasRef.current?.classList.add('cursor-text');
             } else if (toolState.tool.type === "arc") {
                 mainCanvasRef.current?.classList.add('cursor-cell');
+            } else if (toolState.tool.type === "drag") {
+                mainCanvasRef.current?.classList.add('cursor-move');
             } else {
                 mainCanvasRef.current?.classList.add('cursor-crosshair');
             }
         }
     }
-    const mouseLeaveHandler = () => {
-        if (circleOverlayRef.current) circleOverlayRef.current.style.display = 'none';
-        mainCanvasRef.current?.classList.remove('cursor-crosshair');
-        mainCanvasRef.current?.classList.remove('cursor-text');
-        mainCanvasRef.current?.classList.remove('cursor-cell');
-    }
-
     const sendMessage = () => {
         websocketService.sendWebsocketMessage(message);
         setMessage("");
@@ -155,7 +149,7 @@ const Canvas = observer(() => {
                         onTouchStart={() => mouseDownHandler()}
                         onMouseMove={(e: React.MouseEvent<HTMLCanvasElement, MouseEvent>) => mouseMoveHandler(e)}
                         onMouseEnter={() => mouseEnterHandler()}
-                        onMouseLeave={() => mouseLeaveHandler()}
+                        onMouseLeave={() => canvasState.mouseLeaveHandler()}
                 >
                 </canvas>
                 <div ref={circleOverlayRef} className="circle-overlay"></div>

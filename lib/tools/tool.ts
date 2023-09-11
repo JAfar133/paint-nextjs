@@ -1,3 +1,13 @@
+export interface ImageForEdit {
+    imageX: number,
+    imageY: number,
+    offsetX: number,
+    offsetY: number,
+    img: HTMLImageElement,
+    isDragging: boolean,
+    isResizing: boolean,
+    isUpload: boolean,
+}
 export default abstract class Tool {
     canvas: HTMLCanvasElement;
     ctx: CanvasRenderingContext2D;
@@ -11,7 +21,6 @@ export default abstract class Tool {
     offsetTop: number;
     offsetLeft: number;
     saved: string = "";
-
 
     constructor(canvas: HTMLCanvasElement, socket: WebSocket, id: string | string[], type: string) {
         this.canvas = canvas;
@@ -75,7 +84,6 @@ export default abstract class Tool {
     set lineWidth(width: number) {
         this.ctx.lineWidth = width;
     }
-
 
     set font(font: string) {
         this.ctx.font = font

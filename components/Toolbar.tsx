@@ -1,6 +1,6 @@
 "use client";
 
-import React, {ChangeEvent, FormEventHandler, useEffect, useState} from 'react';
+import React, {ChangeEvent, useEffect, useState} from 'react';
 import NavbarAvatar from "@/components/NavbarAvatar";
 import ThemeToggle from "@/components/theme-toggle";
 import {Download, Save, Upload, Users} from "lucide-react";
@@ -18,7 +18,6 @@ import {AiOutlineClear, AiOutlinePlusSquare} from "react-icons/ai";
 import {IoReturnUpBackOutline, IoReturnUpForward} from "react-icons/io5";
 import _ from 'lodash'
 import {ClientTool, cn, fonts, fontWeights, toolClasses, tools} from "@/lib/utils";
-import InputColor, {Color} from "react-input-color";
 import {Popover, PopoverContent, PopoverTrigger} from "@/components/ui/popover";
 
 const toolDivClass = "ml-3 flex flex-col content-center";
@@ -27,24 +26,31 @@ const Toolbar = observer(() => {
 
             const params = useParams();
 
-            const [toolPressed, setToolPressed] = useState<ClientTool | null>(tools[0])
+            const [toolPressed, setToolPressed] = useState<ClientTool>(tools[1])
             const [strokeWidth, setStrokeWidth] = useState(settingState.strokeWidth);
             const [textSize, setTextSize] = useState<number>(settingState.textSize);
             const [textFont, setTextFont] = useState<string>(settingState.textFont);
             const [fontWeight, setFontWeight] = useState<string>(settingState.textFont);
 
-            const findToolByName = (name: string): ClientTool | null => {
+            const findToolByName = (name: string): ClientTool => {
                 const tool = _.find(tools, {name: name})
-                return tool || null;
+                return tool || tools[1];
             }
             const setTool = (toolName: string) => {
-                if (toolPressed && toolName === toolPressed.name) setToolPressed(tools[0]);
+                if (toolPressed && toolName === toolPressed.name) setToolPressed(tools[1]);
                 else setToolPressed(findToolByName(toolName));
             }
 
             useEffect(() => {
                 toolFactory();
             }, [toolPressed, canvasState.canvas, canvasState.socket, canvasState.canvasId]);
+
+            useEffect(() => {
+                if (toolState.tool) {
+                    if(toolState.tool.type !== toolPressed.name) setTool(toolState.tool.type)
+                    if(toolState.tool.type !== "drag") canvasState.deleteBorder();
+                }
+            }, [toolState.tool]);
             const toolFactory = (): void => {
                 if (!canvasState.canvas || !toolPressed) {
                     return;
@@ -52,6 +58,7 @@ const Toolbar = observer(() => {
 
                 const ToolClass = toolClasses[toolPressed.name];
                 if (ToolClass && canvasState.socket) {
+                    if(toolState.tool && toolState.tool.type === toolPressed.name) return;
                     toolState.setTool(new ToolClass(canvasState.canvas, canvasState.socket, canvasState.canvasId, toolPressed.name));
                 }
             }
@@ -136,7 +143,7 @@ const Toolbar = observer(() => {
                         if (event.target) {
                             const dataUrl = event.target.result as string;
                             canvasState.addCurrentContextToUndo();
-                            canvasState.drawByDataUrl(dataUrl);
+                            canvasState.drawByDataUrl(dataUrl, {clearRect: false, imageEdit: true});
                             canvasState.saveCanvas();
                         }
                     };

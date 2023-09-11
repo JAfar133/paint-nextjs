@@ -1,6 +1,8 @@
 import {makeAutoObservable} from "mobx";
 import UserService from "@/lib/api/UserService";
 import {Point} from "@/lib/tools/shapes/arcTool";
+import toolState from "@/store/toolState";
+import DragTool from "@/lib/tools/dragTool";
 
 export interface Message {
     id: string,
@@ -27,17 +29,38 @@ class CanvasState {
     offsetX: number = 0;
     offsetY: number = 0;
     mouse = {x: 0, y: 0};
+    savedCanvasWithoutImage: string = '';
+    imageContainer: HTMLDivElement | null = null;
 
     constructor() {
         this.canvas_id = `f${(+new Date).toString(16)}`
         makeAutoObservable(this);
+
     }
 
     trackMouse(event: MouseEvent) {
         this.mouse.x = event.clientX - this.canvas.offsetLeft;
         this.mouse.y = event.clientY - this.canvas.offsetTop;
     }
-
+    drawBorder(){
+        const ctx = this.canvas.getContext('2d')
+        if (!this.imageContainer) {
+            this.imageContainer = document.createElement('div');
+            this.imageContainer.classList.add("image-container")
+        }
+        if(ctx && toolState.imageForEdit && this.imageContainer){
+            this.imageContainer.style.display = 'block';
+            this.imageContainer.style.width = `${toolState.imageForEdit.img.width}px`; // Установите желаемую ширину
+            this.imageContainer.style.height = `${toolState.imageForEdit.img.height}px`;
+            this.imageContainer.style.transform = `translate(${toolState.imageForEdit.imageX+this.canvas.offsetLeft}px, ${toolState.imageForEdit.imageY+this.canvas.offsetTop}px)`;
+            document.body.appendChild(this.imageContainer);
+        }
+    }
+    deleteBorder(){
+        if (this.imageContainer){
+            this.imageContainer.style.display = 'none';
+        }
+    }
     wheelHandler(e: WheelEvent) {
         e.preventDefault();
         // const scaleFactor = this.scaleMultiplier;
@@ -108,7 +131,8 @@ class CanvasState {
     addRedo(data: any) {
         this.redoList.push(data);
     }
-    addCurrentContextToUndo(){
+
+    addCurrentContextToUndo() {
         this.undoList.push(this.canvas.toDataURL())
     }
 
@@ -144,20 +168,32 @@ class CanvasState {
         }
     }
 
-
-    drawByDataUrl(dataUrl: string) {
+    drawByDataUrl(dataUrl: string, options: { clearRect: boolean, imageEdit: boolean } = {
+        clearRect: true,
+        imageEdit: false
+    }) {
         let ctx = this.canvas.getContext('2d')
         let img = new Image();
         img.src = dataUrl;
+        if (options.imageEdit) {
+            toolState.imageForEdit = {imageX: 0, imageY: 0, offsetX: 0, offsetY: 0, img: img, isDragging: false, isResizing: false, isUpload: true};
+            if(this.socket){
+                toolState.setTool(new DragTool(this.canvas, this.socket, this.canvasId, "drag"))
+            }
+        }
         img.onload = () => {
-            ctx?.clearRect(0, 0, this.canvas.width, this.canvas.height);
-            ctx?.drawImage(img, 0, 0, this.canvas.width, this.canvas.height);
+            options.clearRect && ctx?.clearRect(0, 0, this.canvas.width, this.canvas.height);
+            ctx?.drawImage(img, 0, 0, img.width, img.height);
         }
     }
+
 
     clearCanvas() {
         this.clear()
         this.saveCanvas();
+        this.savedCanvasWithoutImage = '';
+        toolState.imageForEdit = null;
+        this.deleteBorder();
         if (this.socket) {
             this.socket.send(JSON.stringify({
                 method: "clear",
@@ -171,7 +207,14 @@ class CanvasState {
             .catch(e => console.log(e))
         localStorage.removeItem("image")
     }
-
+    mouseLeaveHandler = () => {
+        this.canvas.classList.remove('cursor-crosshair');
+        this.canvas.classList.remove('cursor-text');
+        this.canvas.classList.remove('cursor-cell');
+        this.canvas.classList.remove('cursor-move');
+        this.canvas.classList.remove('cursor-grab');
+        this.canvas.classList.remove('cursor-grabbing');
+    }
     clear() {
         let ctx = this.canvas.getContext('2d')
         if (ctx) {

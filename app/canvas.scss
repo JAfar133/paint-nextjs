@@ -15,6 +15,13 @@
   pointer-events: none;
   background: rgba(255,255,255,0.1);
 }
+.image-container {
+  position: absolute;
+  top: 0;
+  left: 0;
+  border: 2px dashed #000;
+  pointer-events: none;
+}
 .user-cursor {
   position: absolute;
   top: 0;
@@ -62,4 +69,9 @@ input[type="color"] {
     border-radius: 3px;
     border: none;
   }
+}
+.dashed-border {
+  border: 2px dashed black;
+  /* Задаем цвет, толщину и стиль рамки */
+  padding: 10px; /* Может потребоваться регулировать отступы вокруг элемента */
 }
