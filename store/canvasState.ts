@@ -2,7 +2,7 @@ import {makeAutoObservable} from "mobx";
 import UserService from "@/lib/api/UserService";
 import {Point} from "@/lib/tools/shapes/arcTool";
 import toolState from "@/store/toolState";
-import DragTool from "@/lib/tools/dragTool";
+import DragTool, {cursors} from "@/lib/tools/dragTool";
 
 export interface Message {
     id: string,
@@ -60,7 +60,12 @@ class CanvasState {
             this.imageContainer?.remove();
             this.imageContainer = null;
         }
-        document.querySelector('.image-container')?.remove();
+        const containers = document.getElementsByClassName('image-container');
+        const containerArray = Array.from(containers);
+
+        containerArray.forEach(function(container) {
+            container.remove();
+        });
     }
     wheelHandler(e: WheelEvent) {
         e.preventDefault();
@@ -177,7 +182,8 @@ class CanvasState {
         let img = new Image();
         img.src = dataUrl;
         if (options.imageEdit) {
-            toolState.imageForEdit = {imageX: 0, imageY: 0, offsetX: 0, offsetY: 0, img: img, isDragging: false, isResizing: false, isUpload: true};
+            toolState.imageForEdit = {imageX: 0, imageY: 0, offsetX: 0, offsetY: 0,
+                img: img, isDragging: false, isResizing: false, isRotating: false, isUpload: true};
             if(this.socket){
                 toolState.setTool(new DragTool(this.canvas, this.socket, this.canvasId, "drag"))
             }
@@ -212,9 +218,7 @@ class CanvasState {
         this.canvas.classList.remove('cursor-crosshair');
         this.canvas.classList.remove('cursor-text');
         this.canvas.classList.remove('cursor-cell');
-        this.canvas.classList.remove('cursor-move');
-        this.canvas.classList.remove('cursor-grab');
-        this.canvas.classList.remove('cursor-grabbing');
+        cursors.forEach(cursor=>this.canvas.classList.remove(cursor))
     }
     clear() {
         let ctx = this.canvas.getContext('2d')

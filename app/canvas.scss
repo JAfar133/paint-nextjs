@@ -75,3 +75,24 @@ input[type="color"] {
   /* Задаем цвет, толщину и стиль рамки */
   padding: 10px; /* Может потребоваться регулировать отступы вокруг элемента */
 }
+.cursor-grab {
+  cursor: grab;
+}
+.cursor-grabbing {
+  cursor: grabbing;
+}
+.cursor-nwse-resize{
+  cursor: nwse-resize;
+}
+.cursor-nesw-resize{
+  cursor: nesw-resize;
+}
+.cursor-ew-resize{
+  cursor: ew-resize;
+}
+.cursor-ns-resize{
+  cursor: ns-resize;
+}
+.cursor-alias{
+  cursor: alias;
+}

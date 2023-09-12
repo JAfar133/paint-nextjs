@@ -1,13 +1,4 @@
-export interface ImageForEdit {
-    imageX: number,
-    imageY: number,
-    offsetX: number,
-    offsetY: number,
-    img: HTMLImageElement,
-    isDragging: boolean,
-    isResizing: boolean,
-    isUpload: boolean,
-}
+
 export default abstract class Tool {
     canvas: HTMLCanvasElement;
     ctx: CanvasRenderingContext2D;
