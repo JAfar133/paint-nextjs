@@ -96,3 +96,14 @@ input[type="color"] {
 .cursor-alias{
   cursor: alias;
 }
+
+.square {
+  display: block;
+  position: absolute;
+  width: 5px; /* Ширина квадрата */
+  height: 5px; /* Высота квадрата */
+  border: 1px solid #000;
+  top: 0;
+  left: 0;
+  pointer-events: none;
+}

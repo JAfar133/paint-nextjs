@@ -11,6 +11,7 @@ export interface ImageForEdit {
     isResizing: boolean,
     isRotating: boolean,
     isUpload: boolean,
+    angle: number
 }
 class ToolState {
     // @ts-ignore

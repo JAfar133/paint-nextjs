@@ -45,14 +45,38 @@ class CanvasState {
     drawBorder(){
         const ctx = this.canvas.getContext('2d')
 
+        this.deleteBorder();
         this.imageContainer = document.createElement('div');
-        this.imageContainer.classList.add("image-container")
-        if(ctx && toolState.imageForEdit && this.imageContainer){
+        const leftTop = document.createElement('div');
+        const leftBottom = document.createElement('div');
+        const rightTop = document.createElement('div');
+        const rightBottom = document.createElement('div');
+
+        this.imageContainer.classList.add("image-container");
+        leftTop.classList.add('square');
+        leftBottom.classList.add('square');
+        rightTop.classList.add('square');
+        rightBottom.classList.add('square');
+        const image = toolState.imageForEdit;
+
+        if(ctx && image && this.imageContainer){
             this.imageContainer.style.display = 'block';
-            this.imageContainer.style.width = `${toolState.imageForEdit.img.width}px`; // Установите желаемую ширину
-            this.imageContainer.style.height = `${toolState.imageForEdit.img.height}px`;
-            this.imageContainer.style.transform = `translate(${toolState.imageForEdit.imageX+this.canvas.offsetLeft}px, ${toolState.imageForEdit.imageY+this.canvas.offsetTop}px)`;
+            this.imageContainer.style.width = `${image.img.width}px`;
+            this.imageContainer.style.height = `${image.img.height}px`;
+
+            leftTop.style.transform = `translate(${image.imageX+this.canvas.offsetLeft-5}px, ${image.imageY+this.canvas.offsetTop-5}px)`;
+            leftBottom.style.transform = `translate(${image.imageX+this.canvas.offsetLeft-5}px, ${image.imageY+this.canvas.offsetTop+image.img.height}px)`;
+            rightTop.style.transform = `translate(${image.imageX+this.canvas.offsetLeft+image.img.width}px, ${image.imageY+this.canvas.offsetTop-5}px)`;
+            rightBottom.style.transform = `translate(${image.imageX+this.canvas.offsetLeft+image.img.width}px, ${image.imageY+this.canvas.offsetTop+image.img.height}px)`;
+
+            let transformStyle = `translate(${image.imageX+this.canvas.offsetLeft}px, ${image.imageY+this.canvas.offsetTop}px)`;
+            transformStyle = transformStyle.concat(` rotate(${image.angle}rad)`)
+            this.imageContainer.style.transform = transformStyle;
             document.body.appendChild(this.imageContainer);
+            document.body.appendChild(leftTop);
+            document.body.appendChild(leftBottom);
+            document.body.appendChild(rightTop);
+            document.body.appendChild(rightBottom);
         }
     }
     deleteBorder(){
@@ -61,10 +85,15 @@ class CanvasState {
             this.imageContainer = null;
         }
         const containers = document.getElementsByClassName('image-container');
+        const squares = document.getElementsByClassName('square');
         const containerArray = Array.from(containers);
+        const squaresArray = Array.from(squares);
 
         containerArray.forEach(function(container) {
             container.remove();
+        });
+        squaresArray.forEach(function(square) {
+            square.remove();
         });
     }
     wheelHandler(e: WheelEvent) {
@@ -183,7 +212,7 @@ class CanvasState {
         img.src = dataUrl;
         if (options.imageEdit) {
             toolState.imageForEdit = {imageX: 0, imageY: 0, offsetX: 0, offsetY: 0,
-                img: img, isDragging: false, isResizing: false, isRotating: false, isUpload: true};
+                img: img, isDragging: false, isResizing: false, isRotating: false, isUpload: true, angle: 0};
             if(this.socket){
                 toolState.setTool(new DragTool(this.canvas, this.socket, this.canvasId, "drag"))
             }

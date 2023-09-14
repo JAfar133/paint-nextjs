@@ -1,5 +1,5 @@
 import Tool from "@/lib/tools/tool";
-import toolState from "@/store/toolState";
+import toolState, {ImageForEdit} from "@/store/toolState";
 import canvasState from "@/store/canvasState";
 
 type dragPoint = "leftTop" | "leftBottom" | "rightTop" | "rightBottom" | "right" | "left" | "top" | "bottom"
@@ -21,8 +21,11 @@ export default class DragTool extends Tool {
     startHeight: number = 0;
     dragPoint: dragPoint = 'leftTop';
     startAngle: number = 0;
-    angle: number = 0;
-
+    tempCanvas: HTMLCanvasElement = document.createElement('canvas');
+    tempCtx: CanvasRenderingContext2D | null = null;
+    image: ImageForEdit;
+    x1: number = 0;
+    y1: number = 0;
     constructor(canvas: HTMLCanvasElement, socket: WebSocket, id: string | string[], type: string) {
         super(canvas, socket, id, type);
         const img = new Image();
@@ -47,7 +50,8 @@ export default class DragTool extends Tool {
                     isDragging: false,
                     isResizing: false,
                     isRotating: false,
-                    isUpload: false
+                    isUpload: false,
+                    angle: 0
                 }
             } else {
                 canvasState.savedCanvasWithoutImage = canvas.toDataURL();
@@ -64,9 +68,14 @@ export default class DragTool extends Tool {
                 isDragging: false,
                 isResizing: false,
                 isRotating: false,
-                isUpload: false
+                isUpload: false,
+                angle: 0
             }
         }
+        this.image = toolState.imageForEdit;
+        this.tempCanvas.width = this.canvas.width;
+        this.tempCanvas.height = this.canvas.height;
+        this.tempCtx = this.tempCanvas.getContext('2d');
 
         canvasState.drawBorder();
     }
@@ -74,29 +83,27 @@ export default class DragTool extends Tool {
     mouseDownHandler(e: MouseEvent): void {
         const mouseX = e.clientX - this.canvas.offsetLeft;
         const mouseY = e.clientY - this.canvas.offsetTop;
-        if (toolState.imageForEdit) {
-            const image = toolState.imageForEdit;
-            const centerX = image.imageX + image.img.width / 2;
-            const centerY = image.imageY + image.img.height / 2;
+            const centerX = this.image.imageX + this.image.img.width / 2;
+            const centerY = this.image.imageY + this.image.img.height / 2;
             const dx = mouseX - centerX;
             const dy = mouseY - centerY;
-
-            this.startAngle = Math.atan2(dy, dx);
-
+            if (this.image.angle !== 0) {
+                this.startAngle = Math.atan2(dy, dx) - this.image.angle;
+            } else {
+                this.startAngle = Math.atan2(dy, dx);
+            }
             this.startX = mouseX;
             this.startY = mouseY;
-            this.startImageX = image.imageX;
-            this.startImageY = image.imageY;
-            this.startWidth = image.img.width;
-            this.startHeight = image.img.height;
+            this.startImageX = this.image.imageX;
+            this.startImageY = this.image.imageY;
+            this.startWidth = this.image.img.width;
+            this.startHeight = this.image.img.height;
             this.saved = this.canvas.toDataURL();
             const initDrag = () => {
-                if (toolState.imageForEdit) {
-                    image.isResizing = true;
-                    this.mouseDown = true;
-                    image.offsetX = mouseX - image.imageX;
-                    image.offsetY = mouseY - image.imageY;
-                }
+                this.image.isResizing = true;
+                this.mouseDown = true;
+                this.image.offsetX = mouseX - this.image.imageX;
+                this.image.offsetY = mouseY - this.image.imageY;
             }
             if (this.isMouseOnResizingLeftTop(mouseX, mouseY)) {
                 this.dragPoint = "leftTop"
@@ -123,54 +130,48 @@ export default class DragTool extends Tool {
                 this.dragPoint = "left"
                 initDrag();
             } else if (this.isMouseOnImage(mouseX, mouseY)) {
-                image.isDragging = true;
-                image.offsetX = mouseX - image.imageX;
-                image.offsetY = mouseY - image.imageY;
+                this.image.isDragging = true;
+                this.image.offsetX = mouseX - this.image.imageX;
+                this.image.offsetY = mouseY - this.image.imageY;
                 this.setCursor('cursor-grabbing');
                 this.mouseDown = true;
             } else {
-                image.isRotating = true;
+                this.image.isRotating = true;
                 this.mouseDown = true;
-                image.offsetX = mouseX - image.imageX;
-                image.offsetY = mouseY - image.imageY;
+                this.image.offsetX = mouseX - this.image.imageX;
+                this.image.offsetY = mouseY - this.image.imageY;
                 this.setCursor('cursor-alias');
             }
-        }
     }
 
     mouseUpHandler(e: MouseEvent) {
         super.mouseUpHandler(e);
-        if (toolState.imageForEdit) {
-            toolState.imageForEdit.isDragging = false;
+        this.image.isDragging = false;
 
-            if(toolState.imageForEdit.isResizing){
-                this.saveResizedImage()
-                toolState.imageForEdit.isResizing = false;
-            }
-            if(toolState.imageForEdit.isRotating){
-                this.saveRotatedImage();
-                this.angle = 0;
-                toolState.imageForEdit.isRotating = false;
-            }
-            this.mouseDown = false;
+        if (this.image.isResizing) {
+            this.image.isResizing = false;
         }
-        canvasState.drawBorder();
+        if (this.image.isRotating) {
+            this.image.isRotating = false;
+        }
+        this.mouseDown = false;
     }
-    setCursor(cursor: cursorClasses){
-        cursors.forEach(c=>{
-            if(c === cursor) this.canvas.classList.add(c)
+
+    setCursor(cursor: cursorClasses) {
+        cursors.forEach(c => {
+            if (c === cursor) this.canvas.classList.add(c)
             else this.canvas.classList.remove(c)
         })
     }
+
     mouseMoveHandler(e: MouseEvent): void {
         const mouseX = e.clientX - this.canvas.offsetLeft;
         const mouseY = e.clientY - this.canvas.offsetTop;
-        if (toolState.imageForEdit) {
-            if (toolState.imageForEdit.isResizing) {
+            if (this.image.isResizing) {
                 this.drugResize(mouseX, mouseY);
-            } else if (toolState.imageForEdit.isDragging) {
+            } else if (this.image.isDragging) {
                 this.drugImage(mouseX, mouseY)
-            } else if (toolState.imageForEdit.isRotating){
+            } else if (this.image.isRotating) {
                 this.drugRotate(mouseX, mouseY)
             }
             if (this.isMouseOnResizingLeftTop(mouseX, mouseY) || this.isMouseOnResizingRightBottom(mouseX, mouseY)) {
@@ -182,7 +183,7 @@ export default class DragTool extends Tool {
             } else if (this.isMouseOnResizingTopSide(mouseX, mouseY) || this.isMouseOnResizingBottomSide(mouseX, mouseY)) {
                 this.setCursor('cursor-ns-resize');
             } else if (this.isMouseOnImage(mouseX, mouseY)) {
-                if (!toolState.imageForEdit.isDragging) {
+                if (!this.image.isDragging) {
                     this.setCursor('cursor-grab');
                 } else {
                     this.setCursor('cursor-grabbing');
@@ -190,162 +191,110 @@ export default class DragTool extends Tool {
             } else {
                 this.setCursor('cursor-alias');
             }
-        }
 
     }
+
     drugRotate(mouseX: number, mouseY: number) {
         const ctx = this.canvas.getContext('2d');
-        if (ctx && toolState.imageForEdit) {
-            if (toolState.imageForEdit.isRotating) {
-                const image = toolState.imageForEdit;
-                const centerX = image.imageX + image.img.width / 2;
-                const centerY = image.imageY + image.img.height / 2;
+        if (ctx) {
+            if (this.image.isRotating) {
+                const centerX = this.image.imageX + this.image.img.width / 2;
+                const centerY = this.image.imageY + this.image.img.height / 2;
                 const dx = mouseX - centerX;
                 const dy = mouseY - centerY;
 
-                this.angle = Math.atan2(dy, dx) - this.startAngle;
+                this.image.angle = Math.atan2(dy, dx) - this.startAngle;
+                this.tempCanvas.width = this.canvas.width;
+                this.tempCanvas.height = this.canvas.height;
+                this.tempCtx = this.tempCanvas.getContext('2d');
+                if (this.tempCtx) {
+                    this.tempCtx.clearRect(0,0,this.tempCanvas.width, this.tempCanvas.height)
+                    this.tempCtx.translate(centerX, centerY);
+                    this.tempCtx.rotate(this.image.angle);
+                    this.tempCtx.drawImage(
+                        this.image.img,
+                        -this.image.img.width / 2,
+                        -this.image.img.height / 2,
+                        this.image.img.width,
+                        this.image.img.height);
 
-                ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+                }
 
-                ctx.save();
-                ctx.translate(centerX, centerY);
-                ctx.rotate(this.angle);
-
-                ctx.drawImage(image.img, -image.img.width / 2, -image.img.height / 2);
-
-                const tempCanvas = document.createElement('canvas');
-                tempCanvas.width = this.canvas.width;
-                tempCanvas.height = this.canvas.height;
-                const tempCtx = tempCanvas.getContext('2d');
-                tempCtx && tempCtx.drawImage(this.canvas,0,0)
-
-                ctx.restore();
-                ctx.clearRect(0,0, this.canvas.width, this.canvas.height)
+                ctx.clearRect(0, 0, this.canvas.width, this.canvas.height)
 
                 const img = new Image()
                 img.src = canvasState.savedCanvasWithoutImage;
                 ctx.drawImage(img, 0, 0);
-                ctx.drawImage(tempCanvas, 0, 0);
+                ctx.drawImage(this.tempCanvas, 0, 0);
 
+                canvasState.drawBorder();
             }
         }
     }
-    saveResizedImage(){
-        const resizedCanvas = document.createElement('canvas');
-        if(toolState.imageForEdit){
-            const image = toolState.imageForEdit;
-            resizedCanvas.width = image.img.width;
-            resizedCanvas.height = image.img.height;
-            const resizedCtx = resizedCanvas.getContext('2d');
-
-            if(resizedCtx){
-                resizedCtx.drawImage(image.img, 0, 0, resizedCanvas.width, resizedCanvas.height);
-                const resizedImageDataURL = resizedCanvas.toDataURL();
-
-                const newImage = new Image();
-                newImage.src = resizedImageDataURL;
-
-                toolState.imageForEdit.img = newImage;
-            }
-        }
-    }
-    saveRotatedImage() {
-        const canvas = document.createElement('canvas');
-        const ctx = canvas.getContext('2d');
-
-        if (toolState.imageForEdit) {
-            const image = toolState.imageForEdit;
-            const rotatedWidth = image.img.width;
-            const rotatedHeight = image.img.height;
-            console.log(image.img.width)
-            console.log(image.img.height)
-            canvas.width = rotatedWidth;
-            canvas.height = rotatedHeight;
-
-            if (ctx && this.angle !== 0) {
-                ctx.translate(rotatedWidth / 2, rotatedHeight / 2);
-                ctx.rotate(this.angle);
-                ctx.drawImage(image.img, -image.img.width / 2, -image.img.height / 2);
-
-                // Сохранить повернутое изображение в toolState
-                // @ts-ignore
-                toolState.imageForEdit.img = canvas;
-                console.log(toolState.imageForEdit.img.width)
-                console.log(toolState.imageForEdit.img.height)
-            }
-        }
-    }
-
 
 
     drugResize(mouseX: number, mouseY: number) {
         const ctx = this.canvas.getContext('2d');
-        if (ctx && toolState.imageForEdit && toolState.imageForEdit.isResizing) {
+        if (ctx && this.image.isResizing) {
             let newWidth: number = 0, newHeight: number = 0, x = mouseX, y = mouseY;
-            if(this.dragPoint==="leftTop"){
+            if (this.dragPoint === "leftTop") {
                 newWidth = this.startX - mouseX + this.startWidth;
                 newHeight = this.startY - mouseY + this.startHeight;
-            }
-            else if (this.dragPoint==="rightTop"){
+            } else if (this.dragPoint === "rightTop") {
                 newWidth = this.startX - mouseX - this.startWidth;
                 newHeight = this.startY - mouseY + this.startHeight;
-            }
-
-            else if (this.dragPoint==="rightBottom"){
+            } else if (this.dragPoint === "rightBottom") {
                 newWidth = this.startX - mouseX - this.startWidth;
                 newHeight = this.startY - mouseY - this.startHeight;
-            }
-            else if (this.dragPoint==="leftBottom"){
+            } else if (this.dragPoint === "leftBottom") {
                 newWidth = this.startX - mouseX + this.startWidth;
                 newHeight = this.startY - mouseY - this.startHeight;
-            }
-            else if (this.dragPoint==="top"){
+            } else if (this.dragPoint === "top") {
                 newWidth = this.startWidth;
                 newHeight = this.startHeight + this.startY - mouseY;
                 x = this.startImageX;
                 y = mouseY;
-            }
-            else if (this.dragPoint==="bottom"){
+            } else if (this.dragPoint === "bottom") {
                 newWidth = this.startWidth;
                 newHeight = -(this.startHeight + mouseY - this.startY);
                 x = this.startImageX;
                 y = mouseY;
-            }
-            else if (this.dragPoint==="right"){
+            } else if (this.dragPoint === "right") {
                 newWidth = -(this.startWidth + mouseX - this.startX);
                 newHeight = this.startHeight;
                 x = mouseX;
                 y = this.startImageY;
-            }
-            else if (this.dragPoint==="left"){
+            } else if (this.dragPoint === "left") {
                 newWidth = this.startWidth + this.startX - mouseX;
                 newHeight = this.startHeight;
                 x = mouseX;
                 y = this.startImageY;
             }
+            this.tempCanvas.width = this.canvas.width;
+            this.tempCanvas.height = this.canvas.height;
+            this.tempCtx = this.tempCanvas.getContext('2d');
+            if (this.tempCtx) {
+                this.rotateIfNeed();
+                this.tempCtx.drawImage(
+                    this.image.img,
+                    x,
+                    y,
+                    newWidth,
+                    newHeight
+                );
+            }
+            ctx.clearRect(0, 0, this.canvas.width, this.canvas.height)
+
             const img = new Image()
             img.src = canvasState.savedCanvasWithoutImage;
-            img.onload = () => {
-                ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
-                ctx.drawImage(img, 0, 0)
-                canvasState.savedCanvasWithoutImage = this.canvas.toDataURL();
-                if (toolState.imageForEdit) {
-                    ctx.drawImage(
-                        toolState.imageForEdit.img,
-                        x,
-                        y,
-                        newWidth,
-                        newHeight
-                    );
-                }
-            }
+            ctx.drawImage(img, 0, 0);
+            ctx.drawImage(this.tempCanvas, 0, 0);
 
-            toolState.imageForEdit.img.width = Math.abs(newWidth);
-            toolState.imageForEdit.img.height = Math.abs(newHeight);
-            toolState.imageForEdit.imageX = newWidth < 0 ? x - Math.abs(newWidth) : x;
-            toolState.imageForEdit.imageY = newHeight < 0 ? y - Math.abs(newHeight) : y;
+            this.image.img.width = Math.abs(newWidth);
+            this.image.img.height = Math.abs(newHeight);
+            this.image.imageX = newWidth < 0 ? x - Math.abs(newWidth) : x;
+            this.image.imageY = newHeight < 0 ? y - Math.abs(newHeight) : y;
 
-            canvasState.deleteBorder();
             canvasState.drawBorder();
         }
     }
@@ -353,78 +302,93 @@ export default class DragTool extends Tool {
 
     drugImage(mouseX: number, mouseY: number) {
         let ctx = this.canvas.getContext('2d')
-        if (ctx && toolState.imageForEdit && toolState.imageForEdit.isDragging) {
-            toolState.imageForEdit.imageX = mouseX - toolState.imageForEdit.offsetX;
-            toolState.imageForEdit.imageY = mouseY - toolState.imageForEdit.offsetY;
-            let img = new Image();
-            img.src = canvasState.savedCanvasWithoutImage;
-            img.onload = () => {
-                if (ctx && toolState.imageForEdit && toolState.imageForEdit.isDragging) {
-                    ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
-                    ctx.drawImage(img, 0, 0);
-                    canvasState.savedCanvasWithoutImage = this.canvas.toDataURL();
-                    ctx.drawImage(toolState.imageForEdit.img,
-                        toolState.imageForEdit.imageX,
-                        toolState.imageForEdit.imageY,
-                        toolState.imageForEdit.img.width,
-                        toolState.imageForEdit.img.height);
-                }
+        if (ctx && this.image.isDragging) {
+
+            this.tempCanvas.width = this.canvas.width;
+            this.tempCanvas.height = this.canvas.height;
+            this.tempCtx = this.tempCanvas.getContext('2d');
+            if (this.tempCtx) {
+                this.rotateIfNeed();
+                this.image.imageX = mouseX - this.image.offsetX;
+                this.image.imageY = mouseY - this.image.offsetY;
+                this.tempCtx.drawImage(this.image.img,
+                    this.image.imageX,
+                    this.image.imageY,
+                    this.image.img.width,
+                    this.image.img.height);
+
+                ctx.clearRect(0, 0, this.canvas.width, this.canvas.height)
+
+                const img = new Image()
+                img.src = canvasState.savedCanvasWithoutImage;
+                ctx.drawImage(img, 0, 0);
+                ctx.drawImage(this.tempCanvas, 0, 0);
             }
-            canvasState.deleteBorder();
+
             canvasState.drawBorder();
         }
     }
+    rotateIfNeed(){
+        if(this.tempCtx){
+            this.tempCtx.clearRect(0, 0, this.tempCanvas.width, this.tempCanvas.height);
+            if (this.image.angle !== 0) {
+                const centerX = this.image.imageX + this.image.img.width / 2;
+                const centerY = this.image.imageY + this.image.img.height / 2;
+                this.tempCtx.translate(centerX, centerY);
+                this.tempCtx.rotate(this.image.angle);
+                this.tempCtx.translate(-centerX, -centerY);
+            }
+        }
 
+    }
     isMouseOnImage(mouseX: number, mouseY: number) {
-        return toolState.imageForEdit &&
-            mouseX >= toolState.imageForEdit.imageX &&
-            mouseX <= toolState.imageForEdit.imageX + toolState.imageForEdit.img.width &&
-            mouseY >= toolState.imageForEdit.imageY &&
-            mouseY <= toolState.imageForEdit.imageY + toolState.imageForEdit.img.height
+        return mouseX >= this.image.imageX &&
+            mouseX <= this.image.imageX + this.image.img.width &&
+            mouseY >= this.image.imageY &&
+            mouseY <= this.image.imageY + this.image.img.height
     }
 
     isMouseOnResizingLeftTop(mouseX: number, mouseY: number) {
-        return toolState.imageForEdit &&
-            Math.abs(mouseX - toolState.imageForEdit.imageX) <= 10 &&
-            Math.abs(mouseY - toolState.imageForEdit.imageY) <= 10
+            return Math.abs(mouseX - this.image.imageX) <= 5 &&
+                Math.abs(mouseY - this.image.imageY) <= 5
     }
 
+
     isMouseOnResizingRightTop(mouseX: number, mouseY: number) {
-        return toolState.imageForEdit &&
-            Math.abs(mouseX - toolState.imageForEdit.imageX - toolState.imageForEdit.img.width) <= 10 &&
-            Math.abs(mouseY - toolState.imageForEdit.imageY) <= 10
+        return Math.abs(mouseX - this.image.imageX - this.image.img.width) <= 5 &&
+            Math.abs(mouseY - this.image.imageY) <= 5
     }
 
     isMouseOnResizingRightBottom(mouseX: number, mouseY: number) {
-        return toolState.imageForEdit &&
-            Math.abs(mouseX - toolState.imageForEdit.imageX - toolState.imageForEdit.img.width) <= 10 &&
-            Math.abs(mouseY - toolState.imageForEdit.imageY - toolState.imageForEdit.img.height) <= 10
+        return Math.abs(mouseX - this.image.imageX - this.image.img.width) <= 5 &&
+            Math.abs(mouseY - this.image.imageY - this.image.img.height) <= 5
     }
 
     isMouseOnResizingLeftBottom(mouseX: number, mouseY: number) {
-        return toolState.imageForEdit &&
-            Math.abs(mouseX - toolState.imageForEdit.imageX) <= 10 &&
-            Math.abs(mouseY - toolState.imageForEdit.imageY - toolState.imageForEdit.img.height) <= 10
+        return Math.abs(mouseX - this.image.imageX) <= 5 &&
+            Math.abs(mouseY - this.image.imageY - this.image.img.height) <= 5
     }
+
     isMouseOnResizingLeftSide(mouseX: number, mouseY: number) {
-        return toolState.imageForEdit &&
-            Math.abs(mouseX - toolState.imageForEdit.imageX) <= 10 &&
-            Math.abs(mouseY - toolState.imageForEdit.imageY - toolState.imageForEdit.img.height/2) <= toolState.imageForEdit.img.height/2
+            const centerX = this.image.imageX + this.image.img.width / 2;
+            const centerY = this.image.imageY + this.image.img.height / 2;
+            return Math.abs(mouseX - (centerX - this.image.img.width/2)) <= 5 &&
+                Math.abs(mouseY - this.image.imageY - this.image.img.height / 2) <= this.image.img.height / 2
     }
+
     isMouseOnResizingRightSide(mouseX: number, mouseY: number) {
-        return toolState.imageForEdit &&
-            Math.abs(mouseX - toolState.imageForEdit.imageX - toolState.imageForEdit.img.width) <= 10 &&
-            Math.abs(mouseY - toolState.imageForEdit.imageY - toolState.imageForEdit.img.height/2) <= toolState.imageForEdit.img.height/2
+        return Math.abs(mouseX - this.image.imageX - this.image.img.width) <= 5 &&
+            Math.abs(mouseY - this.image.imageY - this.image.img.height / 2) <= this.image.img.height / 2
     }
+
     isMouseOnResizingTopSide(mouseX: number, mouseY: number) {
-        return toolState.imageForEdit &&
-            Math.abs(mouseX - toolState.imageForEdit.imageX - toolState.imageForEdit.img.width/2) <= toolState.imageForEdit.img.width/2 &&
-            Math.abs(mouseY - toolState.imageForEdit.imageY) <= 10
+        return Math.abs(mouseX - this.image.imageX - this.image.img.width / 2) <= this.image.img.width / 2 &&
+            Math.abs(mouseY - this.image.imageY) <= 5
     }
+
     isMouseOnResizingBottomSide(mouseX: number, mouseY: number) {
-        return toolState.imageForEdit &&
-            Math.abs(mouseX - toolState.imageForEdit.imageX - toolState.imageForEdit.img.width/2) <= toolState.imageForEdit.img.width/2 &&
-            Math.abs(mouseY - toolState.imageForEdit.imageY - toolState.imageForEdit.img.height) <= 10
+        return Math.abs(mouseX - this.image.imageX - this.image.img.width / 2) <= this.image.img.width / 2 &&
+            Math.abs(mouseY - this.image.imageY - this.image.img.height) <= 5
     }
 
     touchEndHandler(e: TouchEvent): void {
