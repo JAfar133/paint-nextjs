@@ -15,13 +15,7 @@
   pointer-events: none;
   background: rgba(255,255,255,0.1);
 }
-.image-container {
-  position: absolute;
-  top: 0;
-  left: 0;
-  border: 2px dashed #000;
-  pointer-events: none;
-}
+
 .user-cursor {
   position: absolute;
   top: 0;
@@ -103,7 +97,24 @@ input[type="color"] {
   width: 5px; /* Ширина квадрата */
   height: 5px; /* Высота квадрата */
   border: 1px solid #000;
+  box-shadow: 0 0 0 1px rgba(255,255,255,0.7);
   top: 0;
   left: 0;
   pointer-events: none;
+}
+.image-container {
+  position: absolute;
+  top: 0;
+  left: 0;
+  border: 1px dashed black;
+  pointer-events: none;
+  &::after {
+    content: ''; /* Добавляем пустое содержимое для псевдоэлемента */
+    position: absolute;
+    top: 1px; /* Смещаем на 2 пикселя вниз и вправо */
+    left: 1px;
+    right: 1px; /* Занимает всю доступную ширину внутри .image-container */
+    bottom: 1px; /* Занимает всю доступную высоту внутри .image-container */
+    border: 1px dashed white; /* Устанавливаем белую границу */
+  }
 }
