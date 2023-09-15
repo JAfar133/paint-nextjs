@@ -122,14 +122,18 @@ const Canvas = observer(() => {
     }
     const mouseEnterHandler = () => {
         if (toolState.tool) {
-            if (toolState.tool.type === "text") {
-                mainCanvasRef.current?.classList.add('cursor-text');
-            } else if (toolState.tool.type === "arc") {
-                mainCanvasRef.current?.classList.add('cursor-cell');
-            } else if (toolState.tool.type === "drag") {
-                mainCanvasRef.current?.classList.add('cursor-move');
-            } else {
-                mainCanvasRef.current?.classList.add('cursor-crosshair');
+            switch (toolState.tool.type) {
+                case "text":
+                    canvasState.setCursor('cursor-text');
+                    break;
+                case "arc":
+                    canvasState.setCursor('cursor-text');
+                    break;
+                case "drag":
+                    canvasState.setCursor('cursor-move');
+                    break;
+                default:
+                    canvasState.setCursor('cursor-crosshair');
             }
         }
     }

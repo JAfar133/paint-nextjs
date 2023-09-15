@@ -2,8 +2,16 @@ import {makeAutoObservable} from "mobx";
 import UserService from "@/lib/api/UserService";
 import {Point} from "@/lib/tools/shapes/arcTool";
 import toolState from "@/store/toolState";
-import DragTool, {cursors} from "@/lib/tools/dragTool";
+import DragTool, {getImageCenter, getNewPointPosition} from "@/lib/tools/dragTool";
 
+export type cursorClass =
+    "cursor-move" | "cursor-grab" | "cursor-text" | "cursor-cell" |
+    "cursor-grabbing" | "cursor-nwse-resize" | "cursor-alias" | "cursor-crosshair" |
+    "cursor-nesw-resize" | "cursor-ew-resize" | "cursor-ns-resize"
+export const cursors: cursorClass[] =
+    ["cursor-move", "cursor-grab", "cursor-text" , "cursor-cell",
+        "cursor-grabbing", "cursor-nwse-resize", "cursor-alias", "cursor-crosshair",
+        "cursor-nesw-resize", "cursor-ew-resize", "cursor-ns-resize"]
 export interface Message {
     id: string,
     username: string,
@@ -64,19 +72,19 @@ class CanvasState {
             this.imageContainer.style.width = `${image.img.width}px`;
             this.imageContainer.style.height = `${image.img.height}px`;
 
-            leftTop.style.transform = `translate(${image.imageX+this.canvas.offsetLeft-5}px, ${image.imageY+this.canvas.offsetTop-5}px)`;
-            leftBottom.style.transform = `translate(${image.imageX+this.canvas.offsetLeft-5}px, ${image.imageY+this.canvas.offsetTop+image.img.height}px)`;
-            rightTop.style.transform = `translate(${image.imageX+this.canvas.offsetLeft+image.img.width}px, ${image.imageY+this.canvas.offsetTop-5}px)`;
-            rightBottom.style.transform = `translate(${image.imageX+this.canvas.offsetLeft+image.img.width}px, ${image.imageY+this.canvas.offsetTop+image.img.height}px)`;
+            leftTop.style.transform = `translate(-5px, -5px)`;
+            leftBottom.style.transform = `translate(-5px, ${image.img.height}px)`;
+            rightTop.style.transform = `translate(${image.img.width}px, -5px)`;
+            rightBottom.style.transform = `translate(${image.img.width}px, ${image.img.height}px)`;
 
             let transformStyle = `translate(${image.imageX+this.canvas.offsetLeft}px, ${image.imageY+this.canvas.offsetTop}px)`;
             transformStyle = transformStyle.concat(` rotate(${image.angle}rad)`)
             this.imageContainer.style.transform = transformStyle;
             document.body.appendChild(this.imageContainer);
-            document.body.appendChild(leftTop);
-            document.body.appendChild(leftBottom);
-            document.body.appendChild(rightTop);
-            document.body.appendChild(rightBottom);
+            this.imageContainer.appendChild(leftTop);
+            this.imageContainer.appendChild(leftBottom);
+            this.imageContainer.appendChild(rightTop);
+            this.imageContainer.appendChild(rightBottom);
         }
     }
     deleteBorder(){
@@ -95,6 +103,12 @@ class CanvasState {
         squaresArray.forEach(function(square) {
             square.remove();
         });
+    }
+    setCursor(cursor: cursorClass) {
+        cursors.forEach(c => {
+            if (c === cursor) this.canvas.classList.add(c)
+            else this.canvas.classList.remove(c)
+        })
     }
     wheelHandler(e: WheelEvent) {
         e.preventDefault();
