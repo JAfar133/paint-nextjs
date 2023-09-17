@@ -55,9 +55,9 @@ const ImageLayers = observer(() => {
                               image === toolState.imageForEdit || toolState.imageForEditList.length === 1
                                   ? 'bg-gray-600 hover:bg-gray-700'
                                   : 'hover:bg-gray-500')}
-                              onClick={() => toggleLayer(index)} >
+                              onClick={() => toggleLayer(index)} key={index}>
                               <div className="w-[30px] h-[30px] flex items-center">
-                                  <NextImage width={30} height={30} key={index} src={image.img.src} alt="layer"
+                                  <NextImage width={30} height={30} src={image.img.src} alt="layer"
                                              style={{transform: `rotate(${image.angle}rad)`}}/>
                               </div>
                           </div>
