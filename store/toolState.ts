@@ -11,19 +11,32 @@ export interface ImageForEdit {
     isResizing: boolean,
     isRotating: boolean,
     isUpload: boolean,
-    angle: number
+    angle: number,
 }
 class ToolState {
     // @ts-ignore
     tool: Tool;
     imageForEdit: ImageForEdit | null = null;
+    imageForEditList: ImageForEdit[] = [];
     constructor() {
-        makeAutoObservable(this)
+        makeAutoObservable(this);
+    }
+
+    addImageForEdit(imageForEdit: ImageForEdit){
+        this.imageForEditList = [...this.imageForEditList, imageForEdit];
+        this.imageForEdit = this.imageForEditList[this.imageForEditList.length-1];
+    }
+    setImageForEdit(imageForEdit: ImageForEdit){
+        this.imageForEdit = imageForEdit;
     }
 
     setTool(tool: Tool){
         this.tool = tool
         this.fill()
+    }
+
+    getImageForEdit(){
+        return this.imageForEdit;
     }
 
     fill(){

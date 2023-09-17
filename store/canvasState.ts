@@ -3,6 +3,7 @@ import UserService from "@/lib/api/UserService";
 import {Point} from "@/lib/tools/shapes/arcTool";
 import toolState from "@/store/toolState";
 import DragTool, {getImageCenter, getNewPointPosition} from "@/lib/tools/dragTool";
+import userState from "@/store/userState";
 
 export type cursorClass =
     "cursor-move" | "cursor-grab" | "cursor-text" | "cursor-cell" |
@@ -94,8 +95,10 @@ class CanvasState {
         }
         const containers = document.getElementsByClassName('image-container');
         const squares = document.getElementsByClassName('square');
+        const circleOverlay = document.getElementsByClassName('circle-overlay');
         const containerArray = Array.from(containers);
         const squaresArray = Array.from(squares);
+        const circleOverlayArray = Array.from(circleOverlay);
 
         containerArray.forEach(function(container) {
             container.remove();
@@ -111,7 +114,7 @@ class CanvasState {
         })
     }
     wheelHandler(e: WheelEvent) {
-        e.preventDefault();
+        // e.preventDefault();
         // const scaleFactor = this.scaleMultiplier;
         // const delta = e.deltaY > 0 ? 1 / scaleFactor : scaleFactor;
         // const minScale = 1;
@@ -207,10 +210,11 @@ class CanvasState {
         }
     }
 
-    private sendDataUrl(dataUrl: string) {
+    sendDataUrl(dataUrl: string) {
         if (this.socket) {
             this.socket.send(JSON.stringify({
                 method: "draw_url",
+                username: userState.user?.username,
                 id: this.canvasId,
                 dataUrl: dataUrl
             }))
@@ -225,8 +229,8 @@ class CanvasState {
         let img = new Image();
         img.src = dataUrl;
         if (options.imageEdit) {
-            toolState.imageForEdit = {imageX: 0, imageY: 0, offsetX: 0, offsetY: 0,
-                img: img, isDragging: false, isResizing: false, isRotating: false, isUpload: true, angle: 0};
+            toolState.addImageForEdit({imageX: 0, imageY: 0, offsetX: 0, offsetY: 0,
+                img: img, isDragging: false, isResizing: false, isRotating: false, isUpload: true, angle: 0});
             if(this.socket){
                 toolState.setTool(new DragTool(this.canvas, this.socket, this.canvasId, "drag"))
             }
@@ -242,7 +246,6 @@ class CanvasState {
         this.clear()
         this.saveCanvas();
         this.savedCanvasWithoutImage = '';
-        toolState.imageForEdit = null;
         this.deleteBorder();
         if (this.socket) {
             this.socket.send(JSON.stringify({

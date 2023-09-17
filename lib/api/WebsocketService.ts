@@ -20,6 +20,7 @@ import {FiveStarTool} from "@/lib/tools/shapes/stars/fiveStarTool";
 import {FourStarTool} from "@/lib/tools/shapes/stars/fourStarTool";
 import {SixStarTool} from "@/lib/tools/shapes/stars/SixStarTool";
 import FillingTool from "@/lib/tools/fillingTool";
+import DragTool from "@/lib/tools/dragTool";
 
 class WebsocketService {
     websocketWorker(params: Params) {

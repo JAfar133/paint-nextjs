@@ -144,11 +144,11 @@ const Toolbar = observer(() => {
                             const dataUrl = event.target.result as string;
                             canvasState.addCurrentContextToUndo();
                             canvasState.drawByDataUrl(dataUrl, {clearRect: false, imageEdit: true});
+                            canvasState.sendDataUrl(canvasState.canvas.toDataURL());
                             canvasState.saveCanvas();
                         }
                     };
                     reader.readAsDataURL(file);
-
                 }
             };
             return (

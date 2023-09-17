@@ -101,13 +101,18 @@ const Canvas = observer(() => {
         const canvas = mainCanvasRef.current;
         const ctx = canvas?.getContext('2d');
         const circleOverlay = circleOverlayRef.current;
-        if (circleOverlay && ctx && (toolState.tool.type === "pencil" || toolState.tool.type === "eraser")) {
-            circleOverlay.style.display = 'block';
-            const x = e.pageX - circleOverlay.clientWidth / 2 - 1 + 'px';
-            const y = e.pageY - circleOverlay.clientHeight / 2 - 1 + 'px';
-            circleOverlay.style.transform = `translate(${x}, ${y})`;
-            circleOverlay.style.width = String(`${ctx.lineWidth}px`);
-            circleOverlay.style.height = String(`${ctx.lineWidth}px`);
+        if (circleOverlay && ctx) {
+            if(toolState.tool.type === "pencil" || toolState.tool.type === "eraser"){
+                circleOverlay.style.display = 'block';
+                const x = e.pageX - circleOverlay.clientWidth / 2 - 1 + 'px';
+                const y = e.pageY - circleOverlay.clientHeight / 2 - 1 + 'px';
+                circleOverlay.style.transform = `translate(${x}, ${y})`;
+                circleOverlay.style.width = String(`${ctx.lineWidth}px`);
+                circleOverlay.style.height = String(`${ctx.lineWidth}px`);
+            }
+            else {
+                circleOverlay.style.display = 'none';
+            }
         }
     }
     const mouseDownHandler = () => {
