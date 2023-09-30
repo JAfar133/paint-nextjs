@@ -1,3 +1,4 @@
+import canvasState from "@/store/canvasState";
 
 export default abstract class Tool {
     canvas: HTMLCanvasElement;
@@ -12,6 +13,8 @@ export default abstract class Tool {
     offsetTop: number;
     offsetLeft: number;
     saved: string = "";
+    zoom: number;
+    zoomScale: number;
 
     constructor(canvas: HTMLCanvasElement, socket: WebSocket, id: string | string[], type: string) {
         this.canvas = canvas;
@@ -25,7 +28,9 @@ export default abstract class Tool {
         this.bufferCanvas.width = this.canvas.width;
         this.bufferCanvas.height = this.canvas.height;
         this.bufferCtx = this.bufferCanvas.getContext('2d')!;
-
+        // this.canvas.style.zoom = '0.9';
+        this.zoom = 0.9;
+        this.zoomScale = 2 - this.zoom;
         this.destroyEvents();
         this.listen();
     }
@@ -48,10 +53,13 @@ export default abstract class Tool {
 
 
     abstract touchMoveHandler(e: TouchEvent): void;
+
     abstract touchStartHandler(e: TouchEvent): void;
+
     abstract touchEndHandler(e: TouchEvent): void;
 
     abstract mouseDownHandler(e: MouseEvent): void;
+
     abstract mouseMoveHandler(e: MouseEvent): void;
 
     handleGlobalMouseMove(e: MouseEvent) {
@@ -59,11 +67,13 @@ export default abstract class Tool {
             this.mouseMoveHandler(e);
         }
     }
+
     handleGlobalMouseUp(e: MouseEvent) {
-        if(this.mouseDown){
+        if (this.mouseDown) {
             this.mouseUpHandler(e);
         }
     }
+
     set fillColor(color: string) {
         this.ctx.fillStyle = color;
     }
@@ -79,6 +89,7 @@ export default abstract class Tool {
     set font(font: string) {
         this.ctx.font = font
     }
+
     destroyEvents() {
         document.onkeydown = null;
         document.onmousemove = null;
@@ -90,8 +101,10 @@ export default abstract class Tool {
         this.canvas.ontouchstart = null;
         this.canvas.ontouchend = null;
     }
-    mouseOutHandler(){
+
+    mouseOutHandler() {
         document.onmousemove = this.handleGlobalMouseMove.bind(this);
         document.onmouseup = this.handleGlobalMouseUp.bind(this);
     }
+
 }

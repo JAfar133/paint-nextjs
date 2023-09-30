@@ -1,4 +1,5 @@
 import LineTool from "@/lib/tools/shapes/lineTool";
+import canvasState from "@/store/canvasState";
 
 
 export default class ArrowTool extends LineTool {
@@ -7,7 +8,7 @@ export default class ArrowTool extends LineTool {
         img.src = this.saved;
         img.onload = () => {
             this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
-            this.ctx.drawImage(img, 0, 0);
+            this.ctx.drawImage(img, canvasState.canvasX, canvasState.canvasY);
             this.ctx.fillStyle = this.ctx.strokeStyle;
             drawArrow(this.ctx, x, y, w, h)
 
@@ -18,7 +19,7 @@ export default class ArrowTool extends LineTool {
         ctx.strokeStyle = strokeStyle;
         ctx.fillStyle = ctx.strokeStyle;
         ctx.lineWidth = strokeWidth;
-        drawArrow(ctx, x, y, w, h)
+        drawArrow(ctx, x+ctx.canvas.width/2, y, w+ctx.canvas.width/2, h)
     }
 }
 
@@ -42,4 +43,5 @@ function drawArrow(ctx: CanvasRenderingContext2D, x: number, y: number, w: numbe
     ctx.closePath();
     ctx.fill()
     ctx.stroke();
+    canvasState.clearOutside(ctx);
 }

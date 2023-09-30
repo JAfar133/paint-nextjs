@@ -153,7 +153,6 @@ class WebsocketService {
                 newCursorElement.classList.add("user-cursor");
                 document.body.appendChild(newCursorElement);
                 cursorElement = newCursorElement;
-
             }
             cursorElement.style.color = msg.color;
             const cursorX = msg.point.x;
@@ -195,7 +194,7 @@ class WebsocketService {
             "five_star": (ctx, figure) => FiveStarTool.draw(ctx, figure.x, figure.y, figure.w, figure.h, figure.fillStyle, figure.strokeStyle, figure.strokeWidth, figure.isFill, figure.isStroke),
             "four_star": (ctx, figure) => FourStarTool.draw(ctx, figure.x, figure.y, figure.w, figure.h, figure.fillStyle, figure.strokeStyle, figure.strokeWidth, figure.isFill, figure.isStroke),
             "six_star": (ctx, figure) => SixStarTool.draw(ctx, figure.x, figure.y, figure.w, figure.h, figure.fillStyle, figure.strokeStyle, figure.strokeWidth, figure.isFill, figure.isStroke),
-            "filling": (ctx, figure) => FillingTool.draw(ctx, figure.x, figure.y, figure.fillStyle),
+            "filling": (ctx, figure) => FillingTool.draw(ctx, figure.x, figure.y, figure.fillStyle,figure.tolerance),
             "finish": (ctx) => ctx.beginPath(),
         };
 

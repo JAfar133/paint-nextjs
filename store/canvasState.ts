@@ -39,12 +39,16 @@ class CanvasState {
     offsetY: number = 0;
     mouse = {x: 0, y: 0};
     savedCanvasWithoutImage: string = '';
+    canvasWidth: number = 1200;
+    canvasHeight: number = 600;
+    canvasX: number = 0;
+    canvasY: number = 0;
+    savedCanvas: string | null = null;
     imageContainer: HTMLDivElement | null = null;
 
     constructor() {
         this.canvas_id = `f${(+new Date).toString(16)}`
         makeAutoObservable(this);
-
     }
 
     trackMouse(event: MouseEvent) {
@@ -117,25 +121,44 @@ class CanvasState {
         // e.preventDefault();
         // const scaleFactor = this.scaleMultiplier;
         // const delta = e.deltaY > 0 ? 1 / scaleFactor : scaleFactor;
-        // const minScale = 1;
-        // const maxScale = 10;
+        // const ctx = this.canvas.getContext('2d');
+        // if (ctx) {
+        //     if (!this.savedCanvas) {
+        //         this.savedCanvas = this.getDataUrlCanvas();
+        //     }
         //
-        // const prevScale = this.scale;
+        //     // Сохраняем текущие координаты центра канваса
+        //     const centerX = this.canvasX + this.canvasWidth / 2;
+        //     const centerY = this.canvasY + this.canvasHeight / 2;
         //
-        // this.scale *= delta;
-        // if (this.scale < minScale) this.scale = minScale;
-        // if (this.scale > maxScale) this.scale = maxScale;
-        // this.offsetX = e.offsetX - (e.offsetX - this.offsetX) * (this.scale / prevScale);
-        // this.offsetY = e.offsetY - (e.offsetY - this.offsetY) * (this.scale / prevScale);
+        //     // Изменяем масштаб канваса
+        //     this.canvasWidth *= delta;
+        //     this.canvasHeight *= delta;
+        //     //
+        //     // // Обновляем координаты канваса так, чтобы центр оставался на месте
+        //     this.canvasX = centerX - this.canvasWidth / 2;
+        //     this.canvasY = centerY - this.canvasHeight / 2;
         //
-        // this.draw(this.scale, { x: this.offsetX, y: this.offsetY });
+        //     this.scale *= delta;
+        //     this.drawScroll(ctx, this.savedCanvas);
+        // }
     }
-
-
+    //
+    // drawScroll(ctx: CanvasRenderingContext2D, dataUrl: string) {
+    //     const img = new Image();
+    //     img.src = dataUrl;
+    //     img.onload = () => {
+    //         ctx.save();
+    //         ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+    //         ctx.scale(this.scale, this.scale)
+    //         ctx.drawImage(img, this.canvasX, this.canvasY, this.canvasWidth, this.canvasHeight);
+    //         ctx.restore();
+    //     };
+    // }
     draw(scale: number, translatePos: Point) {
         const img = new Image();
         const ctx = this.canvas.getContext('2d');
-        img.src = this.canvas.toDataURL();
+        img.src = this.getDataUrlCanvas();
         img.onload = () => {
             ctx?.clearRect(0, 0, this.canvas.width, this.canvas.height);
             ctx?.translate(translatePos.x, translatePos.y);
@@ -170,10 +193,11 @@ class CanvasState {
 
     setCanvas(canvas: HTMLCanvasElement) {
         this.canvas = canvas;
-        this.clear();
         this.canvas.onwheel = this.wheelHandler.bind(this);
         this.canvas.onmousemove = this.trackMouse.bind(this);
-
+        this.canvasX = this.canvas.width/2-this.canvasWidth/2;
+        this.canvasY = 50;
+        this.clear();
     }
 
     addUndo(data: any) {
@@ -185,17 +209,17 @@ class CanvasState {
     }
 
     addCurrentContextToUndo() {
-        this.undoList.push(this.canvas.toDataURL())
+        this.undoList.push(this.getDataUrlCanvas())
     }
 
     undo() {
         if (this.undoList.length) {
             let dataUrl = this.undoList.pop();
-            this.addRedo(this.canvas.toDataURL());
-            this.drawByDataUrl(dataUrl);
+            this.addRedo(this.getDataUrlCanvas());
+            this.drawCanvas(dataUrl);
             this.sendDataUrl(dataUrl);
         } else {
-            this.addRedo(this.canvas.toDataURL());
+            this.addRedo(this.getDataUrlCanvas());
             this.clear();
             this.saveCanvas();
         }
@@ -204,8 +228,8 @@ class CanvasState {
     redo() {
         if (this.redoList.length) {
             let dataUrl = this.redoList.pop();
-            this.addUndo(this.canvas.toDataURL())
-            this.drawByDataUrl(dataUrl);
+            this.addUndo(this.getDataUrlCanvas())
+            this.drawCanvas(dataUrl);
             this.sendDataUrl(dataUrl);
         }
     }
@@ -220,24 +244,39 @@ class CanvasState {
             }))
         }
     }
-
+    drawCanvas(dataUrl: string){
+        const ctx = this.canvas.getContext('2d')
+        let img = new Image();
+        img.src = dataUrl;
+        img.onload = () => {
+            if (ctx) {
+                ctx.drawImage(img, this.canvasX, this.canvasY, this.canvasWidth, this.canvasHeight);
+            }
+        }
+    }
     drawByDataUrl(dataUrl: string, options: { clearRect: boolean, imageEdit: boolean } = {
         clearRect: true,
         imageEdit: false
     }) {
-        let ctx = this.canvas.getContext('2d')
+        const ctx = this.canvas.getContext('2d')
         let img = new Image();
         img.src = dataUrl;
+
         if (options.imageEdit) {
-            toolState.addImageForEdit({imageX: 0, imageY: 0, offsetX: 0, offsetY: 0,
+            toolState.addImageForEdit({imageX: this.canvasX, imageY: this.canvasY, offsetX: 0, offsetY: 0,
                 img: img, isDragging: false, isResizing: false, isRotating: false, isUpload: true, angle: 0});
             if(this.socket){
                 toolState.setTool(new DragTool(this.canvas, this.socket, this.canvasId, "drag"))
             }
         }
+
         img.onload = () => {
-            options.clearRect && ctx?.clearRect(0, 0, this.canvas.width, this.canvas.height);
-            ctx?.drawImage(img, 0, 0, img.width, img.height);
+            if(ctx){
+                if(img.width > 0 && img.height > 0){
+                    options.clearRect && ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+                    ctx.drawImage(img, this.canvasX, this.canvasY, img.width, img.height);
+                }
+            }
         }
     }
 
@@ -255,10 +294,29 @@ class CanvasState {
         }
     }
 
+    clearOutside(ctx: CanvasRenderingContext2D){
+        const fullCanvasImageData = ctx.getImageData(this.canvasX, this.canvasY, this.canvasWidth, this.canvasHeight);
+        ctx.clearRect(0,0, ctx.canvas.width, ctx.canvas.height)
+        ctx.putImageData(fullCanvasImageData, this.canvasX, this.canvasY)
+    }
+
     saveCanvas() {
-        UserService.saveImage(this.canvasId, this.canvas.toDataURL())
+        UserService.saveImage(this.canvasId, this.getDataUrlCanvas())
             .catch(e => console.log(e))
         localStorage.removeItem("image")
+    }
+
+    getDataUrlCanvas(canvas?: HTMLCanvasElement){
+        const canvas1 = canvas || this.canvas;
+        const tempCanvas = document.createElement('canvas');
+        const tempCtx = tempCanvas.getContext('2d');
+        tempCanvas.width = this.canvasWidth;
+        tempCanvas.height = this.canvasHeight;
+        if(tempCtx){
+            tempCtx.drawImage(canvas1, this.canvasX, this.canvasY, this.canvasWidth, this.canvasHeight, 0, 0, this.canvasWidth, this.canvasHeight);
+        }
+        return tempCanvas.toDataURL();
+
     }
     mouseLeaveHandler = () => {
         this.canvas.classList.remove('cursor-crosshair');
@@ -267,10 +325,11 @@ class CanvasState {
         cursors.forEach(cursor=>this.canvas.classList.remove(cursor))
     }
     clear() {
-        let ctx = this.canvas.getContext('2d')
+        const ctx = this.canvas.getContext('2d')
         if (ctx) {
+            ctx.clearRect(0,0,this.canvas.width, this.canvas.height)
             ctx.fillStyle = 'rgba(255,255,255,1)';
-            ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+            ctx.fillRect(this.canvasX, this.canvasY, this.canvasWidth, this.canvasHeight);
         }
     }
 }

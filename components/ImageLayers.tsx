@@ -14,7 +14,7 @@ const ImageLayers = observer(() => {
         setTimeout(() => {
             if (canvasState.canvas) {
                 const img = new Image();
-                img.src = canvasState.canvas.toDataURL();
+                img.src = canvasState.getDataUrlCanvas();
                 const image = {
                     imageX: 0,
                     imageY: 0,
@@ -45,17 +45,13 @@ const ImageLayers = observer(() => {
     return (
         <>
             {toolState.imageForEditList.length > 0 &&
-              <div
-                className="w-full fixed bg-transparent h-[50px] flex gap-1 border-gray-300 align-middle items-center"
-                style={{top: 'calc(100vh - 50px)'}}>
-                  {
                       toolState.imageForEditList.map((image, index) =>
                           <div
-                              className={cn("cursor-pointer w-[50px] h-full flex justify-center items-center",
+                              className={cn("fixed bottom-0 cursor-pointer w-[50px] h-[50px] flex justify-center items-center",
                               image === toolState.imageForEdit || toolState.imageForEditList.length === 1
                                   ? 'bg-gray-600 hover:bg-gray-700'
-                                  : 'hover:bg-gray-500')}
-                              onClick={() => toggleLayer(index)} key={index}>
+                                  : 'hover:bg-gray-500',)}
+                              onClick={() => toggleLayer(index)} key={index} style={{left: `${index*54}px`}}>
                               <div className="w-[30px] h-[30px] flex items-center">
                                   <NextImage width={30} height={30} src={image.img.src} alt="layer"
                                              style={{transform: `rotate(${image.angle}rad)`}}/>
@@ -63,8 +59,6 @@ const ImageLayers = observer(() => {
                           </div>
                       )
                   }
-              </div>
-            }
         </>
     );
 });

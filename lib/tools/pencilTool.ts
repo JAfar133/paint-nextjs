@@ -1,15 +1,16 @@
 import Tool from "@/lib/tools/tool";
 import userState from "@/store/userState";
+import canvasState from "@/store/canvasState";
 
 export default class PencilTool extends Tool {
-    lastCircleX: number | null = null;
-    lastCircleY: number | null = null;
+    lastCircleX: number = -1;
+    lastCircleY: number = -1;
 
     mouseUpHandler(e: MouseEvent) {
         this.mouseDown = false;
         this.sendSocketFinish();
-        this.lastCircleX = null;
-        this.lastCircleY = null;
+        this.lastCircleX = -1;
+        this.lastCircleY = -1;
     }
 
     mouseDownHandler(e: MouseEvent) {
@@ -19,9 +20,11 @@ export default class PencilTool extends Tool {
     }
 
     mouseMoveHandler(e: MouseEvent) {
+        const x = e.offsetX;
+        const y = e.offsetY;
         if (this.mouseDown) {
-            this.sendSocketDraw(e.offsetX, e.offsetY);
-            this.draw(e.offsetX, e.offsetY)
+            this.sendSocketDraw(x, y);
+            this.draw(x, y);
         }
         document.onmousemove = null;
     }
@@ -65,9 +68,9 @@ export default class PencilTool extends Tool {
                 strokeWidth: this.ctx.lineWidth,
                 strokeStyle: this.ctx.strokeStyle,
                 type: this.type,
-                x: x,
+                x: x - this.canvas.width/2,
                 y: y,
-                lastCircleX: this.lastCircleX,
+                lastCircleX: this.lastCircleX - this.canvas.width/2,
                 lastCircleY: this.lastCircleY,
             }
         }));
@@ -95,17 +98,16 @@ export default class PencilTool extends Tool {
     touchEndHandler(e: TouchEvent) {
         this.mouseDown = false;
         this.sendSocketFinish();
-        this.lastCircleX = null;
-        this.lastCircleY = null;
+        this.lastCircleX = -1;
+        this.lastCircleY = -1;
         e.preventDefault();
     }
 
 
-    static draw(ctx: CanvasRenderingContext2D, x: number, y: number, lastCircleX: number | null, lastCircleY: number | null, strokeStyle: string, strokeWidth: number) {
+    static draw(ctx: CanvasRenderingContext2D, x: number, y: number, lastCircleX: number, lastCircleY: number, strokeStyle: string, strokeWidth: number) {
         ctx.strokeStyle = strokeStyle;
         ctx.lineWidth = strokeWidth;
-
-        drawCircle(ctx, x, y, lastCircleX, lastCircleY)
+        drawCircle(ctx, ctx.canvas.width/2 + x, y, ctx.canvas.width/2 + lastCircleX, lastCircleY)
     }
 
     draw(x: number, y: number) {
@@ -116,9 +118,8 @@ export default class PencilTool extends Tool {
 
 }
 
-function drawCircle(ctx: CanvasRenderingContext2D, x: number, y: number, lastCircleX: number | null, lastCircleY: number | null) {
-
-    if (lastCircleX && lastCircleY) {
+function drawCircle(ctx: CanvasRenderingContext2D, x: number, y: number, lastCircleX: number, lastCircleY: number) {
+    if (lastCircleX!==-1 && lastCircleY!==-1) {
         ctx.beginPath();
         ctx.moveTo(lastCircleX, lastCircleY);
         ctx.lineTo(x, y);
@@ -128,5 +129,5 @@ function drawCircle(ctx: CanvasRenderingContext2D, x: number, y: number, lastCir
     ctx.arc(x, y, ctx.lineWidth / 2, 0, 2 * Math.PI);
     ctx.fillStyle = ctx.strokeStyle;
     ctx.fill();
-
+    canvasState.clearOutside(ctx);
 }

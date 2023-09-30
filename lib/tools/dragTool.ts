@@ -31,13 +31,13 @@ export default class DragTool extends Tool {
     constructor(canvas: HTMLCanvasElement, socket: WebSocket, id: string | string[], type: string) {
         super(canvas, socket, id, type);
         const img = new Image();
-        img.src = canvas.toDataURL();
+        img.src = canvasState.getDataUrlCanvas(canvas);
         canvasState.deleteBorder();
         const imgOnload = () => {
             img.onload = () => {
                 this.ctx.clearRect(0, 0, canvas.width, canvas.height);
-                canvasState.savedCanvasWithoutImage = canvas.toDataURL();
-                this.ctx.drawImage(img, 0, 0)
+                canvasState.savedCanvasWithoutImage = canvasState.getDataUrlCanvas(canvas);
+                this.ctx.drawImage(img, canvasState.canvasX, canvasState.canvasY)
             }
         }
         if (toolState.imageForEdit) {
@@ -45,7 +45,7 @@ export default class DragTool extends Tool {
                 imgOnload();
                 toolState.imageForEdit.img = img;
             } else {
-                canvasState.savedCanvasWithoutImage = canvas.toDataURL();
+                canvasState.savedCanvasWithoutImage = canvasState.getDataUrlCanvas(canvas);
             }
         } else {
             imgOnload();
@@ -84,7 +84,7 @@ export default class DragTool extends Tool {
         this.startImageY = this.image.imageY;
         this.startWidth = this.image.img.width;
         this.startHeight = this.image.img.height;
-        this.saved = this.canvas.toDataURL();
+        this.saved = canvasState.getDataUrlCanvas();
         const mouseResizePosition: resizePoint | null = this.getMouseResizePosition(mouseX, mouseY);
         if (mouseResizePosition) {
             this.resizePoint = mouseResizePosition;
@@ -118,7 +118,7 @@ export default class DragTool extends Tool {
             this.image.isRotating = false;
         }
         this.mouseDown = false;
-        canvasState.sendDataUrl(this.canvas.toDataURL());
+        canvasState.sendDataUrl(canvasState.getDataUrlCanvas());
     }
 
     mouseMoveHandler(e: MouseEvent): void {
@@ -164,8 +164,9 @@ export default class DragTool extends Tool {
                 img.src = canvasState.savedCanvasWithoutImage;
                 img.onload = ()=>{
                     ctx.clearRect(0, 0, this.canvas.width, this.canvas.height)
-                    ctx.drawImage(img, 0, 0);
+                    ctx.drawImage(img, canvasState.canvasX, canvasState.canvasY);
                     ctx.drawImage(this.tempCanvas, 0, 0);
+                    canvasState.clearOutside(ctx);
                 }
 
                 canvasState.drawBorder();
@@ -239,8 +240,9 @@ export default class DragTool extends Tool {
                 img.src = canvasState.savedCanvasWithoutImage;
                 img.onload = () => {
                     ctx.clearRect(0, 0, this.canvas.width, this.canvas.height)
-                    ctx.drawImage(img, 0, 0);
+                    ctx.drawImage(img, canvasState.canvasX, canvasState.canvasY);
                     ctx.drawImage(this.tempCanvas, 0, 0);
+                    canvasState.clearOutside(ctx);
                 }
             }
 
@@ -481,14 +483,16 @@ function drawResizedImage(tempCtx: CanvasRenderingContext2D, ctx: CanvasRenderin
             newWidth,
             newHeight
         );
+        canvasState.clearOutside(ctx);
     }
 
     const img = new Image()
     img.src = canvasState.savedCanvasWithoutImage;
     img.onload = ()=>{
         ctx.clearRect(0, 0, canvas.width, canvas.height)
-        ctx.drawImage(img, 0, 0);
+        ctx.drawImage(img, canvasState.canvasX, canvasState.canvasY);
         ctx.drawImage(tempCanvas, 0, 0);
+        canvasState.clearOutside(ctx);
     }
 
 }

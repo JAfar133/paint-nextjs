@@ -111,14 +111,14 @@ const Canvas = observer(() => {
                 circleOverlay.style.height = String(`${ctx.lineWidth}px`);
             }
             else {
-                circleOverlay.style.display = 'none';
+                circleOverlay.style.display = 'none'
             }
         }
     }
     const mouseDownHandler = () => {
         window.addEventListener('mouseup', mouseUpHandler);
         window.addEventListener('touchend', mouseUpHandler);
-        if (toolState.tool.type !== "text") canvasState.addUndo(mainCanvasRef.current?.toDataURL());
+        if (toolState.tool.type !== "text") canvasState.addUndo(canvasState.getDataUrlCanvas());
     }
     const mouseUpHandler = () => {
         canvasState.saveCanvas();
@@ -129,9 +129,6 @@ const Canvas = observer(() => {
         if (toolState.tool) {
             switch (toolState.tool.type) {
                 case "text":
-                    canvasState.setCursor('cursor-text');
-                    break;
-                case "arc":
                     canvasState.setCursor('cursor-text');
                     break;
                 case "drag":
@@ -151,8 +148,8 @@ const Canvas = observer(() => {
         <>
             <div className="canvas__container">
                 <canvas className="canvas main_canvas"
-                        width={canvasSize.width}
-                        height={canvasSize.height}
+                        width={window.innerWidth || canvasSize.width}
+                        height={window.innerHeight - 155 || canvasSize.height}
                         ref={mainCanvasRef}
                         onMouseDown={() => mouseDownHandler()}
                         onTouchStart={() => mouseDownHandler()}

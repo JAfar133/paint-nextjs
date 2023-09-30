@@ -59,7 +59,7 @@ export default class TextTool extends Tool {
             }
         }
         if (key.length === 1) {
-            canvasState.addUndo(this.canvas.toDataURL())
+            canvasState.addUndo(canvasState.getDataUrlCanvas())
             const prevKeyLength = this.prevKey ? this.ctx.measureText(this.prevKey.key).width : 0;
             this.prevKey.key = key;
 
@@ -78,7 +78,7 @@ export default class TextTool extends Tool {
                     font: this.ctx.font,
                     type: this.type,
                     text: key,
-                    startX: this.startX,
+                    startX: this.startX - this.canvas.width/2,
                     startY: this.startY + Number(px) * 0.2
                 }
             }));
@@ -94,6 +94,7 @@ export default class TextTool extends Tool {
     };
     print(text: string, startX: number, startY: number) {
         this.ctx.fillText(text, startX, startY);
+        canvasState.clearOutside(this.ctx);
     }
 
 
@@ -112,7 +113,8 @@ export default class TextTool extends Tool {
     static draw(ctx: CanvasRenderingContext2D, text: string, startX: number, startY: number, fillStyle: string, font: string) {
         ctx.font = font;
         ctx.fillStyle = fillStyle;
-        ctx.fillText(text, startX, startY);
+        ctx.fillText(text, startX + ctx.canvas.width/2, startY);
+        canvasState.clearOutside(ctx);
     }
 
     touchEndHandler(e: TouchEvent): void {

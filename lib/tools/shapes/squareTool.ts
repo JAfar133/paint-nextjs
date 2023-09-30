@@ -36,7 +36,7 @@ export default class SquareTool extends Shape {
         img.src = this.saved;
         img.onload = () => {
             this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
-            this.ctx.drawImage(img, 0, 0);
+            this.ctx.drawImage(img, canvasState.canvasX, canvasState.canvasY);
             this.ctx.beginPath();
             drawRect(this.ctx, x, y, w, h, canvasState.isFill, canvasState.isStroke);
         }
@@ -47,7 +47,7 @@ export default class SquareTool extends Shape {
         ctx.strokeStyle = strokeStyle;
         ctx.fillStyle = fillStyle;
         ctx.lineWidth = strokeWidth;
-        drawRect(ctx, x, y, w, h, isFill, isStroke);
+        drawRect(ctx, x + ctx.canvas.width/2, y, w, h, isFill, isStroke);
     }
 }
 
@@ -57,4 +57,5 @@ function drawRect(ctx: CanvasRenderingContext2D, x: number, y: number, w: number
     ctx.rect(x, y, w, h);
     isFill && ctx.fill();
     isStroke && ctx.stroke();
+    canvasState.clearOutside(ctx);
 }

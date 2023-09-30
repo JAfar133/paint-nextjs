@@ -14,13 +14,12 @@ export default abstract class Shape extends Tool {
         this.ctx.beginPath();
         this.startX = e.offsetX;
         this.startY = e.offsetY;
-        this.saved = this.canvas.toDataURL()
+        this.saved = canvasState.getDataUrlCanvas();
     }
     mouseUpHandler(e: MouseEvent) {
         super.mouseUpHandler(e)
         this.mouseDown = false;
         this.sendSocketDraw();
-
     }
     sendSocketDraw(){
         if(this.startX > -1 && this.startY > -1 && this.width !== -1){
@@ -35,7 +34,7 @@ export default abstract class Shape extends Tool {
                     isFill: canvasState.isFill,
                     isStroke: canvasState.isStroke,
                     type: this.type,
-                    x: this.startX,
+                    x: this.startX - this.canvas.width/2,
                     y: this.startY,
                     w: this.width,
                     h: this.height,
@@ -68,7 +67,7 @@ export default abstract class Shape extends Tool {
         const y = touch.clientY - this.offsetTop;
         this.startX = x;
         this.startY = y;
-        this.saved = this.canvas.toDataURL()
+        this.saved = canvasState.getDataUrlCanvas();
         e.preventDefault();
     }
     abstract draw(x: number, y: number, w: number, h: number): void

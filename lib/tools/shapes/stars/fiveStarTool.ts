@@ -10,7 +10,7 @@ export class FiveStarTool extends SquareTool {
         img.src = this.saved;
         img.onload = () => {
             this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
-            this.ctx.drawImage(img, 0, 0);
+            this.ctx.drawImage(img, canvasState.canvasX, canvasState.canvasY);
             drawStar(this.ctx, x, y, w, h, angleCount, canvasState.isFill, canvasState.isStroke)
         }
     }
@@ -20,7 +20,7 @@ export class FiveStarTool extends SquareTool {
         ctx.strokeStyle = strokeStyle;
         ctx.fillStyle = fillStyle;
         ctx.lineWidth = strokeWidth;
-        drawStar(ctx, x, y, w, h, angleCount, isFill, isStroke)
+        drawStar(ctx, x + ctx.canvas.width/2, y, w, h, angleCount, isFill, isStroke)
     }
 }
 
@@ -53,4 +53,5 @@ export function drawStar(ctx: CanvasRenderingContext2D, x0: number, y0: number, 
     ctx.closePath();
     isFill && ctx.fill()
     isStroke && ctx.stroke();
+    canvasState.clearOutside(ctx);
 }

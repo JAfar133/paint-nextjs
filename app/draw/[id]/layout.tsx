@@ -11,22 +11,23 @@ import Toolbar from "@/components/Toolbar";
 const inter = Inter({subsets: ['latin']})
 
 export const metadata: Metadata = {
-  title: 'Draw',
-  description: 'Твори, рисуй, удивляй',
+    title: 'Draw',
+    description: 'Твори, рисуй, удивляй',
+    viewport: 'width=device-width, initial-scale=1.0'
 }
 
 export default function DrawLayout({
-                                     children,
+                                       children,
                                    }: {
-  children: React.ReactNode
+    children: React.ReactNode
 }) {
-  return (
-      <html lang="en">
-      <body className={cn("bg-secondary", inter.className)}>
-      <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
-          {children}
-      </ThemeProvider>
-      </body>
-      </html>
-  )
+    return (
+        <html lang="en">
+        <body className={cn("bg-secondary", inter.className)}>
+        <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
+            {children}
+        </ThemeProvider>
+        </body>
+        </html>
+    )
 }

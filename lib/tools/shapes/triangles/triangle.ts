@@ -1,4 +1,6 @@
 import Shape from "@/lib/tools/shapes/Shape";
+import userState from "@/store/userState";
+import canvasState from "@/store/canvasState";
 
 export default abstract class Triangle extends Shape {
     mouseMoveHandler(e: MouseEvent) {

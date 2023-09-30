@@ -1,6 +1,7 @@
 import Tool from "@/lib/tools/tool";
 import userState from "@/store/userState";
 import settingState from "@/store/settingState";
+import canvasState from "@/store/canvasState";
 
 export default class FillingTool extends Tool {
     pixelColor: string = '';
@@ -23,8 +24,9 @@ export default class FillingTool extends Tool {
             figure: {
                 fillStyle: this.ctx.fillStyle,
                 type: this.type,
-                x: x,
-                y: y
+                x: x - this.canvas.width/2,
+                y: y,
+                tolerance: settingState.fillingTolerance
             }
         }));
     }
@@ -52,7 +54,7 @@ export default class FillingTool extends Tool {
     }
 
     static draw(ctx: CanvasRenderingContext2D, x: number, y: number, fillColor: string, tolerance: number = 5) {
-        floodFill(ctx,x, y, fillColor, tolerance)
+        floodFill(ctx,x + ctx.canvas.width/2, y, fillColor, tolerance)
     }
     getPixelColor(x: number, y: number): string {
         const imageData = this.ctx.getImageData(x, y, 1, 1);
@@ -65,10 +67,11 @@ export default class FillingTool extends Tool {
 
 
 function floodFill(ctx: CanvasRenderingContext2D, startX: number, startY: number, newColor: string, tolerance: number = 5): void {
-    const width = ctx.canvas.width;
-    const height = ctx.canvas.height;
-
-    const casData = ctx.getImageData(0, 0, width, height);
+    const width = canvasState.canvasWidth;
+    const height = canvasState.canvasHeight;
+    startX-=canvasState.canvasX;
+    startY-=canvasState.canvasY;
+    const casData = ctx.getImageData(canvasState.canvasX, canvasState.canvasY, width, height);
     const stack: [number, number][] = [];
 
     const i = (startY * width + startX) * 4;
@@ -126,7 +129,8 @@ function floodFill(ctx: CanvasRenderingContext2D, startX: number, startY: number
             }
         }
     }
-    ctx.putImageData(casData, 0, 0);
+    ctx.putImageData(casData, canvasState.canvasX,canvasState.canvasY);
+    canvasState.clearOutside(ctx);
 }
 interface Color {
     r: number;

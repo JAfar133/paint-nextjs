@@ -42,7 +42,7 @@ export default class CircleTool extends Shape {
                     isFill: canvasState.isFill,
                     isStroke: canvasState.isStroke,
                     type: this.type,
-                    x: this.startX,
+                    x: this.startX - this.canvas.width/2,
                     y: this.startY,
                     r: this.radius,
                 }
@@ -82,7 +82,7 @@ export default class CircleTool extends Shape {
         img.src = this.saved;
         img.onload = () => {
             this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
-            this.ctx.drawImage(img, 0, 0);
+            this.ctx.drawImage(img, canvasState.canvasX, canvasState.canvasY);
             drawCircle(this.ctx, x, y, r, canvasState.isFill, canvasState.isStroke);
         }
     }
@@ -92,7 +92,7 @@ export default class CircleTool extends Shape {
         ctx.strokeStyle = strokeStyle;
         ctx.fillStyle = fillStyle;
         ctx.lineWidth = strokeWith;
-        drawCircle(ctx, x, y, r, isFill, isStroke)
+        drawCircle(ctx, x+ctx.canvas.width/2, y, r, isFill, isStroke)
     }
 }
 
@@ -101,4 +101,5 @@ function drawCircle(ctx: CanvasRenderingContext2D, x: number, y: number, r: numb
     ctx.arc(x, y, r, 0, 2 * Math.PI)
     isFill && ctx.fill();
     isStroke && ctx.stroke();
+    canvasState.clearOutside(ctx);
 }
