@@ -17,6 +17,7 @@ import {MessageSquare, Terminal} from "lucide-react";
 import {Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle} from "@/components/ui/card";
 import {Alert, AlertDescription, AlertTitle} from "@/components/ui/alert";
 import websocketService from "@/lib/api/WebsocketService";
+import {log} from "util";
 
 
 const Canvas = observer(() => {
@@ -26,6 +27,13 @@ const Canvas = observer(() => {
     const [message, setMessage] = useState<string>("");
     const params = useParams();
     const messagesRef = useRef<HTMLDivElement>(null);
+    useEffect(() => {
+        if(mainCanvasRef.current){
+            mainCanvasRef.current.width = window.innerWidth;
+            mainCanvasRef.current.height = window.innerHeight - 155
+        }
+    }, [mainCanvasRef]);
+
     const scrollToBottom = () => {
         if (messagesRef.current) {
             messagesRef.current.scrollTop = messagesRef.current.scrollHeight;
@@ -37,7 +45,7 @@ const Canvas = observer(() => {
     useEffect(() => {
         if (mainCanvasRef.current) {
             const canvas = mainCanvasRef.current;
-            canvasState.setCanvas(mainCanvasRef.current);
+            canvasState.setCanvas(canvas);
             const image = localStorage.getItem("image");
             if (image) {
                 UserService.getGalleryImage(image)
@@ -148,8 +156,6 @@ const Canvas = observer(() => {
         <>
             <div className="canvas__container">
                 <canvas className="canvas main_canvas"
-                        width={window.innerWidth || canvasSize.width}
-                        height={window.innerHeight - 155 || canvasSize.height}
                         ref={mainCanvasRef}
                         onMouseDown={() => mouseDownHandler()}
                         onTouchStart={() => mouseDownHandler()}
