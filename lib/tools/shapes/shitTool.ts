@@ -27,7 +27,7 @@ function drawSheet(ctx: CanvasRenderingContext2D, x0: number, y0: number, w: num
 
     const centerX = x0 + w / 2;
     const centerY = y0 + h / 2;
-    const rotation = Math.PI / 10; // Угол наклона звезды
+    const rotation = Math.PI / 10;
 
     ctx.beginPath();
 

@@ -67,8 +67,8 @@ export default class DragTool extends Tool {
     }
 
     mouseDownHandler(e: MouseEvent): void {
-        const mouseX = e.clientX - this.canvas.offsetLeft;
-        const mouseY = e.clientY - this.canvas.offsetTop;
+        const mouseX = e.offsetX;
+        const mouseY = e.offsetY;
         const centerX = this.image.imageX + this.image.img.width / 2;
         const centerY = this.image.imageY + this.image.img.height / 2;
         const dx = mouseX - centerX;
@@ -122,8 +122,8 @@ export default class DragTool extends Tool {
     }
 
     mouseMoveHandler(e: MouseEvent): void {
-        const mouseX = e.clientX - this.canvas.offsetLeft;
-        const mouseY = e.clientY - this.canvas.offsetTop;
+        const mouseX = e.offsetX;
+        const mouseY = e.offsetY;
         if (this.image.isResizing) {
             this.drugResize(mouseX, mouseY);
         } else if (this.image.isDragging) {

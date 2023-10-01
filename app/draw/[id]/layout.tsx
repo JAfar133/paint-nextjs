@@ -23,7 +23,7 @@ export default function DrawLayout({
 }) {
     return (
         <html lang="en">
-        <body className={cn("bg-secondary", inter.className)}>
+        <body className={cn("bg-secondary overflow-hidden", inter.className)}>
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
             {children}
         </ThemeProvider>

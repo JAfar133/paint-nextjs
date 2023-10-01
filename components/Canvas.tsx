@@ -2,10 +2,10 @@
 
 import React, {useEffect, useRef, useState} from 'react';
 import '../app/canvas.scss'
-import {canvasSize, cn} from "@/lib/utils";
+import {cn} from "@/lib/utils";
 import {observer} from "mobx-react-lite";
 
-import canvasState, {Message} from "../store/canvasState";
+import canvasState from "../store/canvasState";
 import userState from "@/store/userState";
 import {useParams} from "next/navigation";
 import UserService from "@/lib/api/UserService";
@@ -13,16 +13,16 @@ import toolState from "@/store/toolState";
 import {Popover, PopoverContent, PopoverTrigger} from "@/components/ui/popover";
 import {Button} from "@/components/ui/button";
 import {Input} from "@/components/ui/input";
-import {MessageSquare, Terminal} from "lucide-react";
+import {MessageSquare, Search, Terminal} from "lucide-react";
 import {Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle} from "@/components/ui/card";
 import {Alert, AlertDescription, AlertTitle} from "@/components/ui/alert";
 import websocketService from "@/lib/api/WebsocketService";
-import {log} from "util";
 
 
 const Canvas = observer(() => {
 
     const mainCanvasRef = useRef<HTMLCanvasElement>(null);
+    const canvasContanerRef = useRef<HTMLDivElement>(null);
     const circleOverlayRef = useRef<HTMLDivElement>(null);
     const [message, setMessage] = useState<string>("");
     const params = useParams();
@@ -77,6 +77,11 @@ const Canvas = observer(() => {
             window.removeEventListener('keydown', handleKeyDown);
         };
     }, [])
+    useEffect(()=>{
+        if(canvasContanerRef.current){
+            canvasState.canvasContainerRef = canvasContanerRef.current;
+        }
+    },[canvasContanerRef])
     useEffect(() => {
         const fetchData = async () => {
             if (canvasState.canvasId) {
@@ -93,28 +98,31 @@ const Canvas = observer(() => {
     }, [canvasState.canvasId]);
 
     useEffect(() => {
-        window.addEventListener('mousemove', websocketService.handleMouseMove)
-        window.addEventListener('touchmove', websocketService.handleTouchMove)
-        return () => {
-            window.removeEventListener('mousemove', websocketService.handleMouseMove)
-            window.removeEventListener('touchmove', websocketService.handleTouchMove)
-            window.removeEventListener('mouseup', mouseUpHandler)
+        if(canvasContanerRef.current){
+            canvasContanerRef.current.addEventListener('mousemove', websocketService.handleMouseMove)
+            canvasContanerRef.current.addEventListener('touchmove', websocketService.handleTouchMove)
+            return () => {
+                canvasContanerRef.current?.removeEventListener('mousemove', websocketService.handleMouseMove)
+                canvasContanerRef.current?.removeEventListener('touchmove', websocketService.handleTouchMove)
+                window.removeEventListener('mouseup', mouseUpHandler)
+            }
         }
-    }, [userState.color, canvasState.socket])
+
+    }, [canvasContanerRef, userState.color, canvasState.socket])
     useEffect(() => {
         websocketService.websocketWorker(params)
     }, [userState.loading])
 
-    const mouseMoveHandler = (e: React.MouseEvent<HTMLCanvasElement, MouseEvent>) => {
+    const mouseMoveHandler = (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
         const canvas = mainCanvasRef.current;
         const ctx = canvas?.getContext('2d');
         const circleOverlay = circleOverlayRef.current;
-        if (circleOverlay && ctx) {
+        if (circleOverlay && canvasContanerRef.current && ctx) {
             if(toolState.tool.type === "pencil" || toolState.tool.type === "eraser"){
                 circleOverlay.style.display = 'block';
-                const x = e.pageX - circleOverlay.clientWidth / 2 - 1 + 'px';
-                const y = e.pageY - circleOverlay.clientHeight / 2 - 1 + 'px';
-                circleOverlay.style.transform = `translate(${x}, ${y})`;
+                const x = e.clientX - circleOverlay.clientWidth / 2 - 1 + 'px';
+                const y = e.clientY - canvasContanerRef.current.offsetTop  - circleOverlay.clientHeight / 2 - 1 + 'px';
+                circleOverlay.style.transform = `translate(${x}, ${y}) scale(${canvasState.scale})`;
                 circleOverlay.style.width = String(`${ctx.lineWidth}px`);
                 circleOverlay.style.height = String(`${ctx.lineWidth}px`);
             }
@@ -153,19 +161,24 @@ const Canvas = observer(() => {
     }
 
     return (
-        <>
-            <div className="canvas__container">
+        <div id="canvas" ref={canvasContanerRef}
+             onMouseMove={(e: React.MouseEvent<HTMLDivElement, MouseEvent>) => mouseMoveHandler(e)}
+            className="relative">
+            <div className="canvas__container" id="canvas__container">
+                <div className="absolute left-0 z-[500] p-1 flex gap-1">
+                    <Search width={16} color="gray"></Search>
+                    <span className="text-gray-400">{Math.floor(canvasState.scale*100)}%</span>
+                </div>
                 <canvas className="canvas main_canvas"
                         ref={mainCanvasRef}
                         onMouseDown={() => mouseDownHandler()}
                         onTouchStart={() => mouseDownHandler()}
-                        onMouseMove={(e: React.MouseEvent<HTMLCanvasElement, MouseEvent>) => mouseMoveHandler(e)}
                         onMouseEnter={() => mouseEnterHandler()}
                         onMouseLeave={() => canvasState.mouseLeaveHandler()}
                 >
                 </canvas>
-                <div ref={circleOverlayRef} className="circle-overlay"></div>
             </div>
+            <div ref={circleOverlayRef} className="circle-overlay"></div>
             <div className="fixed right-2 bottom-2 z-[200]">
                 <Popover>
                     <PopoverTrigger asChild>
@@ -229,7 +242,7 @@ const Canvas = observer(() => {
                 height: 1,
             }}/>
 
-        </>
+        </div>
     );
 });
 

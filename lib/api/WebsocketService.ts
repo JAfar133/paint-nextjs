@@ -89,47 +89,44 @@ class WebsocketService {
     };
 
     handleMouseMove(e: MouseEvent) {
-        if (canvasState.socket) {
-            const centerX = window.innerWidth / 2;
-            const offsetX = e.pageX - centerX;
-            canvasState.socket.send(JSON.stringify({
-                method: "user_cursor",
-                id: canvasState.canvasId,
-                username: userState.user?.username,
-                point: {
-                    x: offsetX,
-                    y: e.pageY
-                },
-                screen: {
-                    height: window.innerHeight,
-                    width: window.innerWidth
-                },
-                color: userState.color
-            }));
+        if(canvasState.canvasContainerRef){
+            const offsetX = e.pageX - canvasState.centerX;
+            const offsetY = e.offsetY - canvasState.canvasY;
+            if (canvasState.socket) {
+                canvasState.socket.send(JSON.stringify({
+                    method: "user_cursor",
+                    id: canvasState.canvasId,
+                    username: userState.user?.username,
+                    point: {
+                        x: offsetX,
+                        y: offsetY
+                    },
+                    scale: canvasState.scale,
+                    color: userState.color
+                }));
+            }
         }
     }
+
 
     handleTouchMove(e: TouchEvent) {
+        const centerX = canvasState.canvas.width / 2;
+        const offsetX = e.touches[0].pageX - centerX;
+        const offsetY = e.touches[0].clientY;
         if (canvasState.socket) {
-            const centerX = window.innerWidth / 2;
-            const offsetX = e.touches[0].pageX - centerX - 10;
             canvasState.socket.send(JSON.stringify({
                 method: "user_cursor",
                 id: canvasState.canvasId,
                 username: userState.user?.username,
                 point: {
                     x: offsetX,
-                    y: e.touches[0].clientY
+                    y: offsetY
                 },
-                screen: {
-                    height: window.innerHeight,
-                    width: window.innerWidth
-                },
+                scale: canvasState.scale,
                 color: userState.color
             }));
         }
     }
-
     sendWebsocketMessage(message: string) {
         if (canvasState.socket) {
             canvasState.socket.send(JSON.stringify({
@@ -151,15 +148,18 @@ class WebsocketService {
                 const newCursorElement = document.createElement("div");
                 newCursorElement.id = cursorElementId;
                 newCursorElement.classList.add("user-cursor");
-                document.body.appendChild(newCursorElement);
+                if(canvasState.canvasContainerRef){
+                    canvasState.canvasContainerRef.appendChild(newCursorElement);
+
+                }
                 cursorElement = newCursorElement;
             }
             cursorElement.style.color = msg.color;
-            const cursorX = msg.point.x;
-            const cursorY = msg.point.y;
+            const scale = canvasState.scale/msg.scale;
+            let cursorX = msg.point.x;
+            let cursorY = msg.point.y;
             cursorElement.textContent = msg.username;
-
-            cursorElement.style.transform = `translate(${cursorX}px, ${cursorY}px)`;
+            cursorElement.style.transform = `translate(${cursorX*scale-10}px, ${cursorY}px)`;
         }
     }
 

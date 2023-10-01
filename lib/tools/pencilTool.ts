@@ -1,6 +1,7 @@
 import Tool from "@/lib/tools/tool";
 import userState from "@/store/userState";
 import canvasState from "@/store/canvasState";
+import {action} from "mobx";
 
 export default class PencilTool extends Tool {
     lastCircleX: number = -1;
