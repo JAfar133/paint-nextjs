@@ -22,7 +22,8 @@ import websocketService from "@/lib/api/WebsocketService";
 const Canvas = observer(() => {
 
     const mainCanvasRef = useRef<HTMLCanvasElement>(null);
-    const canvasContanerRef = useRef<HTMLDivElement>(null);
+    const canvasMain = useRef<HTMLDivElement>(null);
+    const canvasContainer = useRef<HTMLDivElement>(null);
     const circleOverlayRef = useRef<HTMLDivElement>(null);
     const [message, setMessage] = useState<string>("");
     const params = useParams();
@@ -78,10 +79,15 @@ const Canvas = observer(() => {
         };
     }, [])
     useEffect(()=>{
-        if(canvasContanerRef.current){
-            canvasState.canvasContainerRef = canvasContanerRef.current;
+        if(canvasMain.current){
+            canvasState.canvasMain = canvasMain.current;
         }
-    },[canvasContanerRef])
+    },[canvasMain])
+    useEffect(()=>{
+        if(canvasContainer.current){
+            canvasState.canvasContainer = canvasContainer.current;
+        }
+    },[canvasContainer])
     useEffect(() => {
         const fetchData = async () => {
             if (canvasState.canvasId) {
@@ -98,17 +104,17 @@ const Canvas = observer(() => {
     }, [canvasState.canvasId]);
 
     useEffect(() => {
-        if(canvasContanerRef.current){
-            canvasContanerRef.current.addEventListener('mousemove', websocketService.handleMouseMove)
-            canvasContanerRef.current.addEventListener('touchmove', websocketService.handleTouchMove)
+        if(canvasMain.current){
+            canvasMain.current.addEventListener('mousemove', websocketService.handleMouseMove)
+            canvasMain.current.addEventListener('touchmove', websocketService.handleTouchMove)
             return () => {
-                canvasContanerRef.current?.removeEventListener('mousemove', websocketService.handleMouseMove)
-                canvasContanerRef.current?.removeEventListener('touchmove', websocketService.handleTouchMove)
+                canvasMain.current?.removeEventListener('mousemove', websocketService.handleMouseMove)
+                canvasMain.current?.removeEventListener('touchmove', websocketService.handleTouchMove)
                 window.removeEventListener('mouseup', mouseUpHandler)
             }
         }
 
-    }, [canvasContanerRef, userState.color, canvasState.socket])
+    }, [canvasMain, userState.color, canvasState.socket])
     useEffect(() => {
         websocketService.websocketWorker(params)
     }, [userState.loading])
@@ -117,11 +123,11 @@ const Canvas = observer(() => {
         const canvas = mainCanvasRef.current;
         const ctx = canvas?.getContext('2d');
         const circleOverlay = circleOverlayRef.current;
-        if (circleOverlay && canvasContanerRef.current && ctx) {
+        if (circleOverlay && canvasMain.current && ctx) {
             if(toolState.tool.type === "pencil" || toolState.tool.type === "eraser"){
                 circleOverlay.style.display = 'block';
                 const x = e.clientX - circleOverlay.clientWidth / 2 - 1 + 'px';
-                const y = e.clientY - canvasContanerRef.current.offsetTop  - circleOverlay.clientHeight / 2 - 1 + 'px';
+                const y = e.clientY - canvasMain.current.offsetTop  - circleOverlay.clientHeight / 2 - 1 + 'px';
                 circleOverlay.style.transform = `translate(${x}, ${y}) scale(${canvasState.scale})`;
                 circleOverlay.style.width = String(`${ctx.lineWidth}px`);
                 circleOverlay.style.height = String(`${ctx.lineWidth}px`);
@@ -161,14 +167,14 @@ const Canvas = observer(() => {
     }
 
     return (
-        <div id="canvas" ref={canvasContanerRef}
+        <div id="canvas" ref={canvasMain}
              onMouseMove={(e: React.MouseEvent<HTMLDivElement, MouseEvent>) => mouseMoveHandler(e)}
             className="relative">
-            <div className="canvas__container" id="canvas__container">
-                <div className="absolute left-0 z-[500] p-1 flex gap-1">
-                    <Search width={16} color="gray"></Search>
-                    <span className="text-gray-400">{Math.floor(canvasState.scale*100)}%</span>
-                </div>
+            <div className="absolute left-0 z-[500] p-1 flex gap-1">
+                <Search width={16} color="gray"></Search>
+                <span className="text-gray-400">{Math.floor(canvasState.scale*100)}%</span>
+            </div>
+            <div className="canvas__container" id="canvas__container" ref={canvasContainer}>
                 <canvas className="canvas main_canvas"
                         ref={mainCanvasRef}
                         onMouseDown={() => mouseDownHandler()}

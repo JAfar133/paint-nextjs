@@ -4,6 +4,7 @@
   height: calc(100vh - 155px);
   overflow: hidden;
   position: relative;
+  z-index: 40;
 }
 .canvas {
   top: 0;
@@ -20,12 +21,13 @@
   box-shadow: 0 0 0 1px rgba(255,255,255,0.7);
   border-radius: 50%;
   pointer-events: none;
+  z-index: 100;
   background: rgba(255,255,255,0.1);
 }
 
 .user-cursor {
   position: absolute;
-  top: 50px;
+  top: 0;
   left: 50%;
   width: 20px;
   height: 20px;
@@ -111,7 +113,7 @@ input[type="color"] {
 }
 .image-container {
   position: absolute;
-  top: 155px;
+  top: 0;
   left: 0;
   border: 1px dashed black;
   pointer-events: none;

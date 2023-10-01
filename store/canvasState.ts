@@ -45,7 +45,8 @@ class CanvasState {
     canvasTop: number = 0;
     canvasLeft: number = 0;
     canvasY: number = 0;
-    canvasContainerRef: HTMLDivElement | null = null;
+    canvasMain: HTMLDivElement | null = null;
+    canvasContainer: HTMLDivElement | null = null;
     centerX: number = 0;
     centerY: number = 0;
     imageContainer: HTMLDivElement | null = null;
@@ -75,7 +76,7 @@ class CanvasState {
         rightBottom.classList.add('square');
         const image = toolState.imageForEdit;
 
-        if (ctx && image && this.imageContainer) {
+        if (ctx && image && this.imageContainer && this.canvasContainer) {
             this.imageContainer.style.display = 'block';
             this.imageContainer.style.width = `${image.img.width}px`;
             this.imageContainer.style.height = `${image.img.height}px`;
@@ -84,10 +85,10 @@ class CanvasState {
             leftBottom.style.transform = `translate(-5px, ${image.img.height}px)`;
             rightTop.style.transform = `translate(${image.img.width}px, -5px)`;
             rightBottom.style.transform = `translate(${image.img.width}px, ${image.img.height}px)`;
-            let transformStyle = `translate(${image.imageX}px, ${image.imageY}px) scale(${this.scale})`;
+            let transformStyle = `translate(${image.imageX}px, ${image.imageY}px)`;
             transformStyle = transformStyle.concat(` rotate(${image.angle}rad)`)
             this.imageContainer.style.transform = transformStyle;
-            document.body.appendChild(this.imageContainer);
+            this.canvasContainer.appendChild(this.imageContainer);
             this.imageContainer.appendChild(leftTop);
             this.imageContainer.appendChild(leftBottom);
             this.imageContainer.appendChild(rightTop);
@@ -115,9 +116,9 @@ class CanvasState {
 
     setCursor(cursor: cursorClass) {
         cursors.forEach(c => {
-            if (this.canvasContainerRef) {
-                if (c === cursor) this.canvasContainerRef.classList.add(c)
-                else this.canvasContainerRef.classList.remove(c)
+            if (this.canvasMain) {
+                if (c === cursor) this.canvasMain.classList.add(c)
+                else this.canvasMain.classList.remove(c)
             }
         })
 
@@ -129,7 +130,9 @@ class CanvasState {
         const delta = e.deltaY > 0 ? 1 / scaleFactor : scaleFactor;
         const ctx = this.canvas.getContext('2d');
 
+        if (this.canvasContainer) {
         if (ctx) {
+            console.log(this.centerY, e.pageY)
             if (this.scale * delta > 0.05 && this.scale * delta < 15) {
                 const deltaX = (this.centerX - e.pageX)*0.1;
                 const deltaY = (this.centerY - e.pageY)*0.1;
@@ -138,8 +141,8 @@ class CanvasState {
                     this.canvasTop +=deltaY;
                     this.centerX += deltaX;
                     this.centerY += deltaY;
-                    this.canvas.style.left = `${this.canvasLeft}px`;
-                    this.canvas.style.top = `${this.canvasTop}px`;
+                    this.canvasContainer.style.left = `${this.canvasLeft}px`;
+                    this.canvasContainer.style.top = `${this.canvasTop}px`;
                 }
 
                 else {
@@ -147,11 +150,13 @@ class CanvasState {
                     this.canvasTop -=deltaY;
                     this.centerX -= deltaX;
                     this.centerY -= deltaY;
-                    this.canvas.style.left = `${this.canvasLeft}px`;
-                    this.canvas.style.top = `${this.canvasTop}px`;
+                    this.canvasContainer.style.left = `${this.canvasLeft}px`;
+                    this.canvasContainer.style.top = `${this.canvasTop}px`;
                 }
                 this.scale *= delta;
-                this.canvas.style.transform = `scale(${this.scale})`;
+
+                    this.canvasContainer.style.transform = `scale(${this.scale})`;
+                }
             }
 
             if (toolState.tool.type === "drag") {
@@ -188,16 +193,16 @@ class CanvasState {
     setCanvas(canvas: HTMLCanvasElement) {
         this.canvas = canvas;
         setTimeout(()=>{
-            if(this.canvasContainerRef){
-                this.canvasContainerRef.onwheel = this.wheelHandler.bind(this);
+            if(this.canvasMain){
+                this.canvasMain.onwheel = this.wheelHandler.bind(this);
             }
         },100)
 
         this.canvas.onwheel = this.wheelHandler.bind(this);
         this.canvasX = this.canvas.width / 2 - this.canvasWidth / 2;
-        this.canvasY = 50;
+        this.canvasY = 20;
         this.centerX =  this.canvas.width / 2;
-        this.centerY =  this.canvas.height/2 + 100;
+        this.centerY =  this.canvas.height / 2 + this.canvasY + 50;
 
         this.clear();
     }

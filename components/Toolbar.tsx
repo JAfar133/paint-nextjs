@@ -153,7 +153,7 @@ const Toolbar = observer(() => {
             };
             return (
                 <>
-                    <div className="fixed bg-toolbar top-0 w-full">
+                    <div className="fixed bg-toolbar top-0 w-full z-[99]">
                         <div
                             className={"w-full m-0 flex justify-between py-3 px-7 items-center z-[100]"}>
                             <div className="flex items-center gap-10 flex-wrap">

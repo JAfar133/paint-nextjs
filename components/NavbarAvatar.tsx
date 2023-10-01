@@ -29,7 +29,7 @@ const NavbarAvatar = observer(() => {
                     <AvatarImage src="https://github.com/shadcn.png"/>
                 </Avatar>
             </DropdownMenuTrigger>
-            <DropdownMenuContent className="w-56">
+            <DropdownMenuContent className="w-56 z-[100]">
                 <DropdownMenuLabel>{userState.user?.email}</DropdownMenuLabel>
                 <DropdownMenuSeparator/>
                 {userState._isAuth

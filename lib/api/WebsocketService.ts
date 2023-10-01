@@ -89,9 +89,9 @@ class WebsocketService {
     };
 
     handleMouseMove(e: MouseEvent) {
-        if(canvasState.canvasContainerRef){
+        if(canvasState.canvasMain){
             const offsetX = e.pageX - canvasState.centerX;
-            const offsetY = e.offsetY - canvasState.canvasY;
+            const offsetY = e.offsetY;
             if (canvasState.socket) {
                 canvasState.socket.send(JSON.stringify({
                     method: "user_cursor",
@@ -148,8 +148,8 @@ class WebsocketService {
                 const newCursorElement = document.createElement("div");
                 newCursorElement.id = cursorElementId;
                 newCursorElement.classList.add("user-cursor");
-                if(canvasState.canvasContainerRef){
-                    canvasState.canvasContainerRef.appendChild(newCursorElement);
+                if(canvasState.canvasMain){
+                    canvasState.canvasMain.appendChild(newCursorElement);
 
                 }
                 cursorElement = newCursorElement;

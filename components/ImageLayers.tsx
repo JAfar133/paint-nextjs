@@ -47,7 +47,7 @@ const ImageLayers = observer(() => {
             {toolState.imageForEditList.length > 0 &&
                       toolState.imageForEditList.map((image, index) =>
                           <div
-                              className={cn("fixed bottom-0 cursor-pointer w-[50px] h-[50px] flex justify-center items-center",
+                              className={cn("fixed bottom-0 cursor-pointer w-[50px] h-[50px] flex justify-center items-center z-[99]",
                               image === toolState.imageForEdit || toolState.imageForEditList.length === 1
                                   ? 'bg-gray-600 hover:bg-gray-700'
                                   : 'hover:bg-gray-500',)}
