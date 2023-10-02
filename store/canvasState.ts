@@ -118,11 +118,12 @@ class CanvasState {
     }
 
     setCursor(cursor: cursorClass) {
-        if(this.canvasMain){
-            this.canvasMain.classList.remove(this.canvasCursor)
-            this.canvasMain.classList.add(cursor)
-            this.canvasCursor = cursor;
-        }
+        cursors.forEach(c => {
+            if (this.canvasMain) {
+                if (c === cursor) this.canvasMain.classList.add(c)
+                else this.canvasMain.classList.remove(c)
+            }
+        })
 
     }
 
