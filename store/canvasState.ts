@@ -3,16 +3,15 @@ import UserService from "@/lib/api/UserService";
 import toolState from "@/store/toolState";
 import DragTool from "@/lib/tools/dragTool";
 import userState from "@/store/userState";
-import canvasState from "@/store/canvasState";
 
 export type cursorClass =
     "cursor-move" | "cursor-grab" | "cursor-text" | "cursor-cell" |
     "cursor-grabbing" | "cursor-nwse-resize" | "cursor-alias" | "cursor-crosshair" |
-    "cursor-nesw-resize" | "cursor-ew-resize" | "cursor-ns-resize"
+    "cursor-nesw-resize" | "cursor-ew-resize" | "cursor-ns-resize" | "cursor-auto"
 export const cursors: cursorClass[] =
     ["cursor-move", "cursor-grab", "cursor-text", "cursor-cell",
         "cursor-grabbing", "cursor-nwse-resize", "cursor-alias", "cursor-crosshair",
-        "cursor-nesw-resize", "cursor-ew-resize", "cursor-ns-resize"]
+        "cursor-nesw-resize", "cursor-ew-resize", "cursor-ns-resize","cursor-auto"]
 
 export interface Message {
     id: string,
@@ -49,13 +48,17 @@ class CanvasState {
     canvasContainer: HTMLDivElement | null = null;
     centerX: number = 0;
     centerY: number = 0;
+    mouseDown: boolean = false;
+    mouseDownStartX: number = -1;
+    mouseDownStartY: number = -1;
     imageContainer: HTMLDivElement | null = null;
+    canvasCursor: cursorClass = 'cursor-auto';
+    savedCursor: cursorClass = 'cursor-auto';
 
     constructor() {
         this.canvas_id = `f${(+new Date).toString(16)}`
         makeAutoObservable(this);
     }
-
 
 
     drawBorder() {
@@ -115,12 +118,11 @@ class CanvasState {
     }
 
     setCursor(cursor: cursorClass) {
-        cursors.forEach(c => {
-            if (this.canvasMain) {
-                if (c === cursor) this.canvasMain.classList.add(c)
-                else this.canvasMain.classList.remove(c)
-            }
-        })
+        if(this.canvasMain){
+            this.canvasMain.classList.remove(this.canvasCursor)
+            this.canvasMain.classList.add(cursor)
+            this.canvasCursor = cursor;
+        }
 
     }
 
@@ -131,8 +133,7 @@ class CanvasState {
         const ctx = this.canvas.getContext('2d');
 
         if (this.canvasContainer) {
-        if (ctx) {
-            console.log(this.centerY, e.pageY)
+        if (ctx && toolState.tool) {
             if (this.scale * delta > 0.05 && this.scale * delta < 15) {
                 const deltaX = (this.centerX - e.pageX)*0.1;
                 const deltaY = (this.centerY - e.pageY)*0.1;
@@ -155,16 +156,55 @@ class CanvasState {
                 }
                 this.scale *= delta;
 
-                    this.canvasContainer.style.transform = `scale(${this.scale})`;
+                this.canvasContainer.style.transform = `scale(${this.scale})`;
+                toolState.tool.offsetTop = this.canvas.getBoundingClientRect().top;
+                toolState.tool.offsetLeft = this.canvas.getBoundingClientRect().left;
                 }
             }
 
-            if (toolState.tool.type === "drag") {
+            if (toolState.tool && toolState.tool.type === "drag") {
                 this.drawBorder();
             }
         }
     }
+    mouseMoveHandler(e: MouseEvent) {
+        if (this.mouseDown && this.canvasContainer) {
+            e.preventDefault()
+            const offsetX = e.pageX;
+            const offsetY = e.pageY;
 
+            const deltaX = offsetX - this.mouseDownStartX;
+            const deltaY = offsetY - this.mouseDownStartY;
+            this.canvasContainer.style.left = `${this.canvasContainer.offsetLeft + deltaX}px`;
+            this.canvasContainer.style.top = `${this.canvasContainer.offsetTop + deltaY}px`;
+            this.centerX += deltaX;
+            this.centerY += deltaY;
+            this.canvasLeft += deltaX;
+            this.canvasTop += deltaY;
+
+            this.mouseDownStartX = offsetX;
+            this.mouseDownStartY = offsetY;
+        }
+    }
+    mouseDownHandler(e: MouseEvent){
+        if (e.button === 1) {
+            this.mouseDownStartX = e.pageX;
+            this.mouseDownStartY = e.pageY;
+            this.mouseDown = true;
+            if(toolState.tool){
+                toolState.tool.canDraw = false;
+            }
+            this.savedCursor = this.canvasCursor;
+            this.setCursor('cursor-grabbing')
+        }
+    }
+    mouseUpHandler(e: MouseEvent){
+        if(this.mouseDown && toolState.tool){
+            toolState.tool.canDraw = true;
+        }
+        this.mouseDown = false;
+        this.setCursor(this.savedCursor);
+    }
 
     get canvasId() {
         return this.canvas_id;
@@ -195,6 +235,10 @@ class CanvasState {
         setTimeout(()=>{
             if(this.canvasMain){
                 this.canvasMain.onwheel = this.wheelHandler.bind(this);
+                this.canvasMain.onmousemove = this.mouseMoveHandler.bind(this)
+                this.canvasMain.onmousedown = this.mouseDownHandler.bind(this)
+                window.onmouseup = this.mouseUpHandler.bind(this)
+
             }
         },100)
 

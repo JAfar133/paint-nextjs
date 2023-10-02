@@ -15,15 +15,17 @@ export default class PencilTool extends Tool {
     }
 
     mouseDownHandler(e: MouseEvent) {
-        this.mouseDown = true;
-        this.ctx.beginPath();
-        this.ctx.moveTo(e.offsetX, e.offsetY);
+        if(this.canDraw){
+            this.mouseDown = true;
+            this.ctx.beginPath();
+            this.ctx.moveTo(e.offsetX, e.offsetY);
+        }
     }
 
     mouseMoveHandler(e: MouseEvent) {
-        const x = e.offsetX;
-        const y = e.offsetY;
-        if (this.mouseDown) {
+        if (this.mouseDown && this.canDraw) {
+            const x = e.offsetX;
+            const y = e.offsetY;
             this.sendSocketDraw(x, y);
             this.draw(x, y);
         }
@@ -31,26 +33,16 @@ export default class PencilTool extends Tool {
     }
 
     handleGlobalMouseMove(e: MouseEvent) {
-        if (this.mouseDown) {
-            let x;
-            let y;
-            if ((e.pageY < (this.offsetTop + this.canvas.height)) && e.pageY > this.offsetTop) {
-                x = e.offsetX - this.offsetLeft;
-                y = e.offsetY;
-            } else if (e.pageY < this.offsetTop) {
-                x = e.offsetX - this.offsetLeft;
-                y = e.offsetY - this.offsetTop;
-            } else {
-                x = e.offsetX - this.offsetLeft;
-                y = e.offsetY + this.offsetTop;
-            }
+        if (this.mouseDown && this.canDraw) {
+            let x = e.offsetX - this.offsetLeft;
+            let y = e.offsetY - this.offsetTop;
             this.sendSocketDraw(x, y);
             this.draw(x, y)
         }
     }
 
     touchMoveHandler(e: TouchEvent) {
-        if (this.mouseDown) {
+        if (this.mouseDown && this.canDraw) {
             const touch = e.touches[0];
             const x = touch.clientX - this.offsetLeft;
             const y = touch.clientY - this.offsetTop;

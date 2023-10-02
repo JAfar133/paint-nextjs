@@ -9,12 +9,14 @@ export default class FillingTool extends Tool {
 
     }
     touchStartHandler(e: TouchEvent): void {
-        const touch = e.touches[0];
-        const x = touch.clientX - this.offsetLeft;
-        const y = touch.clientY - this.offsetTop;
-        this.pixelColor = this.getPixelColor(x, y)
-        this.draw(x, y, this.ctx.fillStyle.toString())
-        this.sendDrawWebsocket(x, y)
+        if(this.canDraw) {
+            const touch = e.touches[0];
+            const x = touch.clientX - this.offsetLeft;
+            const y = touch.clientY - this.offsetTop;
+            this.pixelColor = this.getPixelColor(x, y)
+            this.draw(x, y, this.ctx.fillStyle.toString())
+            this.sendDrawWebsocket(x, y)
+        }
     }
     sendDrawWebsocket(x: number, y: number){
         this.socket.send(JSON.stringify({
@@ -32,12 +34,14 @@ export default class FillingTool extends Tool {
     }
 
     mouseUpHandler(e: MouseEvent) {
-        super.mouseUpHandler(e);
-        const x = e.offsetX,
-            y = e.offsetY;
-        this.pixelColor = this.getPixelColor(x, y)
-        this.draw(x, y, this.ctx.fillStyle.toString())
-        this.sendDrawWebsocket(x, y)
+        if(this.canDraw && e.button !== 1){
+            super.mouseUpHandler(e);
+            const x = e.offsetX,
+                y = e.offsetY;
+            this.pixelColor = this.getPixelColor(x, y)
+            this.draw(x, y, this.ctx.fillStyle.toString())
+            this.sendDrawWebsocket(x, y)
+        }
     }
 
     mouseMoveHandler(e: MouseEvent): void {

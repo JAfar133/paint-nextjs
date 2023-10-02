@@ -17,7 +17,7 @@ export default class CircleTool extends Shape {
     }
 
     touchMoveHandler(e: TouchEvent) {
-        if (this.mouseDown) {
+        if (this.mouseDown && this.canDraw) {
             const touch = e.touches[0];
             const x = touch.clientX - this.offsetLeft;
             const y = touch.clientY - this.offsetTop;
@@ -51,7 +51,7 @@ export default class CircleTool extends Shape {
     }
 
     mouseMoveHandler(e: MouseEvent) {
-        if (this.mouseDown) {
+        if (this.mouseDown && this.canDraw) {
             let width = e.offsetX - this.startX;
             let height = e.offsetY - this.startY;
             this.radius = Math.sqrt(width ** 2 + height ** 2)
@@ -61,16 +61,9 @@ export default class CircleTool extends Shape {
     }
 
     handleGlobalMouseMove(e: MouseEvent) {
-        if (this.mouseDown) {
-            let width;
-            let height;
-            if (e.pageY < this.offsetTop) {
-                width = e.pageX - this.startX - this.offsetLeft;
-                height = e.offsetY - this.startY - this.offsetTop;
-            } else {
-                width = e.pageX - this.startX - this.offsetLeft;
-                height = e.offsetY - this.startY;
-            }
+        if (this.mouseDown && this.canDraw) {
+            const width = e.pageX - this.startX - this.offsetLeft;
+            const height = e.offsetY - this.startY - this.offsetTop;
 
             this.radius = Math.sqrt(width ** 2 + height ** 2)
             this.draw(this.startX, this.startY, this.radius)

@@ -1,10 +1,8 @@
 import Shape from "@/lib/tools/shapes/Shape";
-import userState from "@/store/userState";
-import canvasState from "@/store/canvasState";
 
 export default abstract class Triangle extends Shape {
     mouseMoveHandler(e: MouseEvent) {
-        if (this.mouseDown) {
+        if (this.mouseDown && this.canDraw) {
 
             this.width = e.offsetX;
             this.height = e.offsetY;
@@ -13,7 +11,7 @@ export default abstract class Triangle extends Shape {
         document.onmousemove = null;
     }
     touchMoveHandler(e: TouchEvent) {
-        if (this.mouseDown) {
+        if (this.mouseDown && this.canDraw) {
             const touch = e.touches[0];
             const x = touch.clientX - this.offsetLeft;
             const y = touch.clientY - this.offsetTop;
@@ -25,19 +23,10 @@ export default abstract class Triangle extends Shape {
     }
 
     handleGlobalMouseMove(e: MouseEvent) {
-        if (this.mouseDown) {
-            if ((e.pageY < (this.offsetTop + this.canvas.height)) && e.pageY > this.offsetTop) {
-                this.width = e.offsetX - this.offsetLeft;
-                this.height = e.offsetY;
-            }
-            else if(e.pageY < this.offsetTop) {
-                this.width = e.pageX - this.offsetLeft;
-                this.height = e.pageY - this.offsetTop;
-            }
-            else {
-                this.width = e.pageX - this.offsetLeft;
-                this.height = e.pageY - this.offsetTop;
-            }
+        if (this.mouseDown && this.canDraw) {
+            this.width = e.offsetX - this.offsetLeft;
+            this.height = e.offsetY - this.offsetTop;
+
             this.draw(this.startX, this.startY, this.width, this.height)
         }
     }

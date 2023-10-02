@@ -104,17 +104,17 @@ const Canvas = observer(() => {
     }, [canvasState.canvasId]);
 
     useEffect(() => {
-        if(canvasMain.current){
-            canvasMain.current.addEventListener('mousemove', websocketService.handleMouseMove)
-            canvasMain.current.addEventListener('touchmove', websocketService.handleTouchMove)
+        if(canvasContainer.current){
+            canvasContainer.current.addEventListener('mousemove', websocketService.handleMouseMove)
+            canvasContainer.current.addEventListener('touchmove', websocketService.handleTouchMove)
             return () => {
-                canvasMain.current?.removeEventListener('mousemove', websocketService.handleMouseMove)
-                canvasMain.current?.removeEventListener('touchmove', websocketService.handleTouchMove)
+                canvasContainer.current?.removeEventListener('mousemove', websocketService.handleMouseMove)
+                canvasContainer.current?.removeEventListener('touchmove', websocketService.handleTouchMove)
                 window.removeEventListener('mouseup', mouseUpHandler)
             }
         }
 
-    }, [canvasMain, userState.color, canvasState.socket])
+    }, [canvasContainer])
     useEffect(() => {
         websocketService.websocketWorker(params)
     }, [userState.loading])
@@ -124,7 +124,7 @@ const Canvas = observer(() => {
         const ctx = canvas?.getContext('2d');
         const circleOverlay = circleOverlayRef.current;
         if (circleOverlay && canvasMain.current && ctx) {
-            if(toolState.tool.type === "pencil" || toolState.tool.type === "eraser"){
+            if(toolState.tool && (toolState.tool.type === "pencil" || toolState.tool.type === "eraser")){
                 circleOverlay.style.display = 'block';
                 const x = e.clientX - circleOverlay.clientWidth / 2 - 1 + 'px';
                 const y = e.clientY - canvasMain.current.offsetTop  - circleOverlay.clientHeight / 2 - 1 + 'px';
@@ -140,7 +140,7 @@ const Canvas = observer(() => {
     const mouseDownHandler = () => {
         window.addEventListener('mouseup', mouseUpHandler);
         window.addEventListener('touchend', mouseUpHandler);
-        if (toolState.tool.type !== "text") canvasState.addUndo(canvasState.getDataUrlCanvas());
+        if (toolState.tool && toolState.tool.type !== "text") canvasState.addUndo(canvasState.getDataUrlCanvas());
     }
     const mouseUpHandler = () => {
         canvasState.saveCanvas();

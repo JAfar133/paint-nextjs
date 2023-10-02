@@ -10,11 +10,13 @@ export default abstract class Shape extends Tool {
     height: number = -1;
 
     mouseDownHandler(e: MouseEvent) {
-        this.mouseDown = true;
-        this.ctx.beginPath();
-        this.startX = e.offsetX;
-        this.startY = e.offsetY;
-        this.saved = canvasState.getDataUrlCanvas();
+        if(this.canDraw && this.canDraw){
+            this.mouseDown = true;
+            this.ctx.beginPath();
+            this.startX = e.offsetX;
+            this.startY = e.offsetY;
+            this.saved = canvasState.getDataUrlCanvas();
+        }
     }
     mouseUpHandler(e: MouseEvent) {
         super.mouseUpHandler(e)

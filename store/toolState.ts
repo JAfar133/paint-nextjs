@@ -14,8 +14,7 @@ export interface ImageForEdit {
     angle: number,
 }
 class ToolState {
-    // @ts-ignore
-    tool: Tool;
+    tool: Tool | null = null;
     imageForEdit: ImageForEdit | null = null;
     imageForEditList: ImageForEdit[] = [];
     constructor() {
@@ -30,7 +29,7 @@ class ToolState {
         this.imageForEdit = imageForEdit;
     }
 
-    setTool(tool: Tool){
+    setTool(tool: Tool | null){
         this.tool = tool
         this.fill()
     }
@@ -40,10 +39,12 @@ class ToolState {
     }
 
     fill(){
-        this.tool.strokeColor = settingState.strokeColor || '#000';
-        this.tool.fillColor = settingState.fillColor || '#000';
-        this.tool.lineWidth = settingState.strokeWidth;
-        this.tool.font = settingState.font
+        if(this.tool){
+            this.tool.strokeColor = settingState.strokeColor || '#000';
+            this.tool.fillColor = settingState.fillColor || '#000';
+            this.tool.lineWidth = settingState.strokeWidth;
+            this.tool.font = settingState.font
+        }
     }
 }
 

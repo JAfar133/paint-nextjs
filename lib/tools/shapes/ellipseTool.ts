@@ -7,7 +7,7 @@ export default class EllipseTool extends Shape {
     height: number = -1;
 
     mouseMoveHandler(e: MouseEvent) {
-        if (this.mouseDown) {
+        if (this.mouseDown && this.canDraw) {
             let width = e.offsetX - this.startX;
             let height = e.offsetY - this.startY;
             this.width = Math.abs(width);
@@ -17,7 +17,7 @@ export default class EllipseTool extends Shape {
         document.onmousemove = null;
     }
     touchMoveHandler(e: TouchEvent) {
-        if (this.mouseDown) {
+        if (this.mouseDown && this.canDraw) {
             const touch = e.touches[0];
             const x = touch.clientX - this.offsetLeft;
             const y = touch.clientY - this.offsetTop;
@@ -31,19 +31,9 @@ export default class EllipseTool extends Shape {
     }
 
     handleGlobalMouseMove(e: MouseEvent) {
-        if (this.mouseDown) {
-            let width;
-            let height;
-
-            if (e.pageY < this.offsetTop){
-                width = e.pageX - this.startX - this.offsetLeft;
-                height = e.offsetY - this.startY - this.offsetTop;
-            } else {
-                width = e.pageX - this.startX - this.offsetLeft;
-                height = e.offsetY - this.startY;
-            }
-            this.width = Math.abs(width);
-            this.height = Math.abs(height);
+        if (this.mouseDown && this.canDraw) {
+            this.width = Math.abs(e.pageX - this.startX - this.offsetLeft);
+            this.height = Math.abs(e.offsetY - this.startY - this.offsetTop);
             this.draw(this.startX, this.startY, this.width, this.height)
         }
     }

@@ -99,11 +99,13 @@ export default class TextTool extends Tool {
 
 
     mouseDownHandler(e: MouseEvent) {
-        this.mouseDown = true;
-        this.prevKey.key = "";
-        this.ctx.font = settingState.font;
-        this.ctx.beginPath();
-        this.ctx.moveTo(e.offsetX, e.offsetY);
+        if(this.canDraw){
+            this.mouseDown = true;
+            this.prevKey.key = "";
+            this.ctx.font = settingState.font;
+            this.ctx.beginPath();
+            this.ctx.moveTo(e.offsetX, e.offsetY);
+        }
     }
 
     mouseMoveHandler(e: MouseEvent) {

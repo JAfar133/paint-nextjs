@@ -80,7 +80,7 @@ class WebsocketService {
                         canvasState.drawByDataUrl(msg.dataUrl);
                         break;
                     case "user_cursor":
-                        this.cursorHandler(msg);
+                        this.cursorCanvasContainerHandler(msg);
                         break;
 
                 }
@@ -101,13 +101,13 @@ class WebsocketService {
                         x: offsetX,
                         y: offsetY
                     },
+                    canvasContainer: true,
                     scale: canvasState.scale,
                     color: userState.color
                 }));
             }
         }
     }
-
 
     handleTouchMove(e: TouchEvent) {
         const centerX = canvasState.canvas.width / 2;
@@ -139,7 +139,7 @@ class WebsocketService {
         }
     }
 
-    private cursorHandler(msg: any) {
+    private cursorCanvasContainerHandler(msg: any) {
         if (msg.point && canvasState.canvas) {
             const cursorElementId = `cursor-${msg.username}`;
             let cursorElement = document.getElementById(cursorElementId);
@@ -148,18 +148,17 @@ class WebsocketService {
                 const newCursorElement = document.createElement("div");
                 newCursorElement.id = cursorElementId;
                 newCursorElement.classList.add("user-cursor");
-                if(canvasState.canvasMain){
-                    canvasState.canvasMain.appendChild(newCursorElement);
-
+                if(canvasState.canvasContainer){
+                    canvasState.canvasContainer.appendChild(newCursorElement);
                 }
                 cursorElement = newCursorElement;
             }
             cursorElement.style.color = msg.color;
-            const scale = canvasState.scale/msg.scale;
             let cursorX = msg.point.x;
             let cursorY = msg.point.y;
             cursorElement.textContent = msg.username;
-            cursorElement.style.transform = `translate(${cursorX*scale-10}px, ${cursorY}px)`;
+            cursorElement.style.transform = `translate(${cursorX/msg.scale-10}px, ${cursorY}px)`;
+
         }
     }
 

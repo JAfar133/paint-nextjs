@@ -15,12 +15,13 @@ export default abstract class Tool {
     saved: string = "";
     zoom: number;
     zoomScale: number;
+    canDraw: boolean = true;
 
     constructor(canvas: HTMLCanvasElement, socket: WebSocket, id: string | string[], type: string) {
         this.canvas = canvas;
         this.socket = socket;
-        this.offsetTop = canvas.offsetTop;
-        this.offsetLeft = canvas.offsetLeft;
+        this.offsetTop = canvas.getBoundingClientRect().top;
+        this.offsetLeft = canvas.getBoundingClientRect().left;
         this.type = type;
         this.id = id;
         this.ctx = canvas?.getContext('2d')!;

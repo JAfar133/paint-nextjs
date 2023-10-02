@@ -4,7 +4,7 @@ import canvasState from "@/store/canvasState";
 export default class SquareTool extends Shape {
 
     mouseMoveHandler(e: MouseEvent) {
-        if (this.mouseDown) {
+        if (this.mouseDown && this.canDraw) {
 
             this.width = e.offsetX - this.startX;
             this.height = e.offsetY - this.startY;
@@ -15,7 +15,7 @@ export default class SquareTool extends Shape {
     }
 
     handleGlobalMouseMove(e: MouseEvent) {
-        if (this.mouseDown) {
+        if (this.mouseDown && this.canDraw) {
 
             this.width = e.offsetX - this.startX - this.offsetLeft;
             if ((e.pageY < (this.offsetTop + this.canvas.height)) && e.pageY > this.offsetTop) {

@@ -13,35 +13,36 @@ export default class ArcTool extends Tool {
     endPoint: Point | null = null;
 
     mouseDownHandler(e: MouseEvent) {
-        const canvas = e.target as HTMLCanvasElement;
-        const rect = canvas.getBoundingClientRect();
-        const x = e.clientX - rect.left - this.canvas.width/2;
-        const y = e.clientY - rect.top;
-        if (!this.startPoint) {
-            this.startPoint = { x, y };
-        } else if (!this.controlPoint) {
-            this.controlPoint = { x, y };
-        } else if (!this.endPoint) {
-            this.endPoint = { x, y };
-            this.socket.send(JSON.stringify({
-                method: 'draw',
-                id: this.id,
-                username: userState.user?.username,
-                figure: {
-                    strokeStyle: this.ctx.strokeStyle,
-                    strokeWidth: this.ctx.lineWidth,
-                    type: this.type,
-                    startPoint: this.startPoint,
-                    controlPoint: this.controlPoint,
-                    endPoint: this.endPoint,
-                }
-            }))
-            this.draw(this.startPoint, this.endPoint, this.controlPoint);
-            this.startPoint = null;
-            this.controlPoint = null;
-            this.endPoint = null;
+        if(e.button !== 1 && this.canDraw){
+            const canvas = e.target as HTMLCanvasElement;
+            const rect = canvas.getBoundingClientRect();
+            const x = e.clientX - rect.left - this.canvas.width/2;
+            const y = e.clientY - rect.top;
+            if (!this.startPoint) {
+                this.startPoint = { x, y };
+            } else if (!this.controlPoint) {
+                this.controlPoint = { x, y };
+            } else if (!this.endPoint) {
+                this.endPoint = { x, y };
+                this.socket.send(JSON.stringify({
+                    method: 'draw',
+                    id: this.id,
+                    username: userState.user?.username,
+                    figure: {
+                        strokeStyle: this.ctx.strokeStyle,
+                        strokeWidth: this.ctx.lineWidth,
+                        type: this.type,
+                        startPoint: this.startPoint,
+                        controlPoint: this.controlPoint,
+                        endPoint: this.endPoint,
+                    }
+                }))
+                this.draw(this.startPoint, this.endPoint, this.controlPoint);
+                this.startPoint = null;
+                this.controlPoint = null;
+                this.endPoint = null;
+            }
         }
-
     }
 
     static draw(ctx: CanvasRenderingContext2D, startPoint: Point, endPoint: Point, controlPoint: Point,

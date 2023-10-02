@@ -5,7 +5,7 @@ import canvasState from "@/store/canvasState";
 export default class LineTool extends Shape {
 
     mouseMoveHandler(e: MouseEvent) {
-        if (this.mouseDown) {
+        if (this.mouseDown && this.canDraw) {
             this.width = e.offsetX;
             this.height = e.offsetY;
 
@@ -14,7 +14,7 @@ export default class LineTool extends Shape {
         document.onmousemove = null;
     }
     touchMoveHandler(e: TouchEvent) {
-        if (this.mouseDown) {
+        if (this.mouseDown && this.canDraw) {
             const touch = e.touches[0];
             this.width = touch.clientX - this.offsetLeft;
             this.height = touch.clientY - this.offsetTop;
@@ -24,20 +24,10 @@ export default class LineTool extends Shape {
     }
 
     handleGlobalMouseMove(e: MouseEvent) {
-        if (this.mouseDown) {
+        if (this.mouseDown && this.canDraw) {
 
-            if ((e.pageY < (this.offsetTop + this.canvas.height)) && e.pageY > this.offsetTop) {
-                this.width = e.offsetX - this.offsetLeft;
-                this.height = e.offsetY;
-            }
-            else if(e.pageY < this.offsetTop) {
-                this.width = e.offsetX - this.offsetLeft;
-                this.height = e.offsetY - this.offsetTop;
-            }
-            else {
-                this.width = e.pageX - this.offsetLeft;
-                this.height = e.pageY - this.offsetTop;
-            }
+            this.width = e.pageX - this.offsetLeft;
+            this.height = e.pageY - this.offsetTop;
 
             this.draw(this.startX, this.startY, this.width, this.height)
         }

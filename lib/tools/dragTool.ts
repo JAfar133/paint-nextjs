@@ -67,43 +67,45 @@ export default class DragTool extends Tool {
     }
 
     mouseDownHandler(e: MouseEvent): void {
-        const mouseX = e.offsetX;
-        const mouseY = e.offsetY;
-        const centerX = this.image.imageX + this.image.img.width / 2;
-        const centerY = this.image.imageY + this.image.img.height / 2;
-        const dx = mouseX - centerX;
-        const dy = mouseY - centerY;
-        if (this.image.angle !== 0) {
-            this.startAngle = Math.atan2(dy, dx) - this.image.angle;
-        } else {
-            this.startAngle = Math.atan2(dy, dx);
-        }
-        this.startX = mouseX;
-        this.startY = mouseY;
-        this.startImageX = this.image.imageX;
-        this.startImageY = this.image.imageY;
-        this.startWidth = this.image.img.width;
-        this.startHeight = this.image.img.height;
-        this.saved = canvasState.getDataUrlCanvas();
-        const mouseResizePosition: resizePoint | null = this.getMouseResizePosition(mouseX, mouseY);
-        if (mouseResizePosition) {
-            this.resizePoint = mouseResizePosition;
-            this.image.isResizing = true;
-            this.mouseDown = true;
-            this.image.offsetX = mouseX - this.image.imageX;
-            this.image.offsetY = mouseY - this.image.imageY;
-        } else if (this.isMouseOnImage(mouseX, mouseY)) {
-            this.image.isDragging = true;
-            this.image.offsetX = mouseX - this.image.imageX;
-            this.image.offsetY = mouseY - this.image.imageY;
-            canvasState.setCursor('cursor-grabbing');
-            this.mouseDown = true;
-        } else {
-            this.image.isRotating = true;
-            this.mouseDown = true;
-            this.image.offsetX = mouseX - this.image.imageX;
-            this.image.offsetY = mouseY - this.image.imageY;
-            canvasState.setCursor('cursor-alias');
+        if(this.canDraw){
+            const mouseX = e.offsetX;
+            const mouseY = e.offsetY;
+            const centerX = this.image.imageX + this.image.img.width / 2;
+            const centerY = this.image.imageY + this.image.img.height / 2;
+            const dx = mouseX - centerX;
+            const dy = mouseY - centerY;
+            if (this.image.angle !== 0) {
+                this.startAngle = Math.atan2(dy, dx) - this.image.angle;
+            } else {
+                this.startAngle = Math.atan2(dy, dx);
+            }
+            this.startX = mouseX;
+            this.startY = mouseY;
+            this.startImageX = this.image.imageX;
+            this.startImageY = this.image.imageY;
+            this.startWidth = this.image.img.width;
+            this.startHeight = this.image.img.height;
+            this.saved = canvasState.getDataUrlCanvas();
+            const mouseResizePosition: resizePoint | null = this.getMouseResizePosition(mouseX, mouseY);
+            if (mouseResizePosition) {
+                this.resizePoint = mouseResizePosition;
+                this.image.isResizing = true;
+                this.mouseDown = true;
+                this.image.offsetX = mouseX - this.image.imageX;
+                this.image.offsetY = mouseY - this.image.imageY;
+            } else if (this.isMouseOnImage(mouseX, mouseY)) {
+                this.image.isDragging = true;
+                this.image.offsetX = mouseX - this.image.imageX;
+                this.image.offsetY = mouseY - this.image.imageY;
+                canvasState.setCursor('cursor-grabbing');
+                this.mouseDown = true;
+            } else {
+                this.image.isRotating = true;
+                this.mouseDown = true;
+                this.image.offsetX = mouseX - this.image.imageX;
+                this.image.offsetY = mouseY - this.image.imageY;
+                canvasState.setCursor('cursor-alias');
+            }
         }
     }
 
@@ -122,17 +124,19 @@ export default class DragTool extends Tool {
     }
 
     mouseMoveHandler(e: MouseEvent): void {
-        const mouseX = e.offsetX;
-        const mouseY = e.offsetY;
-        if (this.image.isResizing) {
-            this.drugResize(mouseX, mouseY);
-        } else if (this.image.isDragging) {
-            this.drugImage(mouseX, mouseY)
-        } else if (this.image.isRotating) {
-            this.drugRotate(mouseX, mouseY)
+        if(this.canDraw){
+            const mouseX = e.offsetX;
+            const mouseY = e.offsetY;
+            if (this.image.isResizing) {
+                this.drugResize(mouseX, mouseY);
+            } else if (this.image.isDragging) {
+                this.drugImage(mouseX, mouseY)
+            } else if (this.image.isRotating) {
+                this.drugRotate(mouseX, mouseY)
+            }
+            const cursor = this.getMouseMoveCursor(mouseX, mouseY);
+            canvasState.setCursor(cursor);
         }
-        const cursor = this.getMouseMoveCursor(mouseX, mouseY);
-        canvasState.setCursor(cursor);
     }
 
     drugRotate(mouseX: number, mouseY: number) {

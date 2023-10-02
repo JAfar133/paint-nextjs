@@ -21,7 +21,7 @@ export default function RootLayout({
 }) {
     return (
         <html lang="en">
-        <body className={cn("bg-secondary", inter.className)}>
+        <body className={cn("bg-secondary ", inter.className)}>
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
             <Navbar/>
             {children}
