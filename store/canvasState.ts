@@ -338,8 +338,6 @@ class CanvasState {
                 }
             }
         }
-
-
     }
 
     clearCanvas() {
@@ -359,11 +357,6 @@ class CanvasState {
         UserService.saveImage(this.canvasId, this.bufferCanvas.toDataURL())
             .catch(e => console.log(e))
         localStorage.removeItem("image")
-    }
-
-    getDataUrlCanvas(canvas?: HTMLCanvasElement) {
-        const canvas1 = canvas || this.canvas;
-        return canvas1.toDataURL();
     }
 
     mouseLeaveHandler = () => {

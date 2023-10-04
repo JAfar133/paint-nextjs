@@ -87,7 +87,7 @@ export default class DragTool extends Tool {
             this.startImageY = this.image.imageY;
             this.startWidth = this.image.img.width;
             this.startHeight = this.image.img.height;
-            this.saved = canvasState.getDataUrlCanvas();
+            this.saved = canvasState.bufferCanvas.toDataURL();
             const mouseResizePosition: resizePoint | null = this.getMouseResizePosition(mouseX, mouseY);
             if (mouseResizePosition) {
                 this.resizePoint = mouseResizePosition;
@@ -122,7 +122,7 @@ export default class DragTool extends Tool {
             this.image.isRotating = false;
         }
         this.mouseDown = false;
-        canvasState.sendDataUrl(canvasState.getDataUrlCanvas());
+        canvasState.sendDataUrl(canvasState.bufferCanvas.toDataURL());
     }
 
     mouseMoveHandler(e: MouseEvent): void {

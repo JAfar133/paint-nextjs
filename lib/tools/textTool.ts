@@ -60,7 +60,7 @@ export default class TextTool extends Tool {
             }
         }
         if (key.length === 1) {
-            canvasState.addUndo(canvasState.getDataUrlCanvas())
+            canvasState.addUndo(canvasState.bufferCanvas.toDataURL());
             const prevKeyLength = this.prevKey ? canvasState.bufferCtx.measureText(this.prevKey.key).width : 0;
             this.prevKey.key = key;
 

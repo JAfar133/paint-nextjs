@@ -65,7 +65,7 @@ const Toolbar = observer(() => {
             }
 
             const download = () => {
-                const dataURL = canvasState.getDataUrlCanvas();
+                const dataURL = canvasState.bufferCanvas.toDataURL();
                 const a = document.createElement('a');
                 a.href = dataURL;
                 a.download = canvasState.canvasId + ".jpg";
@@ -145,7 +145,7 @@ const Toolbar = observer(() => {
                             const dataUrl = event.target.result as string;
                             canvasState.addCurrentContextToUndo();
                             canvasState.drawByDataUrl(dataUrl, {clearRect: false, imageEdit: true});
-                            canvasState.sendDataUrl(canvasState.getDataUrlCanvas());
+                            canvasState.sendDataUrl(canvasState.bufferCanvas.toDataURL());
                             canvasState.saveCanvas();
                         }
                     };

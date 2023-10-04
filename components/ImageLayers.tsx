@@ -14,7 +14,7 @@ const ImageLayers = observer(() => {
         setTimeout(() => {
             if (canvasState.canvas) {
                 const img = new Image();
-                img.src = canvasState.getDataUrlCanvas();
+                img.src = canvasState.bufferCanvas.toDataURL();
                 const image = {
                     imageX: 0,
                     imageY: 0,
