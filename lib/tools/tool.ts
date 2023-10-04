@@ -1,4 +1,5 @@
 import canvasState from "@/store/canvasState";
+import {canvasSize} from "@/lib/utils";
 export default abstract class Tool {
     canvas: HTMLCanvasElement;
     ctx: CanvasRenderingContext2D;
@@ -8,12 +9,19 @@ export default abstract class Tool {
     mouseDown: boolean = false;
     offsetTop: number;
     offsetLeft: number;
-    saved: string = "";
     canDraw: boolean = true;
+    tempImage: HTMLImageElement;
+    tempCanvas: HTMLCanvasElement;
+    tempCtx: CanvasRenderingContext2D;
 
     constructor(canvas: HTMLCanvasElement, socket: WebSocket, id: string | string[], type: string) {
         this.canvas = canvas;
         this.socket = socket;
+        this.tempImage = new Image();
+        this.tempCanvas = document.createElement('canvas');
+        this.tempCtx = this.tempCanvas.getContext('2d')!;
+        this.tempCanvas.width = canvasSize.width;
+        this.tempCanvas.height = canvasSize.height;
         this.offsetTop = canvas.getBoundingClientRect().top;
         this.offsetLeft = canvas.getBoundingClientRect().left;
         this.type = type;

@@ -4,14 +4,9 @@ import userState from "@/store/userState";
 
 export default class StraightTriangleTool extends Triangle {
     draw(x: number, y: number, x1: number, y1: number) {
-
-        const img = new Image();
-        img.src = this.saved;
-        img.onload = () => {
-            canvasState.bufferCtx.clearRect(0, 0, this.canvas.width, this.canvas.height);
-            canvasState.bufferCtx.drawImage(img, 0, 0);
-            drawTriangle(canvasState.bufferCtx, x, y, x1, y1, canvasState.isFill, canvasState.isStroke);
-        }
+        canvasState.bufferCtx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+        canvasState.bufferCtx.drawImage(this.tempCanvas, 0, 0);
+        drawTriangle(canvasState.bufferCtx, x, y, x1, y1, canvasState.isFill, canvasState.isStroke);
     }
     sendSocketDraw(){
         if(this.startX > -1 && this.startY > -1 && this.width !== -1){

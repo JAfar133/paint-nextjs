@@ -32,22 +32,18 @@ export default class SquareTool extends Shape {
     }
 
     draw(x: number, y: number, w: number, h: number) {
-        const img = new Image();
-        img.src = this.saved;
-        img.onload = () => {
-            canvasState.bufferCtx.clearRect(0, 0, canvasState.bufferCanvas.width, canvasState.bufferCanvas.height);
-            canvasState.bufferCtx.drawImage(img, 0, 0);
-            canvasState.bufferCtx.beginPath();
-            drawRect(canvasState.bufferCtx, x, y, w, h, canvasState.isFill, canvasState.isStroke);
-        }
+        canvasState.bufferCtx.clearRect(0, 0, canvasState.bufferCanvas.width, canvasState.bufferCanvas.height);
+        canvasState.bufferCtx.drawImage(this.tempCanvas, 0, 0);
+        drawRect(canvasState.bufferCtx, x, y, w, h, canvasState.isFill, canvasState.isStroke)
+        canvasState.draw();
     }
-
     static draw(ctx: CanvasRenderingContext2D, x: number, y: number, w: number,
                 h: number, fillStyle: string, strokeStyle: string, strokeWidth: number, isFill: boolean, isStroke: boolean) {
         ctx.strokeStyle = strokeStyle;
         ctx.fillStyle = fillStyle;
         ctx.lineWidth = strokeWidth;
         drawRect(ctx, x + ctx.canvas.width/2, y, w, h, isFill, isStroke);
+        canvasState.draw();
     }
 }
 
@@ -57,5 +53,4 @@ function drawRect(ctx: CanvasRenderingContext2D, x: number, y: number, w: number
     ctx.rect(x, y, w, h);
     isFill && ctx.fill();
     isStroke && ctx.stroke();
-    canvasState.draw();
 }

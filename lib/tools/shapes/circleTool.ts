@@ -72,13 +72,9 @@ export default class CircleTool extends Shape {
     }
 
     draw(x: number, y: number, r: number) {
-        const img = new Image();
-        img.src = this.saved;
-        img.onload = () => {
-            canvasState.bufferCtx.clearRect(0, 0, this.canvas.width, this.canvas.height);
-            canvasState.bufferCtx.drawImage(img, 0, 0);
-            drawCircle(canvasState.bufferCtx, x, y, r, canvasState.isFill, canvasState.isStroke);
-        }
+        canvasState.bufferCtx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+        canvasState.bufferCtx.drawImage(this.tempCanvas, 0, 0);
+        drawCircle(canvasState.bufferCtx, x, y, r, canvasState.isFill, canvasState.isStroke);
     }
 
     static draw(ctx: CanvasRenderingContext2D, x: number, y: number, r: number,

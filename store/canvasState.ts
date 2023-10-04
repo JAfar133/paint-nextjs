@@ -5,6 +5,7 @@ import DragTool from "@/lib/tools/dragTool";
 import Tool from "@/lib/tools/tool";
 import userState from "@/store/userState";
 import settingState from "@/store/settingState";
+import {canvasSize} from "@/lib/utils";
 
 export type cursorClass =
     "cursor-move" | "cursor-grab" | "cursor-text" | "cursor-cell" |
@@ -38,7 +39,8 @@ class CanvasState {
     scale: number = 0.5;
     offsetX: number = 0;
     offsetY: number = 0;
-    savedCanvasWithoutImage: string = '';
+    savedCanvasWithoutImage: HTMLCanvasElement | null = null;
+    savedCtxWithoutImage: CanvasRenderingContext2D | null = null;
     canvasMain: HTMLDivElement | null = null;
     canvasContainer: HTMLDivElement | null = null;
     centerX: number = 0;
@@ -230,9 +232,13 @@ class CanvasState {
     setCanvas(canvas: HTMLCanvasElement) {
         this.canvas = canvas;
         this.bufferCanvas = document.createElement('canvas');
+        this.savedCanvasWithoutImage = document.createElement('canvas');
         this.bufferCtx = this.bufferCanvas.getContext('2d')!;
+        this.savedCtxWithoutImage = this.savedCanvasWithoutImage.getContext('2d')!;
         this.bufferCanvas.width = this.rectWidth;
         this.bufferCanvas.height = this.rectHeight;
+        this.savedCanvasWithoutImage.width = this.rectWidth;
+        this.savedCanvasWithoutImage.height = this.rectHeight;
         setTimeout(()=>{
             if(this.canvasMain){
                 this.canvasMain.onwheel = this.wheelHandler.bind(this);
@@ -320,7 +326,7 @@ class CanvasState {
                 img: img, isDragging: false, isResizing: false, isRotating: false, isUpload: true, angle: 0
             });
             if (this.socket) {
-                toolState.setTool(new DragTool(this.canvas, this.socket, this.canvasId, "drag"))
+                toolState.setTool(new DragTool(this.canvas, this.socket, this.canvasId, "drag", img))
             }
             img.onload = () => {
                 if (img.width > 0 && img.height > 0) {
@@ -343,7 +349,7 @@ class CanvasState {
     clearCanvas() {
         this.clear()
         this.saveCanvas();
-        this.savedCanvasWithoutImage = '';
+        this.savedCanvasWithoutImage = null;
         this.deleteBorder();
         if (this.socket) {
             this.socket.send(JSON.stringify({

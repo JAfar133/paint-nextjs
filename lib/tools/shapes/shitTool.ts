@@ -3,13 +3,9 @@ import canvasState from "@/store/canvasState";
 
 export class ShitTool extends SquareTool {
     draw(x: number, y: number, w: number, h: number) {
-        const img = new Image();
-        img.src = this.saved;
-        img.onload = () => {
-            canvasState.bufferCtx.clearRect(0, 0, this.canvas.width, this.canvas.height);
-            canvasState.bufferCtx.drawImage(img, 0, 0);
-            drawSheet(canvasState.bufferCtx, x, y, w, h, canvasState.isFill, canvasState.isStroke)
-        }
+        canvasState.bufferCtx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+        canvasState.bufferCtx.drawImage(this.tempCanvas, 0, 0);
+        drawSheet(canvasState.bufferCtx, x, y, w, h, canvasState.isFill, canvasState.isStroke)
     }
 
     static draw(ctx: CanvasRenderingContext2D, x: number, y: number, w: number,

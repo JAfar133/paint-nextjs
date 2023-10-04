@@ -16,7 +16,7 @@ export default abstract class Shape extends Tool {
             const {scaledX, scaledY} = this.getScaledPoint(e.offsetX, e.offsetY, canvasState.canvasX, canvasState.canvasY, canvasState.scale)
             this.startX = scaledX;
             this.startY = scaledY;
-            this.saved = canvasState.bufferCanvas.toDataURL();
+            this.tempCtx.drawImage(canvasState.bufferCanvas, 0, 0);
         }
     }
     mouseUpHandler(e: MouseEvent) {
@@ -70,7 +70,6 @@ export default abstract class Shape extends Tool {
         const y = touch.clientY - this.offsetTop;
         this.startX = x;
         this.startY = y;
-        this.saved = canvasState.bufferCanvas.toDataURL();
         e.preventDefault();
     }
     abstract draw(x: number, y: number, w: number, h: number): void

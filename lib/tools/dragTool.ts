@@ -2,6 +2,7 @@ import Tool from "@/lib/tools/tool";
 import toolState, {ImageForEdit} from "@/store/toolState";
 import canvasState, {cursorClass} from "@/store/canvasState";
 import {Point} from "@/lib/tools/shapes/arcTool";
+import {canvasSize} from "@/lib/utils";
 
 type resizePoint = "leftTop" | "leftBottom" | "rightTop" | "rightBottom" | "right" | "left" | "top" | "bottom"
 
@@ -14,7 +15,6 @@ interface ImageSidePoint {
 }
 
 export default class DragTool extends Tool {
-
     startX: number = 0;
     startY: number = 0;
     startImageX: number = 0;
@@ -23,46 +23,54 @@ export default class DragTool extends Tool {
     startHeight: number = 0;
     resizePoint: resizePoint = 'leftTop';
     startAngle: number = 0;
-    tempCanvas: HTMLCanvasElement = document.createElement('canvas');
-    tempCtx: CanvasRenderingContext2D | null = null;
     image: ImageForEdit;
-    imageSidePoints: ImageSidePoint;
+    imageCanvas: HTMLCanvasElement;
+    imageCtx: CanvasRenderingContext2D;
 
-    constructor(canvas: HTMLCanvasElement, socket: WebSocket, id: string | string[], type: string) {
+    constructor(canvas: HTMLCanvasElement, socket: WebSocket, id: string | string[], type: string, img?: HTMLImageElement) {
         super(canvas, socket, id, type);
-        const img = new Image();
-        img.src = canvasState.bufferCanvas.toDataURL();
+        this.imageCanvas = document.createElement('canvas')
+        this.imageCtx = this.imageCanvas.getContext('2d')!;
+        this.imageCanvas.width = canvasSize.width;
+        this.imageCanvas.height = canvasSize.height;
+        this.imageCtx.drawImage(canvasState.bufferCanvas,0,0);
+
         canvasState.deleteBorder();
         const imgOnload = () => {
-            img.onload = () => {
-                canvasState.bufferCtx.clearRect(0, 0, canvas.width, canvas.height);
-                canvasState.savedCanvasWithoutImage = canvasState.bufferCanvas.toDataURL();
-                canvasState.bufferCtx.drawImage(img, canvasState.canvasX, canvasState.canvasY);
-                canvasState.draw()
-            }
+            canvasState.bufferCtx.clearRect(0, 0, canvas.width, canvas.height);
+            canvasState.savedCtxWithoutImage?.drawImage(canvasState.bufferCanvas, 0, 0);
+            canvasState.bufferCtx.drawImage(this.imageCanvas, 0, 0);
+            canvasState.draw()
         }
         if (toolState.imageForEdit) {
             if (!toolState.imageForEdit.isUpload) {
                 imgOnload();
+                const img = new Image();
+                img.src = this.imageCanvas.toDataURL();
                 toolState.imageForEdit.img = img;
             } else {
-                canvasState.savedCanvasWithoutImage = canvasState.bufferCanvas.toDataURL();
+                if(toolState.imageForEdit.img){
+                    setTimeout(()=>{
+                        if(toolState.imageForEdit){
+                            this.imageCanvas.width = toolState.imageForEdit.img.width;
+                            this.imageCanvas.height = toolState.imageForEdit.img.height;
+                            this.imageCtx.clearRect(0,0,this.imageCanvas.width, this.imageCanvas.height)
+                            this.imageCtx.drawImage(toolState.imageForEdit.img, 0, 0);
+                        }
+                    },100)
+
+                }
+                canvasState.savedCtxWithoutImage?.drawImage(canvasState.bufferCanvas, 0, 0);
             }
         } else {
             imgOnload();
         }
         //@ts-ignore
         this.image = toolState.imageForEdit;
+        this.tempCanvas = document.createElement('canvas')
         this.tempCanvas.width = canvasState.bufferCanvas.width;
         this.tempCanvas.height = canvasState.bufferCanvas.height;
-        this.tempCtx = this.tempCanvas.getContext('2d');
-        this.imageSidePoints = {
-            leftTop: {x: this.image.imageX, y: this.image.imageY},
-            leftBottom: {x: this.image.imageX, y: this.image.imageY + this.image.img.height},
-            rightTop: {x: this.image.imageX + this.image.img.width, y: this.image.imageY},
-            rightBottom: {x: this.image.imageX + this.image.img.width, y: this.image.imageY + this.image.img.height},
-            center: {x: this.image.imageX + this.image.img.width / 2, y: this.image.imageY + this.image.img.height / 2}
-        }
+        this.tempCtx = this.tempCanvas.getContext('2d')!;
 
         canvasState.drawBorder();
     }
@@ -87,7 +95,6 @@ export default class DragTool extends Tool {
             this.startImageY = this.image.imageY;
             this.startWidth = this.image.img.width;
             this.startHeight = this.image.img.height;
-            this.saved = canvasState.bufferCanvas.toDataURL();
             const mouseResizePosition: resizePoint | null = this.getMouseResizePosition(mouseX, mouseY);
             if (mouseResizePosition) {
                 this.resizePoint = mouseResizePosition;
@@ -149,27 +156,23 @@ export default class DragTool extends Tool {
                 const dy = mouseY - centerY;
 
                 this.image.angle = Math.atan2(dy, dx) - this.startAngle;
-                this.tempCanvas.width = canvasState.bufferCanvas.width;
-                this.tempCanvas.height = canvasState.bufferCanvas.height;
-                this.tempCtx = this.tempCanvas.getContext('2d');
                 if (this.tempCtx) {
+                    this.tempCtx.save();
                     this.tempCtx.clearRect(0, 0, this.tempCanvas.width, this.tempCanvas.height)
                     this.tempCtx.translate(centerX, centerY);
                     this.tempCtx.rotate(this.image.angle);
                     this.tempCtx.drawImage(
-                        this.image.img,
+                        this.imageCanvas,
                         -this.image.img.width / 2,
                         -this.image.img.height / 2,
                         this.image.img.width,
                         this.image.img.height);
+                    this.tempCtx.restore();
 
                 }
-
-                const img = new Image()
-                img.src = canvasState.savedCanvasWithoutImage;
-                img.onload = ()=>{
+                if(canvasState.savedCanvasWithoutImage){
                     canvasState.bufferCtx.clearRect(0, 0, this.canvas.width, this.canvas.height)
-                    canvasState.bufferCtx.drawImage(img, 0, 0);
+                    canvasState.bufferCtx.drawImage(canvasState.savedCanvasWithoutImage, 0, 0);
                     canvasState.bufferCtx.drawImage(this.tempCanvas, 0, 0);
                     canvasState.draw();
                 }
@@ -195,16 +198,11 @@ export default class DragTool extends Tool {
                 mousePoint.y,
                 this.resizePoint
             );
-
-            this.tempCanvas.width = canvasState.bufferCanvas.width;
-            this.tempCanvas.height = canvasState.bufferCanvas.height;
-            this.tempCtx = this.tempCanvas.getContext('2d');
             if (this.tempCtx) {
-                drawResizedImage(this.tempCtx, canvasState.bufferCtx, canvasState.bufferCanvas, this.tempCanvas, this.image, newX, newY, newWidth, newHeight)
+                drawResizedImage(this.tempCtx, canvasState.bufferCtx, canvasState.bufferCanvas, this.tempCanvas,this.image, this.imageCanvas, newX, newY, newWidth, newHeight)
             }
             this.image.img.width = Math.abs(newWidth);
             this.image.img.height = Math.abs(newHeight);
-
             const x1 = newWidth < 0 ? newX + newWidth : newX;
             const y1 = newHeight < 0 ? newY + newHeight : newY;
 
@@ -224,28 +222,25 @@ export default class DragTool extends Tool {
 
     drugImage(mouseX: number, mouseY: number) {
         if (this.image.isDragging) {
-            this.tempCanvas.width = canvasState.bufferCanvas.width;
-            this.tempCanvas.height = canvasState.bufferCanvas.height;
-            this.tempCtx = this.tempCanvas.getContext('2d');
             if (this.tempCtx) {
-                rotateIfNeed(this.tempCanvas, this.image);
+                this.tempCtx.save();
+                rotateIfNeed(this.tempCanvas, this.tempCtx, this.image);
                 this.image.imageX = mouseX - this.image.offsetX;
                 this.image.imageY = mouseY - this.image.offsetY;
-                this.tempCtx.drawImage(this.image.img,
+                this.tempCtx.drawImage(
+                    this.imageCanvas,
                     this.image.imageX,
                     this.image.imageY,
                     this.image.img.width,
                     this.image.img.height);
-
-
-                const img = new Image()
-                img.src = canvasState.savedCanvasWithoutImage;
-                img.onload = () => {
+                this.tempCtx.restore();
+                if(canvasState.savedCanvasWithoutImage){
                     canvasState.bufferCtx.clearRect(0, 0, this.canvas.width, this.canvas.height)
-                    canvasState.bufferCtx.drawImage(img, 0, 0);
+                    canvasState.bufferCtx.drawImage(canvasState.savedCanvasWithoutImage, 0, 0);
                     canvasState.bufferCtx.drawImage(this.tempCanvas, 0, 0);
                     canvasState.draw();
                 }
+
             }
 
             canvasState.drawBorder();
@@ -474,40 +469,33 @@ function calculateNewSize(
 }
 
 function drawResizedImage(tempCtx: CanvasRenderingContext2D, ctx: CanvasRenderingContext2D,
-                          canvas: HTMLCanvasElement, tempCanvas: HTMLCanvasElement, image: ImageForEdit, x: number, y: number,
+                          canvas: HTMLCanvasElement, tempCanvas: HTMLCanvasElement, image: ImageForEdit, imageCanvas: HTMLCanvasElement, x: number, y: number,
                           newWidth: number, newHeight: number) {
-    if (tempCtx) {
-        rotateIfNeed(tempCanvas, image);
-        tempCtx.drawImage(
-            image.img,
-            x,
-            y,
-            newWidth,
-            newHeight
-        );
-        canvasState.draw();
-    }
-
-    const img = new Image()
-    img.src = canvasState.savedCanvasWithoutImage;
-    img.onload = ()=>{
+    tempCtx.save();
+    rotateIfNeed(tempCanvas, tempCtx, image);
+    tempCtx.drawImage(
+        imageCanvas,
+        x,
+        y,
+        newWidth,
+        newHeight
+    );
+    tempCtx.restore();
+    if(canvasState.savedCanvasWithoutImage){
         ctx.clearRect(0, 0, canvas.width, canvas.height)
-        ctx.drawImage(img, 0, 0);
+        ctx.drawImage(canvasState.savedCanvasWithoutImage, 0, 0);
         ctx.drawImage(tempCanvas, 0, 0);
         canvasState.draw();
     }
 
 }
 
-function rotateIfNeed(tempCanvas: HTMLCanvasElement, image: ImageForEdit) {
-    const tempCtx = tempCanvas.getContext('2d');
-    if (tempCtx) {
-        tempCtx.clearRect(0, 0, tempCanvas.width, tempCanvas.height);
-        if (image.angle !== 0) {
-            const {centerX, centerY} = getImageCenter(image);
-            tempCtx.translate(centerX, centerY);
-            tempCtx.rotate(image.angle);
-            tempCtx.translate(-centerX, -centerY);
-        }
+function rotateIfNeed(tempCanvas: HTMLCanvasElement, tempCtx: CanvasRenderingContext2D, image: ImageForEdit) {
+    tempCtx.clearRect(0, 0, tempCanvas.width, tempCanvas.height);
+    if (image.angle !== 0) {
+        const {centerX, centerY} = getImageCenter(image);
+        tempCtx.translate(centerX, centerY);
+        tempCtx.rotate(image.angle);
+        tempCtx.translate(-centerX, -centerY);
     }
 }

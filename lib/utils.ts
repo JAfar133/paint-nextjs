@@ -49,7 +49,7 @@ export type ButtonVariant =
     | "premium"
     | "golden";
 
-export const canvasSize = {height: 600, width: 1200}
+export const canvasSize = {height: 1080, width: 1920}
 
 export interface ClientTool {
     icon: any;

@@ -54,13 +54,9 @@ export default class LineTool extends Shape {
         }
     }
     draw(x: number, y: number, w: number, h: number) {
-        const img = new Image();
-        img.src = this.saved;
-        img.onload = () => {
-            canvasState.bufferCtx.clearRect(0, 0, this.canvas.width, this.canvas.height);
-            canvasState.bufferCtx.drawImage(img, 0, 0);
-            drawLine(canvasState.bufferCtx, x, y, w, h)
-        }
+        canvasState.bufferCtx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+        canvasState.bufferCtx.drawImage(this.tempCanvas, 0, 0);
+        drawLine(canvasState.bufferCtx, x, y, w, h)
     }
     static draw(ctx: CanvasRenderingContext2D, x: number, y: number, w: number, h: number, strokeStyle: string, strokeWidth: number) {
         ctx.strokeStyle = strokeStyle;
