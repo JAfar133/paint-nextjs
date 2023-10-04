@@ -6,8 +6,9 @@ export default class LineTool extends Shape {
 
     mouseMoveHandler(e: MouseEvent) {
         if (this.mouseDown && this.canDraw) {
-            this.width = e.offsetX;
-            this.height = e.offsetY;
+            const {scaledX, scaledY} = this.getScaledPoint(e.offsetX, e.offsetY, canvasState.canvasX, canvasState.canvasY, canvasState.scale)
+            this.width = scaledX;
+            this.height = scaledY;
 
             this.draw(this.startX, this.startY, this.width, this.height)
         }
@@ -39,15 +40,15 @@ export default class LineTool extends Shape {
                 id: this.id,
                 username: userState.user?.username,
                 figure: {
-                    fillStyle: this.ctx.fillStyle,
-                    strokeStyle: this.ctx.strokeStyle,
-                    strokeWidth: this.ctx.lineWidth,
+                    fillStyle: canvasState.bufferCtx.fillStyle,
+                    strokeStyle: canvasState.bufferCtx.strokeStyle,
+                    strokeWidth: canvasState.bufferCtx.lineWidth,
                     isFill: canvasState.isFill,
                     isStroke: canvasState.isStroke,
                     type: this.type,
-                    x: this.startX - this.canvas.width/2,
+                    x: this.startX - canvasState.bufferCanvas.width/2,
                     y: this.startY,
-                    w: this.width - this.canvas.width/2,
+                    w: this.width - canvasState.bufferCanvas.width/2,
                     h: this.height,
                 }}))
         }
@@ -56,9 +57,9 @@ export default class LineTool extends Shape {
         const img = new Image();
         img.src = this.saved;
         img.onload = () => {
-            this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
-            this.ctx.drawImage(img, canvasState.canvasX, canvasState.canvasY);
-            drawLine(this.ctx, x, y, w, h)
+            canvasState.bufferCtx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+            canvasState.bufferCtx.drawImage(img, 0, 0);
+            drawLine(canvasState.bufferCtx, x, y, w, h)
         }
     }
     static draw(ctx: CanvasRenderingContext2D, x: number, y: number, w: number, h: number, strokeStyle: string, strokeWidth: number) {
@@ -74,5 +75,5 @@ function drawLine(ctx: CanvasRenderingContext2D, x: number, y: number, w: number
     ctx.lineTo(w, h);
     ctx.stroke();
     ctx.beginPath();
-    canvasState.clearOutside(ctx);
+    canvasState.draw();
 }

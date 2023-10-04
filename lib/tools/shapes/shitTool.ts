@@ -6,9 +6,9 @@ export class ShitTool extends SquareTool {
         const img = new Image();
         img.src = this.saved;
         img.onload = () => {
-            this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
-            this.ctx.drawImage(img, canvasState.canvasX, canvasState.canvasY);
-            drawSheet(this.ctx, x, y, w, h, canvasState.isFill, canvasState.isStroke)
+            canvasState.bufferCtx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+            canvasState.bufferCtx.drawImage(img, 0, 0);
+            drawSheet(canvasState.bufferCtx, x, y, w, h, canvasState.isFill, canvasState.isStroke)
         }
     }
 
@@ -48,5 +48,5 @@ function drawSheet(ctx: CanvasRenderingContext2D, x0: number, y0: number, w: num
     ctx.closePath();
     isFill && ctx.fill()
     isStroke && ctx.stroke();
-    canvasState.clearOutside(ctx);
+    canvasState.draw();
 }

@@ -1,6 +1,7 @@
 import {makeAutoObservable} from "mobx";
 import toolState from "@/store/toolState";
 import {Color} from "react-input-color";
+import canvasState from "@/store/canvasState";
 
 class SettingState {
     fillColor: string = '#000';
@@ -39,7 +40,7 @@ class SettingState {
         this.fontWeight = weight;
     }
     fillCtx(){
-        toolState.fill();
+        canvasState.fill();
     }
 
 }

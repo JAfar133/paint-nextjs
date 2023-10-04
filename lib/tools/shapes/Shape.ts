@@ -12,10 +12,11 @@ export default abstract class Shape extends Tool {
     mouseDownHandler(e: MouseEvent) {
         if(this.canDraw && this.canDraw){
             this.mouseDown = true;
-            this.ctx.beginPath();
-            this.startX = e.offsetX;
-            this.startY = e.offsetY;
-            this.saved = canvasState.getDataUrlCanvas();
+            canvasState.bufferCtx.beginPath();
+            const {scaledX, scaledY} = this.getScaledPoint(e.offsetX, e.offsetY, canvasState.canvasX, canvasState.canvasY, canvasState.scale)
+            this.startX = scaledX;
+            this.startY = scaledY;
+            this.saved = canvasState.getDataUrlCanvas(canvasState.bufferCanvas);
         }
     }
     mouseUpHandler(e: MouseEvent) {
@@ -30,13 +31,13 @@ export default abstract class Shape extends Tool {
                 id: this.id,
                 username: userState.user?.username,
                 figure: {
-                    fillStyle: this.ctx.fillStyle,
-                    strokeStyle: this.ctx.strokeStyle,
-                    strokeWidth: this.ctx.lineWidth,
+                    fillStyle: canvasState.bufferCtx.fillStyle,
+                    strokeStyle: canvasState.bufferCtx.strokeStyle,
+                    strokeWidth: canvasState.bufferCtx.lineWidth,
                     isFill: canvasState.isFill,
                     isStroke: canvasState.isStroke,
                     type: this.type,
-                    x: this.startX - this.canvas.width/2,
+                    x: this.startX - canvasState.bufferCanvas.width/2,
                     y: this.startY,
                     w: this.width,
                     h: this.height,

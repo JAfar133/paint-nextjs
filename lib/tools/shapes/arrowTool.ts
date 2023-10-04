@@ -7,10 +7,10 @@ export default class ArrowTool extends LineTool {
         const img = new Image();
         img.src = this.saved;
         img.onload = () => {
-            this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
-            this.ctx.drawImage(img, canvasState.canvasX, canvasState.canvasY);
-            this.ctx.fillStyle = this.ctx.strokeStyle;
-            drawArrow(this.ctx, x, y, w, h)
+            canvasState.bufferCtx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+            canvasState.bufferCtx.drawImage(img, 0, 0);
+            canvasState.bufferCtx.fillStyle = canvasState.bufferCtx.strokeStyle;
+            drawArrow(canvasState.bufferCtx, x, y, w, h)
 
         }
     }
@@ -43,5 +43,5 @@ function drawArrow(ctx: CanvasRenderingContext2D, x: number, y: number, w: numbe
     ctx.closePath();
     ctx.fill()
     ctx.stroke();
-    canvasState.clearOutside(ctx);
+    canvasState.draw();
 }

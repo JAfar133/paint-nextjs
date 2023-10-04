@@ -1,6 +1,5 @@
 import {makeAutoObservable} from "mobx";
 import Tool from "@/lib/tools/tool";
-import settingState from "@/store/settingState";
 export interface ImageForEdit {
     imageX: number,
     imageY: number,
@@ -31,21 +30,12 @@ class ToolState {
 
     setTool(tool: Tool | null){
         this.tool = tool
-        this.fill()
     }
 
     getImageForEdit(){
         return this.imageForEdit;
     }
 
-    fill(){
-        if(this.tool){
-            this.tool.strokeColor = settingState.strokeColor || '#000';
-            this.tool.fillColor = settingState.fillColor || '#000';
-            this.tool.lineWidth = settingState.strokeWidth;
-            this.tool.font = settingState.font
-        }
-    }
 }
 
 export default new ToolState();

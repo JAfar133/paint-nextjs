@@ -36,9 +36,9 @@ export default class CircleTool extends Shape {
                 id: this.id,
                 username: userState.user?.username,
                 figure: {
-                    fillStyle: this.ctx.fillStyle,
-                    strokeStyle: this.ctx.strokeStyle,
-                    strokeWidth: this.ctx.lineWidth,
+                    fillStyle: canvasState.bufferCtx.fillStyle,
+                    strokeStyle: canvasState.bufferCtx.strokeStyle,
+                    strokeWidth: canvasState.bufferCtx.lineWidth,
                     isFill: canvasState.isFill,
                     isStroke: canvasState.isStroke,
                     type: this.type,
@@ -52,8 +52,9 @@ export default class CircleTool extends Shape {
 
     mouseMoveHandler(e: MouseEvent) {
         if (this.mouseDown && this.canDraw) {
-            let width = e.offsetX - this.startX;
-            let height = e.offsetY - this.startY;
+            const {scaledX, scaledY} = this.getScaledPoint(e.offsetX, e.offsetY, canvasState.canvasX, canvasState.canvasY, canvasState.scale)
+            let width = scaledX - this.startX;
+            let height = scaledY - this.startY;
             this.radius = Math.sqrt(width ** 2 + height ** 2)
             this.draw(this.startX, this.startY, this.radius)
         }
@@ -74,9 +75,9 @@ export default class CircleTool extends Shape {
         const img = new Image();
         img.src = this.saved;
         img.onload = () => {
-            this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
-            this.ctx.drawImage(img, canvasState.canvasX, canvasState.canvasY);
-            drawCircle(this.ctx, x, y, r, canvasState.isFill, canvasState.isStroke);
+            canvasState.bufferCtx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+            canvasState.bufferCtx.drawImage(img, 0, 0);
+            drawCircle(canvasState.bufferCtx, x, y, r, canvasState.isFill, canvasState.isStroke);
         }
     }
 
@@ -94,5 +95,5 @@ function drawCircle(ctx: CanvasRenderingContext2D, x: number, y: number, r: numb
     ctx.arc(x, y, r, 0, 2 * Math.PI)
     isFill && ctx.fill();
     isStroke && ctx.stroke();
-    canvasState.clearOutside(ctx);
+    canvasState.draw();
 }

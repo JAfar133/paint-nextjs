@@ -1,11 +1,7 @@
 import canvasState from "@/store/canvasState";
-
 export default abstract class Tool {
     canvas: HTMLCanvasElement;
     ctx: CanvasRenderingContext2D;
-    bufferCanvas: HTMLCanvasElement;
-    bufferCtx: CanvasRenderingContext2D;
-
     socket: WebSocket;
     id: string | string[];
     type: string;
@@ -13,8 +9,6 @@ export default abstract class Tool {
     offsetTop: number;
     offsetLeft: number;
     saved: string = "";
-    zoom: number;
-    zoomScale: number;
     canDraw: boolean = true;
 
     constructor(canvas: HTMLCanvasElement, socket: WebSocket, id: string | string[], type: string) {
@@ -25,17 +19,15 @@ export default abstract class Tool {
         this.type = type;
         this.id = id;
         this.ctx = canvas?.getContext('2d')!;
-        this.bufferCanvas = document.createElement('canvas');
-        this.bufferCanvas.width = this.canvas.width;
-        this.bufferCanvas.height = this.canvas.height;
-        this.bufferCtx = this.bufferCanvas.getContext('2d')!;
-        // this.canvas.style.zoom = '0.9';
-        this.zoom = 0.9;
-        this.zoomScale = 2 - this.zoom;
         this.destroyEvents();
         this.listen();
-    }
 
+    }
+    protected getScaledPoint(x: number, y: number, canvasX: number, canvasY: number, scale: number){
+        const scaledX = (x - canvasX) / scale;
+        const scaledY = (y - canvasY) / scale;
+        return {scaledX, scaledY}
+    }
     listen() {
         this.canvas.onmousemove = this.mouseMoveHandler.bind(this);
         this.canvas.onmousedown = this.mouseDownHandler.bind(this);
@@ -51,7 +43,6 @@ export default abstract class Tool {
         document.onmousemove = null;
         document.onmouseup = null;
     }
-
 
     abstract touchMoveHandler(e: TouchEvent): void;
 
@@ -73,22 +64,6 @@ export default abstract class Tool {
         if (this.mouseDown) {
             this.mouseUpHandler(e);
         }
-    }
-
-    set fillColor(color: string) {
-        this.ctx.fillStyle = color;
-    }
-
-    set strokeColor(color: string) {
-        this.ctx.strokeStyle = color;
-    }
-
-    set lineWidth(width: number) {
-        this.ctx.lineWidth = width;
-    }
-
-    set font(font: string) {
-        this.ctx.font = font
     }
 
     destroyEvents() {

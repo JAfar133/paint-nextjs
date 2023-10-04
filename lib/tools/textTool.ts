@@ -21,8 +21,9 @@ export default class TextTool extends Tool {
     mouseUpHandler(e: MouseEvent) {
         e.preventDefault();
         this.mouseDown = false;
-        this.startX = e.offsetX;
-        this.startY = e.offsetY;
+        const {scaledX, scaledY} = this.getScaledPoint(e.offsetX, e.offsetY, canvasState.canvasX, canvasState.canvasY, canvasState.scale)
+        this.startX = scaledX;
+        this.startY = scaledY;
         this.prevKeyArray = [];
         this.prevKey = new PrevKey("", -1, -1);
         document.onkeydown = this.inputEventHandler.bind(this);
@@ -40,7 +41,7 @@ export default class TextTool extends Tool {
         // @ts-ignore
         const key = e.key || e.target.value.toString().slice(-1)
 
-        const px = (this.ctx.font.match(/\d+(?=px)/) || [0])[0];
+        const px = (canvasState.bufferCtx.font.match(/\d+(?=px)/) || [0])[0];
         if ((e.ctrlKey || e.metaKey) && (key === 'z' || key === 'я')) {
             if (this.prevKeyArray?.length) {
                 const prevKey = this.prevKeyArray.pop();
@@ -60,7 +61,7 @@ export default class TextTool extends Tool {
         }
         if (key.length === 1) {
             canvasState.addUndo(canvasState.getDataUrlCanvas())
-            const prevKeyLength = this.prevKey ? this.ctx.measureText(this.prevKey.key).width : 0;
+            const prevKeyLength = this.prevKey ? canvasState.bufferCtx.measureText(this.prevKey.key).width : 0;
             this.prevKey.key = key;
 
             this.prevKey.x = this.startX;
@@ -74,11 +75,11 @@ export default class TextTool extends Tool {
                 id: this.id,
                 username: userState.user?.username,
                 figure: {
-                    fillStyle: this.ctx.fillStyle,
-                    font: this.ctx.font,
+                    fillStyle: canvasState.bufferCtx.fillStyle,
+                    font: canvasState.bufferCtx.font,
                     type: this.type,
                     text: key,
-                    startX: this.startX - this.canvas.width/2,
+                    startX: this.startX - canvasState.bufferCanvas.width/2,
                     startY: this.startY + Number(px) * 0.2
                 }
             }));
@@ -93,8 +94,9 @@ export default class TextTool extends Tool {
         }
     };
     print(text: string, startX: number, startY: number) {
-        this.ctx.fillText(text, startX, startY);
-        canvasState.clearOutside(this.ctx);
+        canvasState.bufferCtx.fillText(text, startX, startY);
+        canvasState.draw();
+        canvasState.bufferCtx.beginPath();
     }
 
 
@@ -102,9 +104,10 @@ export default class TextTool extends Tool {
         if(this.canDraw){
             this.mouseDown = true;
             this.prevKey.key = "";
-            this.ctx.font = settingState.font;
-            this.ctx.beginPath();
-            this.ctx.moveTo(e.offsetX, e.offsetY);
+            const {scaledX, scaledY} = this.getScaledPoint(e.offsetX, e.offsetY, canvasState.canvasX, canvasState.canvasY, canvasState.scale)
+            canvasState.bufferCtx.font = settingState.font;
+            canvasState.bufferCtx.beginPath();
+            canvasState.bufferCtx.moveTo(scaledX,scaledY);
         }
     }
 
@@ -116,7 +119,7 @@ export default class TextTool extends Tool {
         ctx.font = font;
         ctx.fillStyle = fillStyle;
         ctx.fillText(text, startX + ctx.canvas.width/2, startY);
-        canvasState.clearOutside(ctx);
+        canvasState.draw();
     }
 
     touchEndHandler(e: TouchEvent): void {

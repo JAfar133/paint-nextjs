@@ -5,9 +5,9 @@ export default class SquareTool extends Shape {
 
     mouseMoveHandler(e: MouseEvent) {
         if (this.mouseDown && this.canDraw) {
-
-            this.width = e.offsetX - this.startX;
-            this.height = e.offsetY - this.startY;
+            const {scaledX, scaledY} = this.getScaledPoint(e.offsetX, e.offsetY, canvasState.canvasX, canvasState.canvasY, canvasState.scale)
+            this.width = scaledX - this.startX;
+            this.height = scaledY - this.startY;
 
             this.draw(this.startX, this.startY, this.width, this.height);
         }
@@ -35,10 +35,10 @@ export default class SquareTool extends Shape {
         const img = new Image();
         img.src = this.saved;
         img.onload = () => {
-            this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
-            this.ctx.drawImage(img, canvasState.canvasX, canvasState.canvasY);
-            this.ctx.beginPath();
-            drawRect(this.ctx, x, y, w, h, canvasState.isFill, canvasState.isStroke);
+            canvasState.bufferCtx.clearRect(0, 0, canvasState.bufferCanvas.width, canvasState.bufferCanvas.height);
+            canvasState.bufferCtx.drawImage(img, 0, 0);
+            canvasState.bufferCtx.beginPath();
+            drawRect(canvasState.bufferCtx, x, y, w, h, canvasState.isFill, canvasState.isStroke);
         }
     }
 
@@ -57,5 +57,5 @@ function drawRect(ctx: CanvasRenderingContext2D, x: number, y: number, w: number
     ctx.rect(x, y, w, h);
     isFill && ctx.fill();
     isStroke && ctx.stroke();
-    canvasState.clearOutside(ctx);
+    canvasState.draw();
 }

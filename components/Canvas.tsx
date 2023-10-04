@@ -31,7 +31,7 @@ const Canvas = observer(() => {
     useEffect(() => {
         if(mainCanvasRef.current){
             mainCanvasRef.current.width = window.innerWidth;
-            mainCanvasRef.current.height = window.innerHeight - 155
+            mainCanvasRef.current.height = window.innerHeight - 155;
         }
     }, [mainCanvasRef]);
 
@@ -120,17 +120,15 @@ const Canvas = observer(() => {
     }, [userState.loading])
 
     const mouseMoveHandler = (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
-        const canvas = mainCanvasRef.current;
-        const ctx = canvas?.getContext('2d');
         const circleOverlay = circleOverlayRef.current;
-        if (circleOverlay && canvasMain.current && ctx) {
+        if (circleOverlay && canvasMain.current) {
             if(toolState.tool && (toolState.tool.type === "pencil" || toolState.tool.type === "eraser")){
                 circleOverlay.style.display = 'block';
                 const x = e.clientX - circleOverlay.clientWidth / 2 - 1 + 'px';
                 const y = e.clientY - canvasMain.current.offsetTop  - circleOverlay.clientHeight / 2 - 1 + 'px';
                 circleOverlay.style.transform = `translate(${x}, ${y}) scale(${canvasState.scale})`;
-                circleOverlay.style.width = String(`${ctx.lineWidth}px`);
-                circleOverlay.style.height = String(`${ctx.lineWidth}px`);
+                circleOverlay.style.width = String(`${canvasState.bufferCtx.lineWidth}px`);
+                circleOverlay.style.height = String(`${canvasState.bufferCtx.lineWidth}px`);
             }
             else {
                 circleOverlay.style.display = 'none'
@@ -140,7 +138,7 @@ const Canvas = observer(() => {
     const mouseDownHandler = () => {
         window.addEventListener('mouseup', mouseUpHandler);
         window.addEventListener('touchend', mouseUpHandler);
-        if (toolState.tool && toolState.tool.type !== "text") canvasState.addUndo(canvasState.getDataUrlCanvas());
+        if (toolState.tool && toolState.tool.type !== "text") canvasState.addUndo(canvasState.bufferCanvas.toDataURL());
     }
     const mouseUpHandler = () => {
         canvasState.saveCanvas();

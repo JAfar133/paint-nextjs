@@ -8,9 +8,9 @@ export default class StraightTriangleTool extends Triangle {
         const img = new Image();
         img.src = this.saved;
         img.onload = () => {
-            this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
-            this.ctx.drawImage(img, canvasState.canvasX, canvasState.canvasY);
-            drawTriangle(this.ctx, x, y, x1, y1, canvasState.isFill, canvasState.isStroke);
+            canvasState.bufferCtx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+            canvasState.bufferCtx.drawImage(img, 0, 0);
+            drawTriangle(canvasState.bufferCtx, x, y, x1, y1, canvasState.isFill, canvasState.isStroke);
         }
     }
     sendSocketDraw(){
@@ -20,9 +20,9 @@ export default class StraightTriangleTool extends Triangle {
                 id: this.id,
                 username: userState.user?.username,
                 figure: {
-                    fillStyle: this.ctx.fillStyle,
-                    strokeStyle: this.ctx.strokeStyle,
-                    strokeWidth: this.ctx.lineWidth,
+                    fillStyle: canvasState.bufferCtx.fillStyle,
+                    strokeStyle: canvasState.bufferCtx.strokeStyle,
+                    strokeWidth: canvasState.bufferCtx.lineWidth,
                     isFill: canvasState.isFill,
                     isStroke: canvasState.isStroke,
                     type: this.type,
@@ -50,5 +50,5 @@ function drawTriangle(ctx: CanvasRenderingContext2D, x: number, y: number, x1: n
     ctx.closePath();
     isFill && ctx.fill();
     isStroke && ctx.stroke();
-    canvasState.clearOutside(ctx);
+    canvasState.draw();
 }

@@ -39,6 +39,7 @@ const Toolbar = observer(() => {
             const setTool = (toolName: string) => {
                 if (toolPressed && toolName === toolPressed.name) setToolPressed(tools[1]);
                 else setToolPressed(findToolByName(toolName));
+                canvasState.fill();
             }
 
             useEffect(() => {
@@ -76,13 +77,13 @@ const Toolbar = observer(() => {
             const handleFillColorTool = (color: string) => {
                 if (toolState.tool) {
                     settingState.setFillColor(color);
-                    toolState.fill();
+                    canvasState.fill();
                 }
             }
             const handleStrokeColorTool = (color: string) => {
                 if (toolState.tool) {
                     settingState.setStrokeColor(color);
-                    toolState.fill();
+                    canvasState.fill();
                 }
             }
 
@@ -90,21 +91,21 @@ const Toolbar = observer(() => {
                 setStrokeWidth(width)
                 if (toolState.tool) {
                     settingState.setWidth(width);
-                    toolState.fill();
+                    canvasState.fill();
                 }
             }
             const handleTextSizeTool = (size: number) => {
                 setTextSize(size)
                 if (toolState.tool) {
                     settingState.setTextSize(size);
-                    toolState.fill();
+                    canvasState.fill();
                 }
             }
             const handleTextFontTool = (font: string) => {
                 setTextFont(font)
                 if (toolState.tool) {
                     settingState.setTextFont(font);
-                    toolState.fill();
+                    canvasState.fill();
                 }
             }
             const handleFillingTolerance = (tolerance: number) => {
@@ -116,7 +117,7 @@ const Toolbar = observer(() => {
                 setFontWeight(weight)
                 if (toolState.tool) {
                     settingState.setFontWeight(weight);
-                    toolState.fill();
+                    canvasState.fill();
                 }
             }
             const savetoUser = () => {

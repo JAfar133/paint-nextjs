@@ -2,7 +2,9 @@ import {makeAutoObservable} from "mobx";
 import UserService from "@/lib/api/UserService";
 import toolState from "@/store/toolState";
 import DragTool from "@/lib/tools/dragTool";
+import Tool from "@/lib/tools/tool";
 import userState from "@/store/userState";
+import settingState from "@/store/settingState";
 
 export type cursorClass =
     "cursor-move" | "cursor-grab" | "cursor-text" | "cursor-cell" |
@@ -11,7 +13,7 @@ export type cursorClass =
 export const cursors: cursorClass[] =
     ["cursor-move", "cursor-grab", "cursor-text", "cursor-cell",
         "cursor-grabbing", "cursor-nwse-resize", "cursor-alias", "cursor-crosshair",
-        "cursor-nesw-resize", "cursor-ew-resize", "cursor-ns-resize","cursor-auto"]
+        "cursor-nesw-resize", "cursor-ew-resize", "cursor-ns-resize", "cursor-auto"]
 
 export interface Message {
     id: string,
@@ -33,17 +35,10 @@ class CanvasState {
     messages: Message[] = []
     isFill: boolean = false;
     isStroke: boolean = true;
-    scale: number = 1;
-    scaleMultiplier: number = 1.1;
+    scale: number = 0.5;
     offsetX: number = 0;
     offsetY: number = 0;
     savedCanvasWithoutImage: string = '';
-    canvasWidth: number = 1200;
-    canvasHeight: number = 600;
-    canvasX: number = 0;
-    canvasTop: number = 0;
-    canvasLeft: number = 0;
-    canvasY: number = 0;
     canvasMain: HTMLDivElement | null = null;
     canvasContainer: HTMLDivElement | null = null;
     centerX: number = 0;
@@ -53,10 +48,17 @@ class CanvasState {
     mouseDownStartY: number = -1;
     imageContainer: HTMLDivElement | null = null;
     canvasCursor: cursorClass = 'cursor-auto';
-    savedCursor: cursorClass = 'cursor-auto';
-
+    savedCursor: cursorClass | null = null;
+    rectWidth: number = 1920;
+    rectHeight: number = 1080;
+    canvasX: number = 0;
+    canvasY: number = 0;
+    // @ts-ignore
+    bufferCanvas: HTMLCanvasElement;
+    // @ts-ignore
+    bufferCtx: CanvasRenderingContext2D;
     constructor() {
-        this.canvas_id = `f${(+new Date).toString(16)}`
+        this.canvas_id = `f${(+new Date).toString(16)}`;
         makeAutoObservable(this);
     }
 
@@ -81,14 +83,15 @@ class CanvasState {
 
         if (ctx && image && this.imageContainer && this.canvasContainer) {
             this.imageContainer.style.display = 'block';
-            this.imageContainer.style.width = `${image.img.width}px`;
-            this.imageContainer.style.height = `${image.img.height}px`;
-
-            leftTop.style.transform = `translate(-5px, -5px)`;
-            leftBottom.style.transform = `translate(-5px, ${image.img.height}px)`;
-            rightTop.style.transform = `translate(${image.img.width}px, -5px)`;
-            rightBottom.style.transform = `translate(${image.img.width}px, ${image.img.height}px)`;
-            let transformStyle = `translate(${image.imageX}px, ${image.imageY}px)`;
+            const newWidth = image.img.width*this.scale;
+            const newHeight = image.img.height*this.scale;
+            this.imageContainer.style.width = `${newWidth}px`;
+            this.imageContainer.style.height = `${newHeight}px`;
+            leftTop.style.transform = `translate(-5px, -5px) scale(${this.scale})`;
+            leftBottom.style.transform = `translate(-5px, ${newHeight}px) scale(${this.scale})`;
+            rightTop.style.transform = `translate(${newWidth}px, -5px) scale(${this.scale})`;
+            rightBottom.style.transform = `translate(${newWidth}px, ${newHeight}px) scale(${this.scale})`;
+            let transformStyle = `translate(${image.imageX*this.scale+this.canvasX}px, ${image.imageY*this.scale+this.canvasY}px)`;
             transformStyle = transformStyle.concat(` rotate(${image.angle}rad)`)
             this.imageContainer.style.transform = transformStyle;
             this.canvasContainer.appendChild(this.imageContainer);
@@ -120,49 +123,41 @@ class CanvasState {
     setCursor(cursor: cursorClass) {
         cursors.forEach(c => {
             if (this.canvasMain) {
-                if (c === cursor) this.canvasMain.classList.add(c)
+                if (c === cursor) {
+                    this.canvasMain.classList.add(c);
+                    this.canvasCursor = c;
+                }
                 else this.canvasMain.classList.remove(c)
             }
         })
 
     }
-
     wheelHandler(e: WheelEvent) {
         e.preventDefault();
-        const scaleFactor = this.scaleMultiplier;
-        const delta = e.deltaY > 0 ? 1 / scaleFactor : scaleFactor;
-        const ctx = this.canvas.getContext('2d');
+        const zoomSpeed = 0.1;
+        const scaleFactor = e.deltaY > 0 ? 1 - zoomSpeed : 1 + zoomSpeed;
 
-        if (this.canvasContainer) {
-        if (ctx && toolState.tool) {
-            if (this.scale * delta > 0.05 && this.scale * delta < 15) {
-                const deltaX = (this.centerX - e.pageX)*0.1;
-                const deltaY = (this.centerY - e.pageY)*0.1;
-                if(this.scale < this.scale*delta){
-                    this.canvasLeft +=deltaX;
-                    this.canvasTop +=deltaY;
-                    this.centerX += deltaX;
-                    this.centerY += deltaY;
-                    this.canvasContainer.style.left = `${this.canvasLeft}px`;
-                    this.canvasContainer.style.top = `${this.canvasTop}px`;
-                }
+        this.scale *= scaleFactor;
+        this.canvasX -= (e.offsetX - this.canvasX) * (scaleFactor - 1);
+        this.canvasY -= (e.offsetY - this.canvasY) * (scaleFactor - 1);
+        this.draw();
 
-                else {
-                    this.canvasLeft -=deltaX;
-                    this.canvasTop -=deltaY;
-                    this.centerX -= deltaX;
-                    this.centerY -= deltaY;
-                    this.canvasContainer.style.left = `${this.canvasLeft}px`;
-                    this.canvasContainer.style.top = `${this.canvasTop}px`;
-                }
-                this.scale *= delta;
-
-                this.canvasContainer.style.transform = `scale(${this.scale})`;
-                toolState.tool.offsetTop = this.canvas.getBoundingClientRect().top;
-                toolState.tool.offsetLeft = this.canvas.getBoundingClientRect().left;
-                }
+    }
+    draw(canvas?: HTMLCanvasElement){
+        const ctx = this.canvas.getContext('2d')
+        if(ctx){
+            ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+            ctx.setTransform(this.scale, 0, 0, this.scale, this.canvasX, this.canvasY);
+            ctx.fillStyle = 'white'
+            ctx.fillRect(0, 0, this.bufferCanvas.width, this.bufferCanvas.height);
+            if(canvas){
+                ctx.drawImage(canvas, 0, 0);
+            }
+            else {
+                ctx.drawImage(this.bufferCanvas, 0,0);
             }
 
+            ctx.setTransform(1, 0, 0, 1, 0, 0);
             if (toolState.tool && toolState.tool.type === "drag") {
                 this.drawBorder();
             }
@@ -176,12 +171,9 @@ class CanvasState {
 
             const deltaX = offsetX - this.mouseDownStartX;
             const deltaY = offsetY - this.mouseDownStartY;
-            this.canvasContainer.style.left = `${this.canvasContainer.offsetLeft + deltaX}px`;
-            this.canvasContainer.style.top = `${this.canvasContainer.offsetTop + deltaY}px`;
-            this.centerX += deltaX;
-            this.centerY += deltaY;
-            this.canvasLeft += deltaX;
-            this.canvasTop += deltaY;
+            this.canvasX += deltaX;
+            this.canvasY += deltaY;
+            this.draw();
 
             this.mouseDownStartX = offsetX;
             this.mouseDownStartY = offsetY;
@@ -204,7 +196,11 @@ class CanvasState {
             toolState.tool.canDraw = true;
         }
         this.mouseDown = false;
-        this.setCursor(this.savedCursor);
+        if(this.savedCursor){
+            this.setCursor(this.savedCursor);
+            this.savedCursor = null;
+        }
+
     }
 
     get canvasId() {
@@ -233,6 +229,10 @@ class CanvasState {
 
     setCanvas(canvas: HTMLCanvasElement) {
         this.canvas = canvas;
+        this.bufferCanvas = document.createElement('canvas');
+        this.bufferCtx = this.bufferCanvas.getContext('2d')!;
+        this.bufferCanvas.width = this.rectWidth;
+        this.bufferCanvas.height = this.rectHeight;
         setTimeout(()=>{
             if(this.canvasMain){
                 this.canvasMain.onwheel = this.wheelHandler.bind(this);
@@ -242,14 +242,13 @@ class CanvasState {
 
             }
         },100)
-
         this.canvas.onwheel = this.wheelHandler.bind(this);
-        this.canvasX = this.canvas.width / 2 - this.canvasWidth / 2;
-        this.canvasY = 20;
+        this.canvasX = this.canvas.width /2 - this.rectWidth/2*this.scale
+        this.canvasY = 50;
         this.centerX =  this.canvas.width / 2;
         this.centerY =  this.canvas.height / 2 + this.canvasY + 50;
 
-        this.clear();
+        this.draw();
     }
 
     addUndo(data: any) {
@@ -261,17 +260,18 @@ class CanvasState {
     }
 
     addCurrentContextToUndo() {
-        this.undoList.push(this.getDataUrlCanvas())
+        this.undoList.push(this.bufferCanvas.toDataURL())
     }
 
     undo() {
         if (this.undoList.length) {
             let dataUrl = this.undoList.pop();
-            this.addRedo(this.getDataUrlCanvas());
+            this.addRedo(this.bufferCanvas.toDataURL());
+
             this.drawCanvas(dataUrl);
             this.sendDataUrl(dataUrl);
         } else {
-            this.addRedo(this.getDataUrlCanvas());
+            this.addRedo(this.bufferCanvas.toDataURL());
             this.clear();
             this.saveCanvas();
         }
@@ -280,7 +280,7 @@ class CanvasState {
     redo() {
         if (this.redoList.length) {
             let dataUrl = this.redoList.pop();
-            this.addUndo(this.getDataUrlCanvas())
+            this.addUndo(this.bufferCanvas.toDataURL())
             this.drawCanvas(dataUrl);
             this.sendDataUrl(dataUrl);
         }
@@ -298,13 +298,12 @@ class CanvasState {
     }
 
     drawCanvas(dataUrl: string) {
-        const ctx = this.canvas.getContext('2d')
-        let img = new Image();
+        const img = new Image();
         img.src = dataUrl;
         img.onload = () => {
-            if (ctx) {
-                ctx.drawImage(img, this.canvasX, this.canvasY, this.canvasWidth, this.canvasHeight);
-            }
+            this.bufferCtx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+            this.bufferCtx.drawImage(img, 0, 0);
+            this.draw();
         }
     }
 
@@ -312,28 +311,35 @@ class CanvasState {
         clearRect: true,
         imageEdit: false
     }) {
-        const ctx = this.canvas.getContext('2d')
         let img = new Image();
         img.src = dataUrl;
 
         if (options.imageEdit) {
             toolState.addImageForEdit({
-                imageX: this.canvasX, imageY: this.canvasY, offsetX: 0, offsetY: 0,
+                imageX: 0, imageY: 0, offsetX: 0, offsetY: 0,
                 img: img, isDragging: false, isResizing: false, isRotating: false, isUpload: true, angle: 0
             });
             if (this.socket) {
                 toolState.setTool(new DragTool(this.canvas, this.socket, this.canvasId, "drag"))
             }
-        }
-
-        img.onload = () => {
-            if (ctx) {
+            img.onload = () => {
                 if (img.width > 0 && img.height > 0) {
-                    options.clearRect && ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
-                    ctx.drawImage(img, this.canvasX, this.canvasY, img.width, img.height);
+                    options.clearRect && this.bufferCtx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+                    this.bufferCtx.drawImage(img, 0, 0, img.width, img.height);
+                    this.draw();
+                }
+            }
+        } else {
+            img.onload = () => {
+                if (img.width > 0 && img.height > 0) {
+                    options.clearRect && this.bufferCtx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+                    this.bufferCtx.drawImage(img, 0, 0, this.bufferCanvas.width, this.bufferCanvas.height);
+                    this.draw();
                 }
             }
         }
+
+
     }
 
     clearCanvas() {
@@ -349,44 +355,56 @@ class CanvasState {
         }
     }
 
-    clearOutside(ctx: CanvasRenderingContext2D) {
-        const fullCanvasImageData = ctx.getImageData(this.canvasX, this.canvasY, this.canvasWidth, this.canvasHeight);
-        ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height)
-        ctx.putImageData(fullCanvasImageData, this.canvasX, this.canvasY)
-    }
-
     saveCanvas() {
-        UserService.saveImage(this.canvasId, this.getDataUrlCanvas())
+        UserService.saveImage(this.canvasId, this.bufferCanvas.toDataURL())
             .catch(e => console.log(e))
         localStorage.removeItem("image")
     }
 
     getDataUrlCanvas(canvas?: HTMLCanvasElement) {
         const canvas1 = canvas || this.canvas;
-        const tempCanvas = document.createElement('canvas');
-        const tempCtx = tempCanvas.getContext('2d');
-        tempCanvas.width = this.canvasWidth;
-        tempCanvas.height = this.canvasHeight;
-        if (tempCtx) {
-            tempCtx.drawImage(canvas1, this.canvasX, this.canvasY, this.canvasWidth, this.canvasHeight, 0, 0, this.canvasWidth, this.canvasHeight);
-        }
-        return tempCanvas.toDataURL();
+        return canvas1.toDataURL();
     }
 
     mouseLeaveHandler = () => {
-        this.canvas.classList.remove('cursor-crosshair');
-        this.canvas.classList.remove('cursor-text');
-        this.canvas.classList.remove('cursor-cell');
         cursors.forEach(cursor => this.canvas.classList.remove(cursor))
     }
 
     clear() {
-        const ctx = this.canvas.getContext('2d')
-        if (ctx) {
-            ctx.clearRect(0, 0, this.canvas.width, this.canvas.height)
-            ctx.fillStyle = 'rgba(255,255,255,1)';
-            ctx.fillRect(this.canvasX, this.canvasY, this.canvasWidth, this.canvasHeight);
-        }
+        this.bufferCtx.clearRect(0, 0, this.canvas.width, this.canvas.height)
+        this.bufferCtx.fillStyle = 'rgba(255,255,255,1)';
+        this.bufferCtx.fillRect(0,0, this.bufferCanvas.width, this.bufferCanvas.height);
+        this.draw();
+    }
+    set fillColor(color: string) {
+        this.bufferCtx.fillStyle = color;
+    }
+
+    set strokeColor(color: string) {
+        this.bufferCtx.strokeStyle = color;
+    }
+    set lineJoin(join: CanvasLineJoin){
+        this.bufferCtx.lineJoin = join;
+    }
+    set lineCap(cap: CanvasLineCap){
+        this.bufferCtx.lineCap = cap;
+    }
+
+    set lineWidth(width: number) {
+        this.bufferCtx.lineWidth = width;
+    }
+
+    set font(font: string) {
+        this.bufferCtx.font = font
+    }
+    fill(){
+        console.log('fill')
+        this.strokeColor = settingState.strokeColor || '#000';
+        this.fillColor = settingState.fillColor || '#000';
+        this.lineWidth = settingState.strokeWidth;
+        this.font = settingState.font
+        this.lineCap = "butt"
+        this.lineJoin = "miter"
     }
 }
 

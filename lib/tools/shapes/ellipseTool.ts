@@ -8,8 +8,9 @@ export default class EllipseTool extends Shape {
 
     mouseMoveHandler(e: MouseEvent) {
         if (this.mouseDown && this.canDraw) {
-            let width = e.offsetX - this.startX;
-            let height = e.offsetY - this.startY;
+            const {scaledX, scaledY} = this.getScaledPoint(e.offsetX, e.offsetY, canvasState.canvasX, canvasState.canvasY, canvasState.scale)
+            let width = scaledX - this.startX;
+            let height = scaledY - this.startY;
             this.width = Math.abs(width);
             this.height = Math.abs(height);
             this.draw(this.startX, this.startY, this.width, this.height);
@@ -42,9 +43,9 @@ export default class EllipseTool extends Shape {
         const img = new Image();
         img.src = this.saved;
         img.onload = () => {
-            this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
-            this.ctx.drawImage(img, canvasState.canvasX, canvasState.canvasY);
-            drawEllipse(this.ctx, x, y, w, h, canvasState.isFill, canvasState.isStroke);
+            canvasState.bufferCtx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+            canvasState.bufferCtx.drawImage(img, 0, 0);
+            drawEllipse(canvasState.bufferCtx, x, y, w, h, canvasState.isFill, canvasState.isStroke);
         };
     }
     static draw(ctx: CanvasRenderingContext2D, x: number, y: number, w: number,
@@ -62,5 +63,5 @@ function drawEllipse(ctx: CanvasRenderingContext2D, x: number, y: number, w: num
     ctx.ellipse(x, y, w, h, 0, 0, 2 * Math.PI);
     isFill && ctx.fill();
     isStroke && ctx.stroke();
-    canvasState.clearOutside(ctx);
+    canvasState.draw();
 }

@@ -4,7 +4,6 @@ import settingState from "@/store/settingState";
 import canvasState from "@/store/canvasState";
 
 export default class FillingTool extends Tool {
-    pixelColor: string = '';
     mouseDownHandler(e: MouseEvent): void {
 
     }
@@ -13,7 +12,6 @@ export default class FillingTool extends Tool {
             const touch = e.touches[0];
             const x = touch.clientX - this.offsetLeft;
             const y = touch.clientY - this.offsetTop;
-            this.pixelColor = this.getPixelColor(x, y)
             this.draw(x, y, this.ctx.fillStyle.toString())
             this.sendDrawWebsocket(x, y)
         }
@@ -24,7 +22,7 @@ export default class FillingTool extends Tool {
             id: this.id,
             username: userState.user?.username,
             figure: {
-                fillStyle: this.ctx.fillStyle,
+                fillStyle: canvasState.bufferCtx.fillStyle,
                 type: this.type,
                 x: x - this.canvas.width/2,
                 y: y,
@@ -36,10 +34,10 @@ export default class FillingTool extends Tool {
     mouseUpHandler(e: MouseEvent) {
         if(this.canDraw && e.button !== 1){
             super.mouseUpHandler(e);
-            const x = e.offsetX,
-                y = e.offsetY;
-            this.pixelColor = this.getPixelColor(x, y)
-            this.draw(x, y, this.ctx.fillStyle.toString())
+            const {scaledX, scaledY} = this.getScaledPoint(e.offsetX, e.offsetY, canvasState.canvasX, canvasState.canvasY, canvasState.scale)
+            const x = Math.floor(scaledX),
+                y = Math.floor(scaledY);
+            floodFill(canvasState.bufferCtx,x, y, settingState.fillColor, settingState.fillingTolerance)
             this.sendDrawWebsocket(x, y)
         }
     }
@@ -54,30 +52,22 @@ export default class FillingTool extends Tool {
     }
 
     draw(x: number, y: number, fillColor: string) {
-        floodFill(this.ctx,x, y, fillColor, settingState.fillingTolerance)
+        floodFill(canvasState.bufferCtx,x, y, fillColor, settingState.fillingTolerance)
     }
 
     static draw(ctx: CanvasRenderingContext2D, x: number, y: number, fillColor: string, tolerance: number = 5) {
         floodFill(ctx,x + ctx.canvas.width/2, y, fillColor, tolerance)
-    }
-    getPixelColor(x: number, y: number): string {
-        const imageData = this.ctx.getImageData(x, y, 1, 1);
-        const pixelData = imageData.data;
-        const color = `rgba(${pixelData[0]}, ${pixelData[1]}, ${pixelData[2]}, ${pixelData[3] / 255})`;
-        return color;
     }
 
 }
 
 
 function floodFill(ctx: CanvasRenderingContext2D, startX: number, startY: number, newColor: string, tolerance: number = 5): void {
-    const width = canvasState.canvasWidth;
-    const height = canvasState.canvasHeight;
-    startX-=canvasState.canvasX;
-    startY-=canvasState.canvasY;
-    const casData = ctx.getImageData(canvasState.canvasX, canvasState.canvasY, width, height);
+    const width = ctx.canvas.width;
+    const height = ctx.canvas.height;
+    const casData = ctx.getImageData(0, 0, width, height);
+    console.log(ctx.fillStyle, newColor)
     const stack: [number, number][] = [];
-
     const i = (startY * width + startX) * 4;
     const targetColor = {
         r: casData.data[i],
@@ -133,8 +123,8 @@ function floodFill(ctx: CanvasRenderingContext2D, startX: number, startY: number
             }
         }
     }
-    ctx.putImageData(casData, canvasState.canvasX,canvasState.canvasY);
-    canvasState.clearOutside(ctx);
+    ctx.putImageData(casData, 0,0);
+    canvasState.draw();
 }
 interface Color {
     r: number;

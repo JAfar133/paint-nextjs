@@ -90,8 +90,10 @@ class WebsocketService {
 
     handleMouseMove(e: MouseEvent) {
         if(canvasState.canvasMain){
-            const offsetX = e.pageX - canvasState.centerX;
-            const offsetY = e.offsetY;
+            const centerX = canvasState.canvasX + canvasState.rectWidth/2*canvasState.scale;
+            const centerY = canvasState.canvasY + canvasState.rectHeight/2*canvasState.scale + canvasState.canvas.getBoundingClientRect().top;
+            const offsetX = e.pageX - centerX;
+            const offsetY = e.pageY - centerY;
             if (canvasState.socket) {
                 canvasState.socket.send(JSON.stringify({
                     method: "user_cursor",
@@ -153,11 +155,15 @@ class WebsocketService {
                 }
                 cursorElement = newCursorElement;
             }
+            const centerX = canvasState.canvasX + canvasState.rectWidth/2*canvasState.scale;
+            const centerY = canvasState.canvasY + canvasState.rectHeight/2*canvasState.scale;
+            cursorElement.style.left = `${centerX}px`;
+            cursorElement.style.top = `${centerY}px`;
             cursorElement.style.color = msg.color;
             let cursorX = msg.point.x;
             let cursorY = msg.point.y;
             cursorElement.textContent = msg.username;
-            cursorElement.style.transform = `translate(${cursorX/msg.scale-10}px, ${cursorY}px)`;
+            cursorElement.style.transform = `translate(${cursorX*canvasState.scale/msg.scale-10}px, ${cursorY*canvasState.scale/msg.scale}px)`;
 
         }
     }
@@ -165,11 +171,8 @@ class WebsocketService {
     private drawHandler(msg: any) {
         if (canvasState.canvas) {
             const figure = msg.figure;
-            const ctx = canvasState.canvas.getContext('2d')
-            if (ctx !== null) {
-                this.figureDraw(ctx, figure)
-                settingState.fillCtx()
-            }
+            this.figureDraw(canvasState.bufferCtx, figure)
+            settingState.fillCtx()
         }
     }
 
@@ -178,7 +181,7 @@ class WebsocketService {
         figure: any
     ) {
         const draw: { [key: string]: (ctx: CanvasRenderingContext2D, figure: any) => void } = {
-            "pencil": (ctx, figure) => PencilTool.draw(ctx, figure.x, figure.y, figure.lastCircleX, figure.lastCircleY, figure.strokeStyle, figure.strokeWidth),
+            "pencil": (ctx, figure) => PencilTool.draw(ctx, figure.x, figure.y, figure.strokeStyle, figure.strokeWidth),
             "square": (ctx, figure) => SquareTool.draw(ctx, figure.x, figure.y, figure.w, figure.h, figure.fillStyle, figure.strokeStyle, figure.strokeWidth, figure.isFill, figure.isStroke),
             "eraser": (ctx, figure) => EraserTool.eraser(ctx, figure.x, figure.y, figure.strokeStyle, figure.strokeWidth),
             "line": (ctx, figure) => LineTool.draw(ctx, figure.x, figure.y, figure.w, figure.h, figure.strokeStyle, figure.strokeWidth),

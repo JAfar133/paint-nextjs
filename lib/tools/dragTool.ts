@@ -31,13 +31,14 @@ export default class DragTool extends Tool {
     constructor(canvas: HTMLCanvasElement, socket: WebSocket, id: string | string[], type: string) {
         super(canvas, socket, id, type);
         const img = new Image();
-        img.src = canvasState.getDataUrlCanvas(canvas);
+        img.src = canvasState.bufferCanvas.toDataURL();
         canvasState.deleteBorder();
         const imgOnload = () => {
             img.onload = () => {
-                this.ctx.clearRect(0, 0, canvas.width, canvas.height);
-                canvasState.savedCanvasWithoutImage = canvasState.getDataUrlCanvas(canvas);
-                this.ctx.drawImage(img, canvasState.canvasX, canvasState.canvasY)
+                canvasState.bufferCtx.clearRect(0, 0, canvas.width, canvas.height);
+                canvasState.savedCanvasWithoutImage = canvasState.bufferCanvas.toDataURL();
+                canvasState.bufferCtx.drawImage(img, canvasState.canvasX, canvasState.canvasY);
+                canvasState.draw()
             }
         }
         if (toolState.imageForEdit) {
@@ -45,15 +46,15 @@ export default class DragTool extends Tool {
                 imgOnload();
                 toolState.imageForEdit.img = img;
             } else {
-                canvasState.savedCanvasWithoutImage = canvasState.getDataUrlCanvas(canvas);
+                canvasState.savedCanvasWithoutImage = canvasState.bufferCanvas.toDataURL();
             }
         } else {
             imgOnload();
         }
         //@ts-ignore
         this.image = toolState.imageForEdit;
-        this.tempCanvas.width = this.canvas.width;
-        this.tempCanvas.height = this.canvas.height;
+        this.tempCanvas.width = canvasState.bufferCanvas.width;
+        this.tempCanvas.height = canvasState.bufferCanvas.height;
         this.tempCtx = this.tempCanvas.getContext('2d');
         this.imageSidePoints = {
             leftTop: {x: this.image.imageX, y: this.image.imageY},
@@ -68,8 +69,9 @@ export default class DragTool extends Tool {
 
     mouseDownHandler(e: MouseEvent): void {
         if(this.canDraw){
-            const mouseX = e.offsetX;
-            const mouseY = e.offsetY;
+            const {scaledX, scaledY} = this.getScaledPoint(e.offsetX, e.offsetY, canvasState.canvasX, canvasState.canvasY, canvasState.scale)
+            const mouseX = scaledX;
+            const mouseY = scaledY;
             const centerX = this.image.imageX + this.image.img.width / 2;
             const centerY = this.image.imageY + this.image.img.height / 2;
             const dx = mouseX - centerX;
@@ -125,8 +127,9 @@ export default class DragTool extends Tool {
 
     mouseMoveHandler(e: MouseEvent): void {
         if(this.canDraw){
-            const mouseX = e.offsetX;
-            const mouseY = e.offsetY;
+            const {scaledX, scaledY} = this.getScaledPoint(e.offsetX, e.offsetY, canvasState.canvasX, canvasState.canvasY, canvasState.scale)
+            const mouseX = scaledX;
+            const mouseY = scaledY;
             if (this.image.isResizing) {
                 this.drugResize(mouseX, mouseY);
             } else if (this.image.isDragging) {
@@ -140,16 +143,14 @@ export default class DragTool extends Tool {
     }
 
     drugRotate(mouseX: number, mouseY: number) {
-        const ctx = this.canvas.getContext('2d');
-        if (ctx) {
             if (this.image.isRotating) {
                 const {centerX, centerY} = getImageCenter(this.image);
                 const dx = mouseX - centerX;
                 const dy = mouseY - centerY;
 
                 this.image.angle = Math.atan2(dy, dx) - this.startAngle;
-                this.tempCanvas.width = this.canvas.width;
-                this.tempCanvas.height = this.canvas.height;
+                this.tempCanvas.width = canvasState.bufferCanvas.width;
+                this.tempCanvas.height = canvasState.bufferCanvas.height;
                 this.tempCtx = this.tempCanvas.getContext('2d');
                 if (this.tempCtx) {
                     this.tempCtx.clearRect(0, 0, this.tempCanvas.width, this.tempCanvas.height)
@@ -167,20 +168,18 @@ export default class DragTool extends Tool {
                 const img = new Image()
                 img.src = canvasState.savedCanvasWithoutImage;
                 img.onload = ()=>{
-                    ctx.clearRect(0, 0, this.canvas.width, this.canvas.height)
-                    ctx.drawImage(img, canvasState.canvasX, canvasState.canvasY);
-                    ctx.drawImage(this.tempCanvas, 0, 0);
-                    canvasState.clearOutside(ctx);
+                    canvasState.bufferCtx.clearRect(0, 0, this.canvas.width, this.canvas.height)
+                    canvasState.bufferCtx.drawImage(img, 0, 0);
+                    canvasState.bufferCtx.drawImage(this.tempCanvas, 0, 0);
+                    canvasState.draw();
                 }
 
                 canvasState.drawBorder();
             }
-        }
     }
 
     drugResize(mouseX: number, mouseY: number) {
-        const ctx = this.canvas.getContext('2d');
-        if (ctx && this.image.isResizing) {
+        if (this.image.isResizing) {
             const {centerX, centerY} = getImageCenter(this.image);
             const mousePoint = getNewPointPosition(mouseX, mouseY, centerX, centerY, -this.image.angle)
             const startImageXYPoint = getNewPointPosition(this.startImageX, this.startImageY, centerX, centerY, -this.image.angle)
@@ -197,11 +196,11 @@ export default class DragTool extends Tool {
                 this.resizePoint
             );
 
-            this.tempCanvas.width = this.canvas.width;
-            this.tempCanvas.height = this.canvas.height;
+            this.tempCanvas.width = canvasState.bufferCanvas.width;
+            this.tempCanvas.height = canvasState.bufferCanvas.height;
             this.tempCtx = this.tempCanvas.getContext('2d');
             if (this.tempCtx) {
-                drawResizedImage(this.tempCtx, this.ctx, this.canvas, this.tempCanvas, this.image, newX, newY, newWidth, newHeight)
+                drawResizedImage(this.tempCtx, canvasState.bufferCtx, canvasState.bufferCanvas, this.tempCanvas, this.image, newX, newY, newWidth, newHeight)
             }
             this.image.img.width = Math.abs(newWidth);
             this.image.img.height = Math.abs(newHeight);
@@ -224,10 +223,9 @@ export default class DragTool extends Tool {
     }
 
     drugImage(mouseX: number, mouseY: number) {
-        const ctx = this.canvas.getContext('2d')
-        if (ctx && this.image.isDragging) {
-            this.tempCanvas.width = this.canvas.width;
-            this.tempCanvas.height = this.canvas.height;
+        if (this.image.isDragging) {
+            this.tempCanvas.width = canvasState.bufferCanvas.width;
+            this.tempCanvas.height = canvasState.bufferCanvas.height;
             this.tempCtx = this.tempCanvas.getContext('2d');
             if (this.tempCtx) {
                 rotateIfNeed(this.tempCanvas, this.image);
@@ -243,10 +241,10 @@ export default class DragTool extends Tool {
                 const img = new Image()
                 img.src = canvasState.savedCanvasWithoutImage;
                 img.onload = () => {
-                    ctx.clearRect(0, 0, this.canvas.width, this.canvas.height)
-                    ctx.drawImage(img, canvasState.canvasX, canvasState.canvasY);
-                    ctx.drawImage(this.tempCanvas, 0, 0);
-                    canvasState.clearOutside(ctx);
+                    canvasState.bufferCtx.clearRect(0, 0, this.canvas.width, this.canvas.height)
+                    canvasState.bufferCtx.drawImage(img, 0, 0);
+                    canvasState.bufferCtx.drawImage(this.tempCanvas, 0, 0);
+                    canvasState.draw();
                 }
             }
 
@@ -487,16 +485,16 @@ function drawResizedImage(tempCtx: CanvasRenderingContext2D, ctx: CanvasRenderin
             newWidth,
             newHeight
         );
-        canvasState.clearOutside(ctx);
+        canvasState.draw();
     }
 
     const img = new Image()
     img.src = canvasState.savedCanvasWithoutImage;
     img.onload = ()=>{
         ctx.clearRect(0, 0, canvas.width, canvas.height)
-        ctx.drawImage(img, canvasState.canvasX, canvasState.canvasY);
+        ctx.drawImage(img, 0, 0);
         ctx.drawImage(tempCanvas, 0, 0);
-        canvasState.clearOutside(ctx);
+        canvasState.draw();
     }
 
 }
