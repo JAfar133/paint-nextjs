@@ -398,7 +398,6 @@ class CanvasState {
         this.bufferCtx.font = font
     }
     fill(){
-        console.log('fill')
         this.strokeColor = settingState.strokeColor || '#000';
         this.fillColor = settingState.fillColor || '#000';
         this.lineWidth = settingState.strokeWidth;

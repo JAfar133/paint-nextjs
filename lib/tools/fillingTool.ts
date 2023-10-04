@@ -66,7 +66,6 @@ function floodFill(ctx: CanvasRenderingContext2D, startX: number, startY: number
     const width = ctx.canvas.width;
     const height = ctx.canvas.height;
     const casData = ctx.getImageData(0, 0, width, height);
-    console.log(ctx.fillStyle, newColor)
     const stack: [number, number][] = [];
     const i = (startY * width + startX) * 4;
     const targetColor = {

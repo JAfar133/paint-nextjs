@@ -16,7 +16,6 @@ export default class PencilTool extends Tool {
         if(this.canDraw && canvasState.bufferCtx){
             this.mouseDown = true;
             const {scaledX, scaledY} = this.getScaledPoint(e.offsetX, e.offsetY, canvasState.canvasX, canvasState.canvasY, canvasState.scale)
-            console.log(e.offsetY, scaledY, this.offsetTop)
             canvasState.bufferCtx.beginPath();
             canvasState.bufferCtx.moveTo(scaledX, scaledY);
         }
@@ -24,7 +23,6 @@ export default class PencilTool extends Tool {
 
     mouseMoveHandler(e: MouseEvent) {
         if (this.mouseDown && this.canDraw) {
-            console.log(this.canvas.height, window.innerHeight)
             const {scaledX, scaledY} = this.getScaledPoint(e.offsetX, e.offsetY, canvasState.canvasX, canvasState.canvasY, canvasState.scale)
             this.sendSocketDraw(scaledX, scaledY);
             this.draw(scaledX, scaledY);
