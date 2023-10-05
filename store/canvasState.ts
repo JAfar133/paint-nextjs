@@ -106,7 +106,7 @@ class CanvasState {
 
     deleteBorder() {
         if (this.imageContainer) {
-            this.imageContainer?.remove();
+            this.imageContainer.remove();
             this.imageContainer = null;
         }
         const containers = document.getElementsByClassName('image-container');
@@ -148,7 +148,7 @@ class CanvasState {
     draw(canvas?: HTMLCanvasElement){
         const ctx = this.canvas.getContext('2d')
         if(ctx){
-            ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+            ctx.clearRect(0, 0, this.bufferCanvas.width, this.bufferCanvas.height);
             ctx.setTransform(this.scale, 0, 0, this.scale, this.canvasX, this.canvasY);
             ctx.fillStyle = 'white'
             ctx.fillRect(0, 0, this.bufferCanvas.width, this.bufferCanvas.height);
@@ -307,7 +307,7 @@ class CanvasState {
         const img = new Image();
         img.src = dataUrl;
         img.onload = () => {
-            this.bufferCtx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+            this.bufferCtx.clearRect(0, 0, this.bufferCanvas.width, this.bufferCanvas.height);
             this.bufferCtx.drawImage(img, 0, 0);
             this.draw();
         }
@@ -349,7 +349,6 @@ class CanvasState {
     clearCanvas() {
         this.clear()
         this.saveCanvas();
-        this.savedCanvasWithoutImage = null;
         this.deleteBorder();
         if (this.socket) {
             this.socket.send(JSON.stringify({
@@ -370,7 +369,10 @@ class CanvasState {
     }
 
     clear() {
-        this.bufferCtx.clearRect(0, 0, this.canvas.width, this.canvas.height)
+        if(toolState.tool){
+            toolState.tool.tempCtx.clearRect(0,0,toolState.tool.tempCanvas.width, toolState.tool.tempCanvas.height)
+        }
+        this.bufferCtx.clearRect(0, 0, this.bufferCanvas.width, this.bufferCanvas.height)
         this.bufferCtx.fillStyle = 'rgba(255,255,255,1)';
         this.bufferCtx.fillRect(0,0, this.bufferCanvas.width, this.bufferCanvas.height);
         this.draw();

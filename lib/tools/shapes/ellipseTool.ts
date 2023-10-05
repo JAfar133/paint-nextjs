@@ -40,7 +40,7 @@ export default class EllipseTool extends Shape {
     }
 
     draw(x: number, y: number, w: number, h: number) {
-        canvasState.bufferCtx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+        canvasState.bufferCtx.clearRect(0, 0, canvasState.bufferCanvas.width, canvasState.bufferCanvas.height);
         canvasState.bufferCtx.drawImage(this.tempCanvas, 0, 0);
         drawEllipse(canvasState.bufferCtx, x, y, w, h, canvasState.isFill, canvasState.isStroke);
     }

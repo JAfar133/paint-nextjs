@@ -24,7 +24,7 @@ export default class FillingTool extends Tool {
             figure: {
                 fillStyle: canvasState.bufferCtx.fillStyle,
                 type: this.type,
-                x: x - this.canvas.width/2,
+                x: x - canvasState.bufferCanvas.width/2,
                 y: y,
                 tolerance: settingState.fillingTolerance
             }

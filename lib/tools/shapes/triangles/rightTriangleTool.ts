@@ -5,7 +5,7 @@ import userState from "@/store/userState";
 export default class RightTriangleTool extends Triangle {
 
     draw(x: number, y: number, x1: number, y1: number) {
-        canvasState.bufferCtx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+        canvasState.bufferCtx.clearRect(0, 0, canvasState.bufferCanvas.width, canvasState.bufferCanvas.height);
         canvasState.bufferCtx.drawImage(this.tempCanvas, 0, 0);
         drawTriangle(canvasState.bufferCtx, x, y, x1, y1, canvasState.isFill, canvasState.isStroke);
     }
