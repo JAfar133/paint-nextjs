@@ -100,6 +100,7 @@ export default class ArcTool extends Tool {
     }
 }
 function drawCurve(ctx: CanvasRenderingContext2D, startPoint: Point, endPoint: Point, controlPoint: Point){
+    ctx.lineCap = "round"
     ctx.beginPath();
     ctx.moveTo(startPoint.x, startPoint.y);
     ctx.bezierCurveTo(
@@ -111,6 +112,7 @@ function drawCurve(ctx: CanvasRenderingContext2D, startPoint: Point, endPoint: P
     canvasState.draw();
 }
 function drawLine(ctx: CanvasRenderingContext2D, x: number, y: number, w: number, h: number) {
+    ctx.lineCap = "round"
     ctx.beginPath();
     ctx.moveTo(x, y);
     ctx.lineTo(w, h);

@@ -135,10 +135,12 @@ const Canvas = observer(() => {
             }
         }
     }
-    const mouseDownHandler = () => {
-        window.addEventListener('mouseup', mouseUpHandler);
-        window.addEventListener('touchend', mouseUpHandler);
-        if (toolState.tool && toolState.tool.type !== "text") canvasState.addUndo(canvasState.bufferCanvas.toDataURL());
+    const mouseDownHandler = (e: React.MouseEvent<HTMLCanvasElement, MouseEvent> | React.TouchEvent<HTMLCanvasElement>) => {
+        if ((e.nativeEvent instanceof MouseEvent && e.nativeEvent.button !== 1) || e.nativeEvent instanceof TouchEvent) {
+            window.addEventListener('mouseup', mouseUpHandler);
+            window.addEventListener('touchend', mouseUpHandler);
+            if (toolState.tool && toolState.tool.type !== "text") canvasState.addUndo(canvasState.bufferCanvas.toDataURL());
+        }
     }
     const mouseUpHandler = () => {
         canvasState.saveCanvas();
@@ -175,8 +177,8 @@ const Canvas = observer(() => {
             <div className="canvas__container" id="canvas__container" ref={canvasContainer}>
                 <canvas className="canvas main_canvas"
                         ref={mainCanvasRef}
-                        onMouseDown={() => mouseDownHandler()}
-                        onTouchStart={() => mouseDownHandler()}
+                        onMouseDown={(e: React.MouseEvent<HTMLCanvasElement, MouseEvent>) => mouseDownHandler(e)}
+                        onTouchStart={(e: React.TouchEvent<HTMLCanvasElement>) => mouseDownHandler(e)}
                         onMouseEnter={() => mouseEnterHandler()}
                         onMouseLeave={() => canvasState.mouseLeaveHandler()}
                 >
