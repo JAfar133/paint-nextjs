@@ -3,7 +3,6 @@ import {BASE_SOCKET_URL} from "@/lib/config";
 import canvasState from "@/store/canvasState";
 import {toast} from "@/components/ui/use-toast";
 import userState from "@/store/userState";
-import settingState from "@/store/settingState";
 import PencilTool from "@/lib/tools/pencilTool";
 import SquareTool from "@/lib/tools/shapes/squareTool";
 import EraserTool from "@/lib/tools/eraserTool";
@@ -20,7 +19,6 @@ import {FiveStarTool} from "@/lib/tools/shapes/stars/fiveStarTool";
 import {FourStarTool} from "@/lib/tools/shapes/stars/fourStarTool";
 import {SixStarTool} from "@/lib/tools/shapes/stars/SixStarTool";
 import FillingTool from "@/lib/tools/fillingTool";
-import DragTool from "@/lib/tools/dragTool";
 
 class WebsocketService {
     websocketWorker(params: Params) {
@@ -172,7 +170,7 @@ class WebsocketService {
         if (canvasState.canvas) {
             const figure = msg.figure;
             this.figureDraw(canvasState.bufferCtx, figure)
-            settingState.fillCtx()
+            canvasState.fill()
         }
     }
 
@@ -181,23 +179,25 @@ class WebsocketService {
         figure: any
     ) {
         const draw: { [key: string]: (ctx: CanvasRenderingContext2D, figure: any) => void } = {
-            "pencil": (ctx, figure) => PencilTool.draw(ctx, figure.x, figure.y, figure.strokeStyle, figure.strokeWidth),
-            "square": (ctx, figure) => SquareTool.draw(ctx, figure.x, figure.y, figure.w, figure.h, figure.fillStyle, figure.strokeStyle, figure.strokeWidth, figure.isFill, figure.isStroke),
+            "pencil": (ctx, figure) => PencilTool.draw(ctx, figure.x, figure.y, figure.strokeStyle, figure.strokeWidth,figure.globalAlpha),
+            "square": (ctx, figure) => SquareTool.draw(ctx, figure.x, figure.y, figure.w, figure.h, figure.fillStyle, figure.strokeStyle, figure.strokeWidth, figure.isFill, figure.isStroke,figure.globalAlpha,figure.lineJoin as CanvasLineJoin),
             "eraser": (ctx, figure) => EraserTool.eraser(ctx, figure.x, figure.y, figure.strokeStyle, figure.strokeWidth),
-            "line": (ctx, figure) => LineTool.draw(ctx, figure.x, figure.y, figure.w, figure.h, figure.strokeStyle, figure.strokeWidth),
-            "circle": (ctx, figure) => CircleTool.draw(ctx, figure.x, figure.y, figure.r, figure.fillStyle, figure.strokeStyle, figure.strokeWidth, figure.isFill, figure.isStroke),
-            "ellipse": (ctx, figure) => EllipseTool.draw(ctx, figure.x, figure.y, figure.w, figure.h, figure.fillStyle, figure.strokeStyle, figure.strokeWidth, figure.isFill, figure.isStroke),
-            "right-triangle": (ctx, figure) => RightTriangleTool.draw(ctx, figure.x, figure.y, figure.w, figure.h, figure.fillStyle, figure.strokeStyle, figure.strokeWidth, figure.isFill, figure.isStroke),
-            "straight-triangle": (ctx, figure) => StraightTriangleTool.draw(ctx, figure.x, figure.y, figure.w, figure.h, figure.fillStyle, figure.strokeStyle, figure.strokeWidth, figure.isFill, figure.isStroke),
-            "text": (ctx, figure) => TextTool.draw(ctx, figure.text, figure.startX, figure.startY, figure.fillStyle, figure.font),
-            "arc": (ctx, figure) => ArcTool.draw(ctx, figure.startPoint, figure.endPoint, figure.controlPoint, figure.strokeStyle, figure.strokeWidth),
-            "arrow": (ctx, figure) => ArrowTool.draw(ctx, figure.x, figure.y, figure.w, figure.h, figure.strokeStyle, figure.strokeWidth),
-            "shit": (ctx, figure) => ShitTool.draw(ctx, figure.x, figure.y, figure.w, figure.h, figure.fillStyle, figure.strokeStyle, figure.strokeWidth, figure.isFill, figure.isStroke),
-            "five_star": (ctx, figure) => FiveStarTool.draw(ctx, figure.x, figure.y, figure.w, figure.h, figure.fillStyle, figure.strokeStyle, figure.strokeWidth, figure.isFill, figure.isStroke),
-            "four_star": (ctx, figure) => FourStarTool.draw(ctx, figure.x, figure.y, figure.w, figure.h, figure.fillStyle, figure.strokeStyle, figure.strokeWidth, figure.isFill, figure.isStroke),
-            "six_star": (ctx, figure) => SixStarTool.draw(ctx, figure.x, figure.y, figure.w, figure.h, figure.fillStyle, figure.strokeStyle, figure.strokeWidth, figure.isFill, figure.isStroke),
-            "filling": (ctx, figure) => FillingTool.draw(ctx, figure.x, figure.y, figure.fillStyle,figure.tolerance),
-            "finish": (ctx) => ctx.beginPath(),
+            "line": (ctx, figure) => LineTool.draw(ctx, figure.x, figure.y, figure.w, figure.h, figure.strokeStyle, figure.strokeWidth,figure.globalAlpha,figure.lineCap as CanvasLineCap),
+            "circle": (ctx, figure) => CircleTool.draw(ctx, figure.x, figure.y, figure.r, figure.fillStyle, figure.strokeStyle, figure.strokeWidth, figure.isFill, figure.isStroke,figure.globalAlpha,figure.lineJoin as CanvasLineJoin),
+            "ellipse": (ctx, figure) => EllipseTool.draw(ctx, figure.x, figure.y, figure.w, figure.h, figure.fillStyle, figure.strokeStyle, figure.strokeWidth, figure.isFill, figure.isStroke,figure.globalAlpha,figure.lineJoin as CanvasLineJoin),
+            "right-triangle": (ctx, figure) => RightTriangleTool.draw(ctx, figure.x, figure.y, figure.w, figure.h, figure.fillStyle, figure.strokeStyle, figure.strokeWidth, figure.isFill, figure.isStroke,figure.globalAlpha,figure.lineJoin as CanvasLineJoin),
+            "straight-triangle": (ctx, figure) => StraightTriangleTool.draw(ctx, figure.x, figure.y, figure.w, figure.h, figure.fillStyle, figure.strokeStyle, figure.strokeWidth, figure.isFill, figure.isStroke,figure.globalAlpha,figure.lineJoin as CanvasLineJoin),
+            "text": (ctx, figure) => TextTool.draw(ctx, figure.text, figure.startX, figure.startY, figure.fillStyle, figure.font,figure.globalAlpha),
+            "arc": (ctx, figure) => ArcTool.draw(ctx, figure.startPoint, figure.endPoint, figure.controlPoint, figure.strokeStyle, figure.strokeWidth,figure.globalAlpha,figure.lineCap as CanvasLineCap),
+            "arrow": (ctx, figure) => ArrowTool.draw(ctx, figure.x, figure.y, figure.w, figure.h, figure.strokeStyle, figure.strokeWidth,figure.globalAlpha,figure.lineCap as CanvasLineCap),
+            "shit": (ctx, figure) => ShitTool.draw(ctx, figure.x, figure.y, figure.w, figure.h, figure.fillStyle, figure.strokeStyle, figure.strokeWidth, figure.isFill, figure.isStroke,figure.globalAlpha,figure.lineJoin as CanvasLineJoin),
+            "five_star": (ctx, figure) => FiveStarTool.draw(ctx, figure.x, figure.y, figure.w, figure.h, figure.fillStyle, figure.strokeStyle, figure.strokeWidth, figure.isFill, figure.isStroke,figure.globalAlpha,figure.lineJoin as CanvasLineJoin),
+            "four_star": (ctx, figure) => FourStarTool.draw(ctx, figure.x, figure.y, figure.w, figure.h, figure.fillStyle, figure.strokeStyle, figure.strokeWidth, figure.isFill, figure.isStroke,figure.globalAlpha,figure.lineJoin as CanvasLineJoin),
+            "six_star": (ctx, figure) => SixStarTool.draw(ctx, figure.x, figure.y, figure.w, figure.h, figure.fillStyle, figure.strokeStyle, figure.strokeWidth, figure.isFill, figure.isStroke,figure.globalAlpha,figure.lineJoin as CanvasLineJoin),
+            "filling": (ctx, figure) => FillingTool.draw(ctx, figure.x, figure.y, figure.fillStyle,figure.tolerance,figure.globalAlpha),
+            "finish": (ctx) => {
+                ctx.beginPath()
+            },
         };
 
         return draw[figure.type](ctx, figure);

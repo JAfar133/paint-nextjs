@@ -1,6 +1,7 @@
 import Shape from "@/lib/tools/shapes/Shape";
 import userState from "@/store/userState";
 import canvasState from "@/store/canvasState";
+import settingState from "@/store/settingState";
 
 export default class LineTool extends Shape {
 
@@ -43,7 +44,9 @@ export default class LineTool extends Shape {
                     fillStyle: canvasState.bufferCtx.fillStyle,
                     strokeStyle: canvasState.bufferCtx.strokeStyle,
                     strokeWidth: canvasState.bufferCtx.lineWidth,
+                    globalAlpha: settingState.globalAlpha,
                     isFill: canvasState.isFill,
+                    lineCap: settingState.lineCap,
                     isStroke: canvasState.isStroke,
                     type: this.type,
                     x: this.startX - canvasState.bufferCanvas.width/2,
@@ -56,11 +59,15 @@ export default class LineTool extends Shape {
     draw(x: number, y: number, w: number, h: number) {
         canvasState.bufferCtx.clearRect(0, 0, canvasState.bufferCanvas.width, canvasState.bufferCanvas.height);
         canvasState.bufferCtx.drawImage(this.tempCanvas, 0, 0);
+        canvasState.bufferCtx.globalAlpha = settingState.globalAlpha;
         drawLine(canvasState.bufferCtx, x, y, w, h)
     }
-    static draw(ctx: CanvasRenderingContext2D, x: number, y: number, w: number, h: number, strokeStyle: string, strokeWidth: number) {
+    static draw(ctx: CanvasRenderingContext2D, x: number, y: number, w: number, h: number,
+                strokeStyle: string, strokeWidth: number, globalAlpha: number, lineCap: CanvasLineCap) {
         ctx.strokeStyle = strokeStyle;
         ctx.lineWidth = strokeWidth;
+        ctx.globalAlpha = globalAlpha;
+        ctx.lineCap = lineCap;
         drawLine(ctx, x+ctx.canvas.width/2, y, w + ctx.canvas.width/2, h)
     }
 }

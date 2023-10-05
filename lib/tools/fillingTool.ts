@@ -23,6 +23,7 @@ export default class FillingTool extends Tool {
             username: userState.user?.username,
             figure: {
                 fillStyle: canvasState.bufferCtx.fillStyle,
+                globalAlpha: settingState.globalAlpha,
                 type: this.type,
                 x: x - canvasState.bufferCanvas.width/2,
                 y: y,
@@ -37,7 +38,7 @@ export default class FillingTool extends Tool {
             const {scaledX, scaledY} = this.getScaledPoint(e.offsetX, e.offsetY, canvasState.canvasX, canvasState.canvasY, canvasState.scale)
             const x = Math.floor(scaledX),
                 y = Math.floor(scaledY);
-            floodFill(canvasState.bufferCtx,x, y, settingState.fillColor, settingState.fillingTolerance)
+            floodFill(canvasState.bufferCtx,x, y, settingState.fillColor, settingState.fillingTolerance, settingState.globalAlpha)
             this.sendDrawWebsocket(x, y)
         }
     }
@@ -52,17 +53,17 @@ export default class FillingTool extends Tool {
     }
 
     draw(x: number, y: number, fillColor: string) {
-        floodFill(canvasState.bufferCtx,x, y, fillColor, settingState.fillingTolerance)
+        floodFill(canvasState.bufferCtx,x, y, fillColor, settingState.fillingTolerance, settingState.globalAlpha)
     }
 
-    static draw(ctx: CanvasRenderingContext2D, x: number, y: number, fillColor: string, tolerance: number = 5) {
-        floodFill(ctx,x + ctx.canvas.width/2, y, fillColor, tolerance)
+    static draw(ctx: CanvasRenderingContext2D, x: number, y: number, fillColor: string, tolerance: number = 5, globalAlpha: number) {
+        floodFill(ctx,x + ctx.canvas.width/2, y, fillColor, tolerance, globalAlpha)
     }
 
 }
 
 
-function floodFill(ctx: CanvasRenderingContext2D, startX: number, startY: number, newColor: string, tolerance: number = 5): void {
+function floodFill(ctx: CanvasRenderingContext2D, startX: number, startY: number, newColor: string, tolerance: number = 5, globalAlpha: number): void {
     const width = ctx.canvas.width;
     const height = ctx.canvas.height;
     const casData = ctx.getImageData(0, 0, width, height);
@@ -76,12 +77,12 @@ function floodFill(ctx: CanvasRenderingContext2D, startX: number, startY: number
     };
 
     const replacementColor = normalizeColor(newColor);
-
     if (!replacementColor) {
         console.error("Invalid replacement color.");
         return;
     }
-
+    replacementColor.a = Math.floor(globalAlpha*255);
+    console.log(replacementColor)
     if (colorsMatch(targetColor, replacementColor)) {
         return;
     }
@@ -136,7 +137,7 @@ function colorsMatchWithTolerance(color1: Color, color2: Color, tolerance: numbe
         Math.abs(color1.r - color2.r) <= tolerance &&
         Math.abs(color1.g - color2.g) <= tolerance &&
         Math.abs(color1.b - color2.b) <= tolerance &&
-        Math.abs(color1.a - color2.a) <= tolerance
+        Math.abs(color1.a - color2.a) <= 255
     );
 }
 function colorsMatch(color1: Color, color2: Color): boolean {

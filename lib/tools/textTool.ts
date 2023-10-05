@@ -76,6 +76,7 @@ export default class TextTool extends Tool {
                 username: userState.user?.username,
                 figure: {
                     fillStyle: canvasState.bufferCtx.fillStyle,
+                    globalAlpha: settingState.globalAlpha,
                     font: canvasState.bufferCtx.font,
                     type: this.type,
                     text: key,
@@ -94,6 +95,7 @@ export default class TextTool extends Tool {
         }
     };
     print(text: string, startX: number, startY: number) {
+        canvasState.bufferCtx.globalAlpha = settingState.globalAlpha;
         canvasState.bufferCtx.fillText(text, startX, startY);
         canvasState.draw();
         canvasState.bufferCtx.beginPath();
@@ -115,9 +117,11 @@ export default class TextTool extends Tool {
 
     }
 
-    static draw(ctx: CanvasRenderingContext2D, text: string, startX: number, startY: number, fillStyle: string, font: string) {
+    static draw(ctx: CanvasRenderingContext2D, text: string, startX: number, startY: number,
+                fillStyle: string, font: string, globalAlpha: number) {
         ctx.font = font;
         ctx.fillStyle = fillStyle;
+        ctx.globalAlpha = globalAlpha;
         ctx.fillText(text, startX + ctx.canvas.width/2, startY);
         canvasState.draw();
     }

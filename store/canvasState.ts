@@ -2,10 +2,8 @@ import {makeAutoObservable} from "mobx";
 import UserService from "@/lib/api/UserService";
 import toolState from "@/store/toolState";
 import DragTool from "@/lib/tools/dragTool";
-import Tool from "@/lib/tools/tool";
 import userState from "@/store/userState";
 import settingState from "@/store/settingState";
-import {canvasSize} from "@/lib/utils";
 
 export type cursorClass =
     "cursor-move" | "cursor-grab" | "cursor-text" | "cursor-cell" |
@@ -67,7 +65,6 @@ class CanvasState {
 
     drawBorder() {
         const ctx = this.canvas.getContext('2d')
-        const container = document.querySelector('#canvas');
         this.deleteBorder();
 
         this.imageContainer = document.createElement('div');
@@ -137,17 +134,27 @@ class CanvasState {
     wheelHandler(e: WheelEvent) {
         e.preventDefault();
         const zoomSpeed = 0.1;
-        const scaleFactor = e.deltaY > 0 ? 1 - zoomSpeed : 1 + zoomSpeed;
+        let scaleFactor = e.deltaY > 0 ? 1 - zoomSpeed : 1 + zoomSpeed;
 
         this.scale *= scaleFactor;
+        if (this.scale < 0.05) {
+            this.scale = 0.05;
+            scaleFactor = 1;
+        } else if (this.scale > 32) {
+            this.scale = 32;
+            scaleFactor = 1;
+        }
+
         this.canvasX -= (e.offsetX - this.canvasX) * (scaleFactor - 1);
         this.canvasY -= (e.offsetY - this.canvasY) * (scaleFactor - 1);
         this.draw();
-
     }
+
     draw(canvas?: HTMLCanvasElement){
         const ctx = this.canvas.getContext('2d')
         if(ctx){
+            this.bufferCtx.globalAlpha = 1;
+            this.fill();
             ctx.clearRect(0, 0, this.bufferCanvas.width, this.bufferCanvas.height);
             ctx.setTransform(this.scale, 0, 0, this.scale, this.canvasX, this.canvasY);
             ctx.fillStyle = 'white'
@@ -158,7 +165,6 @@ class CanvasState {
             else {
                 ctx.drawImage(this.bufferCanvas, 0,0);
             }
-
             ctx.setTransform(1, 0, 0, 1, 0, 0);
             if (toolState.tool && toolState.tool.type === "drag") {
                 this.drawBorder();
@@ -326,7 +332,7 @@ class CanvasState {
                 img: img, isDragging: false, isResizing: false, isRotating: false, isUpload: true, angle: 0
             });
             if (this.socket) {
-                toolState.setTool(new DragTool(this.canvas, this.socket, this.canvasId, "drag", img))
+                toolState.setTool(new DragTool(this.canvas, this.socket, this.canvasId, "drag"))
             }
             img.onload = () => {
                 if (img.width > 0 && img.height > 0) {
@@ -398,13 +404,16 @@ class CanvasState {
     set font(font: string) {
         this.bufferCtx.font = font
     }
+    set globalAlpha(alpha: number) {
+        this.bufferCtx.globalAlpha = alpha
+    }
     fill(){
         this.strokeColor = settingState.strokeColor || '#000';
         this.fillColor = settingState.fillColor || '#000';
         this.lineWidth = settingState.strokeWidth;
-        this.font = settingState.font
-        this.lineCap = "butt"
-        this.lineJoin = "miter"
+        this.font = settingState.font;
+        this.lineCap = settingState.lineCap;
+        this.lineJoin = settingState.lineJoin;
     }
 }
 

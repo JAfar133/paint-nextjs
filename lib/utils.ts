@@ -48,12 +48,29 @@ export type ButtonVariant =
     | "ghost"
     | "premium"
     | "golden";
-
+export type ToolName =
+    "drag"
+    | "pencil"
+    | "circle"
+    | "ellipse"
+    | "square"
+    | "straight-triangle"
+    | "right-triangle"
+    | "four_star"
+    | "five_star"
+    | "six_star"
+    | "shit"
+    | "line"
+    | "arrow"
+    | "arc"
+    | "text"
+    | "eraser"
+    | "filling"
 export const canvasSize = {height: 1080, width: 1920}
 
 export interface ClientTool {
     icon: any;
-    name: string;
+    name: ToolName;
     description: string;
     fillColor: boolean;
     strokeColor: boolean;
@@ -200,7 +217,7 @@ export const tools: ClientTool[] = [
 ]
 
 export const toolClasses: {
-    [key: string]: new (canvas: HTMLCanvasElement, socket: WebSocket, id: string | string[], type: string) => Tool
+    [key: string]: new (canvas: HTMLCanvasElement, socket: WebSocket, id: string | string[], type: ToolName) => Tool
 } = {
     "pencil": PencilTool,
     "drag": DragTool,

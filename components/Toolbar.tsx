@@ -17,8 +17,9 @@ import {useParams} from "next/navigation";
 import {AiOutlineClear, AiOutlinePlusSquare} from "react-icons/ai";
 import {IoReturnUpBackOutline, IoReturnUpForward} from "react-icons/io5";
 import _ from 'lodash'
-import {ClientTool, cn, fonts, fontWeights, toolClasses, tools} from "@/lib/utils";
+import {ClientTool, cn, fonts, fontWeights, toolClasses, ToolName, tools} from "@/lib/utils";
 import {Popover, PopoverContent, PopoverTrigger} from "@/components/ui/popover";
+import {Slider} from "@/components/ui/slider";
 
 const toolDivClass = "ml-3 flex flex-col content-center";
 
@@ -32,11 +33,11 @@ const Toolbar = observer(() => {
             const [textFont, setTextFont] = useState<string>(settingState.textFont);
             const [fontWeight, setFontWeight] = useState<string>(settingState.textFont);
 
-            const findToolByName = (name: string): ClientTool => {
+            const findToolByName = (name: ToolName): ClientTool => {
                 const tool = _.find(tools, {name: name})
                 return tool || tools[1];
             }
-            const setTool = (toolName: string) => {
+            const setTool = (toolName: ToolName) => {
                 if (toolPressed && toolName === toolPressed.name) setToolPressed(tools[1]);
                 else setToolPressed(findToolByName(toolName));
                 canvasState.fill();
@@ -117,6 +118,18 @@ const Toolbar = observer(() => {
                 setFontWeight(weight)
                 if (toolState.tool) {
                     settingState.setFontWeight(weight);
+                    canvasState.fill();
+                }
+            }
+            const handleLineJoinTool = (lineJoin: CanvasLineJoin) => {
+                if (toolState.tool) {
+                    settingState.setLineJoin(lineJoin);
+                    canvasState.fill();
+                }
+            }
+            const handleLineCapTool = (lineCap: CanvasLineCap) => {
+                if (toolState.tool) {
+                    settingState.setLineCap(lineCap);
                     canvasState.fill();
                 }
             }
@@ -261,26 +274,56 @@ const Toolbar = observer(() => {
                                       <div className="ml-5 flex flex-col gap-1 text-sm">
                                         <div>
                                           <span style={{fontSize: 11, marginRight: 5}}>Заливка</span>
-                                          <select value={canvasState.isFill.toString()}
-                                                  onChange={(e) => {
-                                                      canvasState.isFill = e.target.value === 'true'
-                                                  }}>
+                                          <select
+                                            className="w-[150px]"
+                                            value={canvasState.isFill.toString()}
+                                            onChange={(e) => {
+                                              canvasState.isFill = e.target.value === 'true'
+                                            }}>
                                             <option value="true">Сплошной цвет</option>
                                             <option value="false">Без заливки</option>
                                           </select>
                                         </div>
                                         <div>
                                           <span style={{fontSize: 11, marginRight: 12}}>Контур</span>
-                                          <select value={canvasState.isStroke.toString()}
-                                                  onChange={(e) => {
-                                                      canvasState.isStroke = e.target.value === 'true'
-                                                  }}>
+                                          <select
+                                            className="w-[150px]"
+                                            value={canvasState.isStroke.toString()}
+                                            onChange={(e) => {
+                                              canvasState.isStroke = e.target.value === 'true'
+                                            }}>
                                             <option value="true">Сплошной цвет</option>
                                             <option value="false">Без контура</option>
                                           </select>
                                         </div>
+                                          { toolPressed.name !== "circle" && toolPressed.name !== "ellipse" && <div>
+                                          <span style={{fontSize: 11, marginRight: 24}}>Углы</span>
+                                          <select
+                                            className="w-[150px]"
+                                            value={settingState.lineJoin}
+                                            onChange={(e) => {
+                                              handleLineJoinTool(e.target.value as CanvasLineJoin)
+                                            }}>
+                                            <option value="miter">Острые</option>
+                                            <option value="round">Скругленные</option>
+                                            <option value="bevel">Срезанные</option>
+                                          </select>
+                                        </div>}
                                       </div>
                                     }
+                                    { (toolPressed.name === "arc" || toolPressed.name === "line" || toolPressed.name === "arrow") &&
+                                        <div className="ml-4">
+                                          <span style={{fontSize: 11, marginRight: 5}}>Линии</span>
+                                          <select
+                                            value={settingState.lineCap}
+                                            onChange={(e) => {
+                                                handleLineCapTool(e.target.value as CanvasLineCap)
+                                            }}>
+                                            <option value="butt">Прямые</option>
+                                            <option value="round">Скругленные</option>
+                                            <option value="square">Прямые с добавлением</option>
+                                          </select>
+                                        </div>}
                                     { toolPressed?.name === "filling" &&
                                       <div className={cn(toolDivClass, "gap-2")}>
                                         <CustomSelect id="width" classname="w-12 m-auto h-7"
@@ -290,6 +333,21 @@ const Toolbar = observer(() => {
                                         <label htmlFor="width" style={{fontSize: 10}} className="ml-1 m-auto">Допуск</label>
                                       </div>
                                     }
+                                    <div className={cn(toolDivClass, "gap-2")}>
+                                        <Slider
+                                            max={100}
+                                            step={1}
+                                            value={[settingState.globalAlpha*100]}
+                                            onValueChange={(value: number[]) => {
+                                                settingState.setGlobalAlpha(value[0]/100)
+                                            }}
+                                            onValueCommit={() => {
+                                                canvasState.fill()
+                                            }}
+                                            className={cn("w-[200px]")}
+                                        />
+                                        <label htmlFor="width" style={{fontSize: 10}} className="ml-1 m-auto">Прозрачность</label>
+                                    </div>
                                 </div>
                             </div>
                             <div className="flex gap-7 items-center">

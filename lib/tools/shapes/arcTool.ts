@@ -1,6 +1,7 @@
 import Tool from "@/lib/tools/tool";
 import userState from "@/store/userState";
 import canvasState from "@/store/canvasState";
+import settingState from "@/store/settingState";
 
 export interface Point {
     x: number;
@@ -14,7 +15,7 @@ export default class ArcTool extends Tool {
     x: number = 0;
     y: number = 0;
     mouseDownHandler(e: MouseEvent) {
-        if(this.canDraw && this.canDraw){
+        if(this.canDraw && this.canDraw && e.button !== 1){
             this.mouseDown = true;
             canvasState.bufferCtx.beginPath();
             const {scaledX, scaledY} = this.getScaledPoint(e.offsetX, e.offsetY, canvasState.canvasX, canvasState.canvasY, canvasState.scale)
@@ -27,16 +28,18 @@ export default class ArcTool extends Tool {
         }
     }
     mouseMoveHandler(e: MouseEvent) {
-        if (this.mouseDown && this.canDraw) {
+        if (this.mouseDown && this.canDraw && e.button !== 1) {
             const {scaledX, scaledY} = this.getScaledPoint(e.offsetX, e.offsetY, canvasState.canvasX, canvasState.canvasY, canvasState.scale)
             if(this.startPoint && !this.controlPoint ){
                 canvasState.bufferCtx.clearRect(0, 0, canvasState.bufferCanvas.width, canvasState.bufferCanvas.height);
                 canvasState.bufferCtx.drawImage(this.tempCanvas, 0, 0);
+                canvasState.bufferCtx.globalAlpha = settingState.globalAlpha;
                 drawLine(canvasState.bufferCtx, this.startPoint.x, this.startPoint.y, scaledX, scaledY)
             }else if(this.endPoint && this.startPoint && this.controlPoint){
                 this.endPoint = {x: scaledX,y: scaledY};
                 canvasState.bufferCtx.clearRect(0, 0, canvasState.bufferCanvas.width, canvasState.bufferCanvas.height);
                 canvasState.bufferCtx.drawImage(this.tempCanvas, 0, 0);
+                canvasState.bufferCtx.globalAlpha = settingState.globalAlpha;
                 drawCurve(canvasState.bufferCtx, this.startPoint, this.controlPoint, this.endPoint)
             }
 
@@ -46,14 +49,16 @@ export default class ArcTool extends Tool {
 
     mouseUpHandler(e: MouseEvent) {
         super.mouseUpHandler(e);
-        const {scaledX, scaledY} = this.getScaledPoint(e.offsetX, e.offsetY, canvasState.canvasX, canvasState.canvasY, canvasState.scale)
+        if(e.button !== 1){
+            const {scaledX, scaledY} = this.getScaledPoint(e.offsetX, e.offsetY, canvasState.canvasX, canvasState.canvasY, canvasState.scale)
 
-        if(!this.controlPoint){
-            this.controlPoint = {x: scaledX, y: scaledY};
-        }
-        else {
-            this.sendWebSocket()
+            if(!this.controlPoint){
+                this.controlPoint = {x: scaledX, y: scaledY};
+            }
+            else {
+                this.sendWebSocket()
 
+            }
         }
         this.mouseDown = false;
     }
@@ -69,6 +74,8 @@ export default class ArcTool extends Tool {
                 figure: {
                     strokeStyle: canvasState.bufferCtx.strokeStyle,
                     strokeWidth: canvasState.bufferCtx.lineWidth,
+                    globalAlpha: settingState.globalAlpha,
+                    lineCap: settingState.lineCap,
                     type: this.type,
                     startPoint: this.startPoint,
                     controlPoint: this.controlPoint,
@@ -81,9 +88,11 @@ export default class ArcTool extends Tool {
         }
     }
     static draw(ctx: CanvasRenderingContext2D, startPoint: Point, endPoint: Point, controlPoint: Point,
-                strokeStyle: string, strokeWith: number) {
+                strokeStyle: string, strokeWith: number, globalAlpha: number, lineCap: CanvasLineCap) {
         ctx.strokeStyle = strokeStyle;
         ctx.lineWidth = strokeWith;
+        ctx.lineCap = lineCap;
+        ctx.globalAlpha = globalAlpha;
         startPoint.x = startPoint.x + canvasState.bufferCanvas.width/2
         controlPoint.x = controlPoint.x + canvasState.bufferCanvas.width/2
         endPoint.x = endPoint.x + canvasState.bufferCanvas.width/2
@@ -100,7 +109,6 @@ export default class ArcTool extends Tool {
     }
 }
 function drawCurve(ctx: CanvasRenderingContext2D, startPoint: Point, endPoint: Point, controlPoint: Point){
-    ctx.lineCap = "round"
     ctx.beginPath();
     ctx.moveTo(startPoint.x, startPoint.y);
     ctx.bezierCurveTo(
@@ -112,7 +120,6 @@ function drawCurve(ctx: CanvasRenderingContext2D, startPoint: Point, endPoint: P
     canvasState.draw();
 }
 function drawLine(ctx: CanvasRenderingContext2D, x: number, y: number, w: number, h: number) {
-    ctx.lineCap = "round"
     ctx.beginPath();
     ctx.moveTo(x, y);
     ctx.lineTo(w, h);

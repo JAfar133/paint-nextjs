@@ -1,10 +1,9 @@
 import Tool from "@/lib/tools/tool";
 import userState from "@/store/userState";
 import canvasState from "@/store/canvasState";
+import settingState from "@/store/settingState";
 
 export default class PencilTool extends Tool {
-    lastCircleX: number = -1;
-    lastCircleY: number = -1;
 
     mouseUpHandler(e: MouseEvent) {
         this.mouseDown = false;
@@ -68,21 +67,14 @@ export default class PencilTool extends Tool {
             figure: {
                 strokeWidth: canvasState.bufferCtx.lineWidth,
                 strokeStyle: canvasState.bufferCtx.strokeStyle,
+                globalAlpha: settingState.globalAlpha,
                 type: this.type,
                 x: x - canvasState.bufferCanvas.width/2,
                 y: y
             }
         }));
     }
-    sendSocketFinish(){
-        this.socket.send(JSON.stringify({
-            method: 'draw',
-            id: this.id,
-            figure: {
-                type: 'finish',
-            }
-        }));
-    }
+
 
     touchStartHandler(e: TouchEvent) {
         const touch = e.touches[0];
@@ -97,23 +89,24 @@ export default class PencilTool extends Tool {
     touchEndHandler(e: TouchEvent) {
         this.mouseDown = false;
         this.sendSocketFinish();
-        this.lastCircleX = -1;
-        this.lastCircleY = -1;
         e.preventDefault();
     }
 
 
-    static draw(ctx: CanvasRenderingContext2D, x: number, y: number, strokeStyle: string, strokeWidth: number) {
+    static draw(ctx: CanvasRenderingContext2D, x: number, y: number, strokeStyle: string, strokeWidth: number, globalAlpha: number) {
         ctx.lineCap = "round";
         ctx.lineJoin = "round";
         ctx.strokeStyle = strokeStyle;
         ctx.lineWidth = strokeWidth;
+        ctx.globalAlpha = globalAlpha;
+        console.log("draw pencil")
         drawLine(ctx, x+ctx.canvas.width/2, y)
     }
 
     draw(x: number, y: number) {
         canvasState.bufferCtx.lineCap = "round";
         canvasState.bufferCtx.lineJoin = "round";
+        canvasState.bufferCtx.globalAlpha = settingState.globalAlpha;
         drawLine(canvasState.bufferCtx, x, y);
     }
 }

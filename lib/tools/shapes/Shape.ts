@@ -1,6 +1,7 @@
 import Tool from "@/lib/tools/tool";
 import userState from "@/store/userState";
 import canvasState from "@/store/canvasState";
+import settingState from "@/store/settingState";
 
 export default abstract class Shape extends Tool {
 
@@ -31,9 +32,11 @@ export default abstract class Shape extends Tool {
                 id: this.id,
                 username: userState.user?.username,
                 figure: {
-                    fillStyle: canvasState.bufferCtx.fillStyle,
-                    strokeStyle: canvasState.bufferCtx.strokeStyle,
-                    strokeWidth: canvasState.bufferCtx.lineWidth,
+                    fillStyle: settingState.fillColor,
+                    strokeStyle: settingState.strokeColor,
+                    strokeWidth: settingState.strokeWidth,
+                    globalAlpha: settingState.globalAlpha,
+                    lineJoin: settingState.lineJoin,
                     isFill: canvasState.isFill,
                     isStroke: canvasState.isStroke,
                     type: this.type,
@@ -43,6 +46,7 @@ export default abstract class Shape extends Tool {
                     h: this.height,
                 }}))
         }
+        this.sendSocketFinish();
     }
     touchEndHandler(e: TouchEvent): void {
         this.mouseDown = false;

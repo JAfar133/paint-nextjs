@@ -1,5 +1,6 @@
 import LineTool from "@/lib/tools/shapes/lineTool";
 import canvasState from "@/store/canvasState";
+import settingState from "@/store/settingState";
 
 
 export default class ArrowTool extends LineTool {
@@ -7,13 +8,16 @@ export default class ArrowTool extends LineTool {
         canvasState.bufferCtx.clearRect(0, 0, canvasState.bufferCanvas.width, canvasState.bufferCanvas.height);
         canvasState.bufferCtx.drawImage(this.tempCanvas, 0, 0);
         canvasState.bufferCtx.fillStyle = canvasState.bufferCtx.strokeStyle;
+        canvasState.bufferCtx.globalAlpha = settingState.globalAlpha;
         drawArrow(canvasState.bufferCtx, x, y, w, h)
     }
     static draw(ctx: CanvasRenderingContext2D, x: number, y: number, w: number,
-                h: number, strokeStyle: string, strokeWidth: number) {
+                h: number, strokeStyle: string, strokeWidth: number, globalAlpha: number, lineCap: CanvasLineCap) {
+        ctx.lineCap = lineCap;
         ctx.strokeStyle = strokeStyle;
         ctx.fillStyle = ctx.strokeStyle;
         ctx.lineWidth = strokeWidth;
+        ctx.globalAlpha = globalAlpha;
         drawArrow(ctx, x+ctx.canvas.width/2, y, w+ctx.canvas.width/2, h)
     }
 }

@@ -1,11 +1,11 @@
-import canvasState from "@/store/canvasState";
-import {canvasSize} from "@/lib/utils";
+import {canvasSize, ToolName} from "@/lib/utils";
+
 export default abstract class Tool {
     canvas: HTMLCanvasElement;
     ctx: CanvasRenderingContext2D;
     socket: WebSocket;
     id: string | string[];
-    type: string;
+    type: ToolName;
     mouseDown: boolean = false;
     offsetTop: number;
     offsetLeft: number;
@@ -14,7 +14,7 @@ export default abstract class Tool {
     tempCanvas: HTMLCanvasElement;
     tempCtx: CanvasRenderingContext2D;
 
-    constructor(canvas: HTMLCanvasElement, socket: WebSocket, id: string | string[], type: string) {
+    constructor(canvas: HTMLCanvasElement, socket: WebSocket, id: string | string[], type: ToolName) {
         this.canvas = canvas;
         this.socket = socket;
         this.tempImage = new Image();
@@ -30,6 +30,15 @@ export default abstract class Tool {
         this.destroyEvents();
         this.listen();
 
+    }
+    sendSocketFinish(){
+        this.socket.send(JSON.stringify({
+            method: 'draw',
+            id: this.id,
+            figure: {
+                type: 'finish',
+            }
+        }));
     }
     protected getScaledPoint(x: number, y: number, canvasX: number, canvasY: number, scale: number){
         const scaledX = (x - canvasX) / scale;

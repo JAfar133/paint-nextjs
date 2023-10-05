@@ -2,7 +2,7 @@ import Tool from "@/lib/tools/tool";
 import toolState, {ImageForEdit} from "@/store/toolState";
 import canvasState, {cursorClass} from "@/store/canvasState";
 import {Point} from "@/lib/tools/shapes/arcTool";
-import {canvasSize} from "@/lib/utils";
+import {canvasSize, ToolName} from "@/lib/utils";
 
 type resizePoint = "leftTop" | "leftBottom" | "rightTop" | "rightBottom" | "right" | "left" | "top" | "bottom"
 interface ImageCenter {
@@ -24,7 +24,7 @@ export default class DragTool extends Tool {
     imageCenter: ImageCenter = {centerX: 0, centerY: 0}
     imageXY: Point = {x: 0, y: 0}
 
-    constructor(canvas: HTMLCanvasElement, socket: WebSocket, id: string | string[], type: string, img?: HTMLImageElement) {
+    constructor(canvas: HTMLCanvasElement, socket: WebSocket, id: string | string[], type: ToolName) {
         super(canvas, socket, id, type);
         this.imageCanvas = document.createElement('canvas')
         this.imageCtx = this.imageCanvas.getContext('2d')!;
@@ -218,7 +218,12 @@ export default class DragTool extends Tool {
             )
             this.image.imageX = x;
             this.image.imageY = y;
-
+            if(canvasState.savedCanvasWithoutImage){
+                canvasState.bufferCtx.clearRect(0, 0, canvasState.bufferCanvas.width, canvasState.bufferCanvas.height)
+                canvasState.bufferCtx.drawImage(canvasState.savedCanvasWithoutImage, 0, 0);
+                canvasState.bufferCtx.drawImage(this.tempCanvas, 0, 0);
+                canvasState.draw();
+            }
         }
     }
 
@@ -466,12 +471,6 @@ export default class DragTool extends Tool {
             newHeight
         );
         tempCtx.restore();
-        if(canvasState.savedCanvasWithoutImage){
-            ctx.clearRect(0, 0, canvas.width, canvas.height)
-            ctx.drawImage(canvasState.savedCanvasWithoutImage, 0, 0);
-            ctx.drawImage(tempCanvas, 0, 0);
-            canvasState.draw();
-        }
 
     }
 
