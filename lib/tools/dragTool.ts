@@ -34,7 +34,7 @@ export default class DragTool extends Tool {
 
         canvasState.deleteBorder();
         const imgOnload = () => {
-            canvasState.bufferCtx.clearRect(0, 0, canvas.width, canvas.height);
+            canvasState.bufferCtx.clearRect(0, 0, canvasState.bufferCanvas.width, canvasState.bufferCanvas.height);
             canvasState.savedCtxWithoutImage?.drawImage(canvasState.bufferCanvas, 0, 0);
             canvasState.bufferCtx.drawImage(this.imageCanvas, 0, 0);
             canvasState.draw()
@@ -167,7 +167,7 @@ export default class DragTool extends Tool {
 
                 }
                 if(canvasState.savedCanvasWithoutImage){
-                    canvasState.bufferCtx.clearRect(0, 0, this.canvas.width, this.canvas.height)
+                    canvasState.bufferCtx.clearRect(0, 0, canvasState.bufferCanvas.width, canvasState.bufferCanvas.height)
                     canvasState.bufferCtx.drawImage(canvasState.savedCanvasWithoutImage, 0, 0);
                     canvasState.bufferCtx.drawImage(this.tempCanvas, 0, 0);
                     canvasState.draw();
@@ -243,7 +243,7 @@ export default class DragTool extends Tool {
                     this.image.img.height);
                 this.tempCtx.restore();
                 if(canvasState.savedCanvasWithoutImage){
-                    canvasState.bufferCtx.clearRect(0, 0, this.tempCanvas.width, this.tempCanvas.height)
+                    canvasState.bufferCtx.clearRect(0, 0, canvasState.bufferCanvas.width, canvasState.bufferCanvas.height);
                     canvasState.bufferCtx.drawImage(canvasState.savedCanvasWithoutImage, 0, 0);
                     canvasState.bufferCtx.drawImage(this.tempCanvas, 0, 0);
                     canvasState.draw();
