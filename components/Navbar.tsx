@@ -12,8 +12,6 @@ import canvasState from "@/store/canvasState";
 
 const Navbar = observer(() => {
 
-    const paint_id = "fawwd123hgbsqwe"
-
     return (
         <div className="w-full fixed py-2 items-center px-6 flex justify-between bg-secondary border-b border-primary/10 shadow-gray-500 shadow-md">
             <div className="logo hidden md:flex">

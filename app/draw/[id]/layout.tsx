@@ -4,7 +4,7 @@ import {Inter} from 'next/font/google'
 import Navbar from "@/components/Navbar";
 import React from "react";
 import {ThemeProvider} from "@/components/theme-provider";
-
+import 'react-bootstrap-range-slider/dist/react-bootstrap-range-slider.css';
 import {cn} from "@/lib/utils";
 import Toolbar from "@/components/Toolbar";
 

@@ -151,6 +151,11 @@ export default class PencilTool extends Tool {
             canvasState.draw(Tool.tempCanvas!);
         }
         else {
+            canvasState.bufferCtx.lineCap = "round";
+            canvasState.bufferCtx.lineJoin = "round";
+            canvasState.bufferCtx.strokeStyle = strokeStyle;
+            canvasState.bufferCtx.lineWidth = strokeWidth;
+            mouse.x+=canvasState.bufferCanvas.width/2;
             draw(ctx, mouse.x, mouse.y)
         }
 

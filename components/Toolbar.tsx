@@ -19,7 +19,8 @@ import {IoReturnUpBackOutline, IoReturnUpForward} from "react-icons/io5";
 import _ from 'lodash'
 import {ClientTool, cn, fonts, fontWeights, toolClasses, ToolName, tools} from "@/lib/utils";
 import {Popover, PopoverContent, PopoverTrigger} from "@/components/ui/popover";
-import {Slider} from "@/components/ui/slider";
+import RangeSlider from "react-bootstrap-range-slider";
+import {useTheme} from "next-themes";
 
 const toolDivClass = "ml-3 flex flex-col content-center";
 
@@ -158,9 +159,8 @@ const Toolbar = observer(() => {
             };
             return (
                 <>
-                    <div className="fixed bg-toolbar top-0 w-full z-[99]">
-                        <div
-                            className={"w-full m-0 flex justify-between py-3 px-7 items-center z-[100]"}>
+                    <div className="toolbar-top fixed bg-toolbar top-0 w-full z-[99] max-h-[155px]">
+                        <div className="toolbar-menu w-full m-0 flex justify-between py-3 px-7 items-center z-[100]">
                             <div className="flex items-center gap-10 flex-wrap">
                                 <div className="flex items-center ">
                                     <div className={toolDivClass}>
@@ -203,133 +203,6 @@ const Toolbar = observer(() => {
                                         <label htmlFor="" style={{fontSize: 10}} className="m-auto">Вернуть</label>
                                     </div>
                                 </div>
-
-                                <div className="flex items-center flex-wrap">
-                                    {toolPressed?.strokeWidth && <div className={cn(toolDivClass, "gap-2")}>
-                                      <CustomSelect id="width" classname="w-12 m-auto h-7"
-                                                    value={settingState.strokeWidth}
-                                                    options={[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 12, 14, 16, 18, 20, 30, 40, 50, 60, 70, 80, 90, 100, 150, 200]}
-                                                    onChange={handleStrokeWidthTool}/>
-                                      <label htmlFor="width" style={{fontSize: 10}} className="ml-1 m-auto">Толщина</label>
-                                    </div>}
-                                    {toolPressed?.name === 'text'
-                                        && <>
-                                        <div className={cn(toolDivClass, "gap-2")}>
-                                          <CustomSelect id="width" classname="w-12 m-auto h-7"
-                                                        value={settingState.textSize}
-                                                        options={[8, 9, 10, 12, 14, 16, 18, 20, 24, 26, 30, 36, 40, 50, 100, 200]}
-                                                        onChange={handleTextSizeTool}/>
-                                          <label htmlFor="width" style={{fontSize: 10}} className="m-auto">Размер текста</label>
-                                        </div>
-                                        <div className={cn(toolDivClass, "gap-2")}>
-                                          <CustomSelect id="width" classname="w-20 m-auto h-7"
-                                                        value={settingState.textFont}
-                                                        options={fonts}
-                                                        onChange={handleTextFontTool}/>
-                                          <label htmlFor="width" style={{fontSize: 10}} className="m-auto">Шрифт</label>
-                                        </div>
-                                        <div className={cn(toolDivClass, "gap-2")}>
-                                          <CustomSelect id="width" classname="w-20 m-auto h-7"
-                                                        value={settingState.fontWeight}
-                                                        options={fontWeights}
-                                                        onChange={handleTextWeightTool}/>
-                                          <label htmlFor="width" style={{fontSize: 10}} className="m-auto">Насыщенность</label>
-                                        </div>
-                                      </>
-                                    }
-                                    {toolPressed?.fillColor && <>
-                                      <div className={cn(toolDivClass, "gap-3 color-input")}>
-                                        <input type="color" value={settingState.fillColor}
-                                               onChange={e=>handleFillColorTool(e.target.value)}
-                                               name="fill" id="fill"/>
-                                        <label htmlFor="fill" style={{fontSize: 10}} className="m-auto">Заливка</label>
-                                      </div>
-                                    </>}
-                                    {toolPressed?.strokeColor && <div className={cn(toolDivClass, "gap-3 color-input")}>
-                                      <input type="color" value={settingState.strokeColor}
-                                             onChange={e=>handleStrokeColorTool(e.target.value)}
-                                             name="stroke" id="stroke"/>
-                                        <label htmlFor="stroke" style={{fontSize: 10}} className="m-auto">Цвет</label>
-                                    </div>}
-                                    {toolPressed?.fillColor && toolPressed.strokeColor &&
-                                      <div className="ml-5 flex flex-col gap-1 text-sm">
-                                        <div>
-                                          <span style={{fontSize: 11, marginRight: 5}}>Заливка</span>
-                                          <select
-                                            className="w-[150px]"
-                                            value={canvasState.isFill.toString()}
-                                            onChange={(e) => {
-                                              canvasState.isFill = e.target.value === 'true'
-                                            }}>
-                                            <option value="true">Сплошной цвет</option>
-                                            <option value="false">Без заливки</option>
-                                          </select>
-                                        </div>
-                                        <div>
-                                          <span style={{fontSize: 11, marginRight: 12}}>Контур</span>
-                                          <select
-                                            className="w-[150px]"
-                                            value={canvasState.isStroke.toString()}
-                                            onChange={(e) => {
-                                              canvasState.isStroke = e.target.value === 'true'
-                                            }}>
-                                            <option value="true">Сплошной цвет</option>
-                                            <option value="false">Без контура</option>
-                                          </select>
-                                        </div>
-                                          { toolPressed.name !== "circle" && toolPressed.name !== "ellipse" && <div>
-                                          <span style={{fontSize: 11, marginRight: 24}}>Углы</span>
-                                          <select
-                                            className="w-[150px]"
-                                            value={settingState.lineJoin}
-                                            onChange={(e) => {
-                                              handleLineJoinTool(e.target.value as CanvasLineJoin)
-                                            }}>
-                                            <option value="miter">Острые</option>
-                                            <option value="round">Скругленные</option>
-                                            <option value="bevel">Срезанные</option>
-                                          </select>
-                                        </div>}
-                                      </div>
-                                    }
-                                    { (toolPressed.name === "arc" || toolPressed.name === "line" || toolPressed.name === "arrow") &&
-                                        <div className="ml-4">
-                                          <span style={{fontSize: 11, marginRight: 5}}>Линии</span>
-                                          <select
-                                            value={settingState.lineCap}
-                                            onChange={(e) => {
-                                                handleLineCapTool(e.target.value as CanvasLineCap)
-                                            }}>
-                                            <option value="butt">Прямые</option>
-                                            <option value="round">Скругленные</option>
-                                            <option value="square">Прямые с добавлением</option>
-                                          </select>
-                                        </div>}
-                                    { toolPressed.name === "filling" &&
-                                      <div className={cn(toolDivClass, "gap-2")}>
-                                        <CustomSelect id="width" classname="w-12 m-auto h-7"
-                                                      value={settingState.fillingTolerance}
-                                                      options={[0, 5, 25, 50, 75, 100, 125, 150, 175, 200, 225, 255]}
-                                                      onChange={handleFillingTolerance}/>
-                                        <label htmlFor="width" style={{fontSize: 10}} className="ml-1 m-auto">Допуск</label>
-                                      </div>
-                                    }
-                                    { toolPressed.name !== "eraser" && <div className={cn(toolDivClass, "gap-2")}>
-                                        <Slider
-                                            max={100}
-                                            step={1}
-                                            value={[settingState.globalAlpha*100]}
-                                            onValueChange={(value: number[]) => {
-                                                settingState.setGlobalAlpha(value[0]/100)
-                                            }}
-                                            onValueCommit={() => {
-                                                canvasState.fill()
-                                            }}
-                                            className={cn("w-[200px]")}
-                                        />
-                                        <label htmlFor="width" style={{fontSize: 10}} className="ml-1 m-auto">Прозрачность</label>
-                                    </div>}
-                                </div>
                             </div>
                             <div className="flex gap-7 items-center">
                                 <Popover>
@@ -355,7 +228,7 @@ const Toolbar = observer(() => {
                                 <NavbarAvatar/>
                             </div>
                         </div>
-                        <div className={"border-t-2 w-full m-0 flex py-3 px-7 items-center"} style={{top: 75}}>
+                        <div className={"toolbar-tools border-t-2 w-full m-0 flex py-3 px-7 items-center"} style={{top: 75}}>
                             <div className="items-center flex flex-wrap">
                                 {
                                     tools.map((tool) =>
@@ -375,6 +248,155 @@ const Toolbar = observer(() => {
                                     )
                                 }
                             </div>
+                        </div>
+                    </div>
+                    <div className="toolbar-setting fixed w-[300px] right-0 top-[155px] h-full bg-toolbar p-7 pr-3">
+                        <div className="flex flex-wrap justify-start flex-col gap-3 text-xs">
+                            {toolPressed?.fillColor && <>
+                              <div className={"flex gap-3 color-input text-xs"}>
+                                <label htmlFor="fill" className="w-[80px] mr-2">Заливка</label>
+                                <input type="color" value={settingState.fillColor}
+                                       onChange={e=>handleFillColorTool(e.target.value)}
+                                       name="fill" id="fill"/>
+                              </div>
+                            </>}
+                            {toolPressed?.strokeColor && <div className="flex gap-3 color-input">
+                              <label htmlFor="stroke" className="w-[80px] mr-2">Цвет</label>
+                              <input type="color" value={settingState.strokeColor}
+                                     onChange={e=>handleStrokeColorTool(e.target.value)}
+                                     name="stroke" id="stroke"/>
+                            </div>}
+                            {toolPressed?.strokeWidth && <div className="flex gap-3 items-center">
+                              <label htmlFor="width" className="w-[80px] mr-2">Толщина</label>
+                              <RangeSlider
+                                min={1}
+                                max={200}
+                                className="w-100"
+                                value={settingState.strokeWidth}
+                                onChange={e => {
+                                    handleStrokeWidthTool(parseInt(e.target.value))
+                                }}
+                                variant={useTheme().theme === "dark" ? "secondary" : "light"}
+                              />
+                            </div>}
+                            {toolPressed?.name === 'text'
+                                && <>
+                                <div className="flex gap-3 items-center">
+                                  <label htmlFor="width" className="w-[80px] mr-2">Размер текста</label>
+                                  <RangeSlider
+                                    min={1}
+                                    max={200}
+                                    className="w-100"
+                                    value={settingState.textSize}
+                                    onChange={e => {
+                                        handleTextSizeTool(parseInt(e.target.value))
+                                    }}
+                                    variant={useTheme().theme === "dark" ? "secondary" : "light"}
+                                  />
+                                </div>
+                                <div className="flex gap-3 items-center">
+                                  <label htmlFor="width" className="w-[80px] mr-2">Шрифт</label>
+                                  <CustomSelect id="width" classname="w-20 h-7"
+                                                value={settingState.textFont}
+                                                options={fonts}
+                                                onChange={handleTextFontTool}/>
+                                </div>
+                                <div className="flex gap-3 items-center">
+                                  <label htmlFor="width" className="w-[80px] mr-2">Насыщенность</label>
+                                  <CustomSelect id="width" classname="w-20 h-7"
+                                                value={settingState.fontWeight}
+                                                options={fontWeights}
+                                                onChange={handleTextWeightTool}/>
+                                </div>
+                              </>
+                            }
+                            {toolPressed?.fillColor && toolPressed.strokeColor &&
+                              <div className="flex flex-col gap-3 text-xs">
+                                <div className="flex gap-3 items-center">
+                                  <label htmlFor="isFill" className="w-[80px] mr-2">Заливка</label>
+                                  <select
+                                    name="isFill"
+                                    className="w-[150px]"
+                                    value={canvasState.isFill.toString()}
+                                    onChange={(e) => {
+                                        canvasState.isFill = e.target.value === 'true'
+                                    }}>
+                                    <option value="true">Сплошной цвет</option>
+                                    <option value="false">Без заливки</option>
+                                  </select>
+                                </div>
+                                <div className="flex gap-3 items-center">
+                                  <label htmlFor="isStroke" className="w-[80px] mr-2">Контур</label>
+                                  <select
+                                    name="isStroke"
+                                    className="w-[150px]"
+                                    value={canvasState.isStroke.toString()}
+                                    onChange={(e) => {
+                                        canvasState.isStroke = e.target.value === 'true'
+                                    }}>
+                                    <option value="true">Сплошной цвет</option>
+                                    <option value="false">Без контура</option>
+                                  </select>
+                                </div>
+                                  { toolPressed.name !== "circle" && toolPressed.name !== "ellipse" &&
+                                    <div className="flex gap-3 items-center">
+                                        <label htmlFor="lineJoin" className="w-[80px] mr-2">Углы</label>
+                                        <select
+                                          name="lineJoin"
+                                          className="w-[150px] text-xs"
+                                          value={settingState.lineJoin}
+                                          onChange={(e) => {
+                                              handleLineJoinTool(e.target.value as CanvasLineJoin)
+                                          }}>
+                                          <option value="miter">Острые</option>
+                                          <option value="round">Скругленные</option>
+                                          <option value="bevel">Срезанные</option>
+                                        </select>
+                                    </div>}
+                              </div>
+                            }
+                            { (toolPressed.name === "arc" || toolPressed.name === "line" || toolPressed.name === "arrow") &&
+                              <div className="flex gap-3 items-center">
+                                <label htmlFor="lineCap" className="w-[80px] mr-2">Линии</label>
+                                <select
+                                  className="w-100"
+                                  name="lineCap"
+                                  value={settingState.lineCap}
+                                  onChange={(e) => {
+                                      handleLineCapTool(e.target.value as CanvasLineCap)
+                                  }}>
+                                  <option value="butt">Прямые</option>
+                                  <option value="round">Скругленные</option>
+                                  <option value="square">Прямые с добавлением</option>
+                                </select>
+                              </div>}
+                            { toolPressed.name === "filling" &&
+                              <div className="flex gap-3 items-center">
+                                <label htmlFor="width" className="w-[80px] mr-2">Допуск</label>
+                                <RangeSlider
+                                  min={1}
+                                  max={255}
+                                  className="w-100"
+                                  value={settingState.fillingTolerance}
+                                  onChange={e => {
+                                      handleFillingTolerance(parseInt(e.target.value))
+                                  }}
+                                  variant={useTheme().theme === "dark" ? "secondary" : "light"}
+                                />
+                              </div>
+                            }
+                            { toolPressed.name !== "eraser" && toolPressed.name !== "drag" && <div className="flex gap-3 items-center">
+                              <label htmlFor="width" className="w-[80px] mr-2">Прозрачность</label>
+                              <RangeSlider
+                                className="w-100"
+                                value={Math.round(settingState.globalAlpha * 100)}
+                                onChange={e => {
+                                    const newValue = parseFloat(e.target.value);
+                                    settingState.setGlobalAlpha(newValue / 100);
+                                }}
+                                variant={useTheme().theme === "dark" ? "secondary" : "light"}
+                              />
+                            </div>}
                         </div>
                     </div>
                 </>

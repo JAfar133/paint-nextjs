@@ -138,13 +138,6 @@ class CanvasState {
         let scaleFactor = e.deltaY > 0 ? 1 - zoomSpeed : 1 + zoomSpeed;
 
         this.scale *= scaleFactor;
-        if (this.scale < 0.05) {
-            this.scale = 0.05;
-            scaleFactor = 1;
-        } else if (this.scale > 32) {
-            this.scale = 32;
-            scaleFactor = 1;
-        }
 
         this.canvasX -= (e.offsetX - this.canvasX) * (scaleFactor - 1);
         this.canvasY -= (e.offsetY - this.canvasY) * (scaleFactor - 1);

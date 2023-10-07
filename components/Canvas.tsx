@@ -30,7 +30,7 @@ const Canvas = observer(() => {
     const messagesRef = useRef<HTMLDivElement>(null);
     useEffect(() => {
         if(mainCanvasRef.current){
-            mainCanvasRef.current.width = window.innerWidth;
+            mainCanvasRef.current.width = window.innerWidth - 300;
             mainCanvasRef.current.height = window.innerHeight - 155;
         }
     }, [mainCanvasRef]);
@@ -134,7 +134,13 @@ const Canvas = observer(() => {
     }
     const drawCircleOverlay = (x: number, y: number) => {
         if (canvasState.circleOverlayRef && canvasMain.current) {
-            if(toolState.tool && (toolState.tool.type === "pencil" || toolState.tool.type === "eraser")){
+            if(toolState.tool &&
+                (toolState.tool.type === "pencil"
+                    || toolState.tool.type === "eraser"
+                    || (toolState.tool.type === "line"
+                        || toolState.tool.type === "arrow"
+                        || toolState.tool.type === "arc")
+                    && settingState.lineCap === 'round')){
                 canvasState.circleOverlayRef.style.display = 'block';
                 const xTransform = x - canvasState.circleOverlayRef.clientWidth / 2 - 1 + 'px';
                 const yTransform = y - canvasMain.current.offsetTop  - canvasState.circleOverlayRef.clientHeight / 2 - 1 + 'px';
