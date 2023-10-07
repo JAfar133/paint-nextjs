@@ -154,7 +154,6 @@ class CanvasState {
         const ctx = this.canvas.getContext('2d')
         if(ctx){
             this.bufferCtx.globalAlpha = 1;
-            this.fill();
             ctx.clearRect(0, 0, this.bufferCanvas.width, this.bufferCanvas.height);
             ctx.setTransform(this.scale, 0, 0, this.scale, this.canvasX, this.canvasY);
             ctx.fillStyle = 'white'

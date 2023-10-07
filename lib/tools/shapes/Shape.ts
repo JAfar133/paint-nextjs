@@ -17,6 +17,7 @@ export default abstract class Shape extends Tool {
             const {scaledX, scaledY} = this.getScaledPoint(e.offsetX, e.offsetY, canvasState.canvasX, canvasState.canvasY, canvasState.scale)
             this.startX = scaledX;
             this.startY = scaledY;
+            this.tempCtx.clearRect(0,0,this.tempCanvas.width, this.tempCanvas.height)
             this.tempCtx.drawImage(canvasState.bufferCanvas, 0, 0);
         }
     }

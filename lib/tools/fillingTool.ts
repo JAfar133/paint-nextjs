@@ -75,23 +75,19 @@ function floodFill(ctx: CanvasRenderingContext2D, startX: number, startY: number
         b: casData.data[i + 2],
         a: casData.data[i + 3]
     };
-    let replacementColor;
     const normalizedColor = normalizeColor(newColor);
     if(!normalizedColor){
         console.error("Invalid replacement color.");
         return;
     }
+    let replacementColor = normalizedColor;
     if(globalAlpha !==1){
-        normalizedColor.a = globalAlpha*255;
+        const tcolor = {...targetColor}
+        tcolor.a = Math.round(globalAlpha*255);
+        replacementColor = combineColors(tcolor);
     }
-    if(colorsMatch(targetColor, normalizedColor)){
-        replacementColor = combineColors(targetColor, normalizedColor);
-        replacementColor.a = Math.floor(globalAlpha*255);
-    }
-    else {
-        replacementColor = combineColors(targetColor, normalizedColor);
-    }
-    console.log(targetColor, replacementColor)
+
+
     if (colorsMatch(targetColor, replacementColor)) {
         return;
     }
@@ -180,10 +176,10 @@ export function normalizeColor(color: string): Color | null {
     return null;
 }
 
-function combineColors(bg: Color, color: Color): Color {
+function combineColors(color: Color, bgColor: Color = {r: 255, g: 255, b: 255, a: 255}): Color {
     const a = color.a/255;
-    const r = Math.round((1 - a) * bg.r + a * color.r);
-    const g = Math.round((1 - a) * bg.g + a * color.g);
-    const b = Math.round((1 - a) * bg.b + a * color.b);
+    const r = Math.round((1 - a) * bgColor.r + a * color.r);
+    const g = Math.round((1 - a) * bgColor.g + a * color.g);
+    const b = Math.round((1 - a) * bgColor.b + a * color.b);
     return {r, g, b, a: color.a};
 }
