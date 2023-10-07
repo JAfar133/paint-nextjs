@@ -8,9 +8,9 @@ import settingState from "@/store/settingState";
 export type cursorClass =
     "cursor-move" | "cursor-grab" | "cursor-text" | "cursor-cell" |
     "cursor-grabbing" | "cursor-nwse-resize" | "cursor-alias" | "cursor-crosshair" |
-    "cursor-nesw-resize" | "cursor-ew-resize" | "cursor-ns-resize" | "cursor-auto"
+    "cursor-nesw-resize" | "cursor-ew-resize" | "cursor-ns-resize" | "cursor-auto" | "cursor-none"
 export const cursors: cursorClass[] =
-    ["cursor-move", "cursor-grab", "cursor-text", "cursor-cell",
+    ["cursor-move", "cursor-grab", "cursor-text", "cursor-cell", "cursor-none",
         "cursor-grabbing", "cursor-nwse-resize", "cursor-alias", "cursor-crosshair",
         "cursor-nesw-resize", "cursor-ew-resize", "cursor-ns-resize", "cursor-auto"]
 
@@ -47,6 +47,7 @@ class CanvasState {
     mouseDownStartX: number = -1;
     mouseDownStartY: number = -1;
     imageContainer: HTMLDivElement | null = null;
+    circleOverlayRef: HTMLDivElement | null = null;
     canvasCursor: cursorClass = 'cursor-auto';
     savedCursor: cursorClass | null = null;
     rectWidth: number = 1920;
@@ -369,6 +370,9 @@ class CanvasState {
     }
 
     mouseLeaveHandler = () => {
+        if(this.circleOverlayRef){
+            this.circleOverlayRef.style.display = 'none';
+        }
         cursors.forEach(cursor => this.canvas.classList.remove(cursor))
     }
 

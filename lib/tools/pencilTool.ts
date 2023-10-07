@@ -41,10 +41,6 @@ export default class PencilTool extends Tool {
             }
             else {
                 const {scaledX, scaledY} = this.getScaledPoint(e.offsetX, e.offsetY, canvasState.canvasX, canvasState.canvasY, canvasState.scale)
-                canvasState.bufferCtx.lineWidth = settingState.strokeWidth;
-                canvasState.bufferCtx.strokeStyle = settingState.strokeColor;
-                canvasState.bufferCtx.lineCap = "round";
-                canvasState.bufferCtx.lineJoin = "round";
                 canvasState.bufferCtx.beginPath();
                 canvasState.bufferCtx.moveTo(scaledX, scaledY);
             }
@@ -63,6 +59,10 @@ export default class PencilTool extends Tool {
                 this.draw(scaledX, scaledY);
             }
             else {
+                canvasState.bufferCtx.lineWidth = settingState.strokeWidth;
+                canvasState.bufferCtx.strokeStyle = settingState.strokeColor;
+                canvasState.bufferCtx.lineCap = "round";
+                canvasState.bufferCtx.lineJoin = "round";
                 draw(canvasState.bufferCtx, this.mouse.x, this.mouse.y);
             }
         }

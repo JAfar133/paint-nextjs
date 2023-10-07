@@ -28,10 +28,6 @@ const Toolbar = observer(() => {
             const params = useParams();
 
             const [toolPressed, setToolPressed] = useState<ClientTool>(tools[1])
-            const [strokeWidth, setStrokeWidth] = useState(settingState.strokeWidth);
-            const [textSize, setTextSize] = useState<number>(settingState.textSize);
-            const [textFont, setTextFont] = useState<string>(settingState.textFont);
-            const [fontWeight, setFontWeight] = useState<string>(settingState.textFont);
 
             const findToolByName = (name: ToolName): ClientTool => {
                 const tool = _.find(tools, {name: name})
@@ -89,21 +85,18 @@ const Toolbar = observer(() => {
             }
 
             const handleStrokeWidthTool = (width: number) => {
-                setStrokeWidth(width)
                 if (toolState.tool) {
                     settingState.setWidth(width);
                     canvasState.fill();
                 }
             }
             const handleTextSizeTool = (size: number) => {
-                setTextSize(size)
                 if (toolState.tool) {
                     settingState.setTextSize(size);
                     canvasState.fill();
                 }
             }
             const handleTextFontTool = (font: string) => {
-                setTextFont(font)
                 if (toolState.tool) {
                     settingState.setTextFont(font);
                     canvasState.fill();
@@ -115,7 +108,6 @@ const Toolbar = observer(() => {
                 }
             }
             const handleTextWeightTool = (weight: string) => {
-                setFontWeight(weight)
                 if (toolState.tool) {
                     settingState.setFontWeight(weight);
                     canvasState.fill();
@@ -152,7 +144,6 @@ const Toolbar = observer(() => {
                 const file = target.files?.[0]
                 if (file) {
                     const reader = new FileReader();
-
                     reader.onload = (event) => {
                         if (event.target) {
                             const dataUrl = event.target.result as string;
@@ -216,7 +207,7 @@ const Toolbar = observer(() => {
                                 <div className="flex items-center flex-wrap">
                                     {toolPressed?.strokeWidth && <div className={cn(toolDivClass, "gap-2")}>
                                       <CustomSelect id="width" classname="w-12 m-auto h-7"
-                                                    value={strokeWidth}
+                                                    value={settingState.strokeWidth}
                                                     options={[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 12, 14, 16, 18, 20, 30, 40, 50, 60, 70, 80, 90, 100, 150, 200]}
                                                     onChange={handleStrokeWidthTool}/>
                                       <label htmlFor="width" style={{fontSize: 10}} className="ml-1 m-auto">Толщина</label>
@@ -225,21 +216,21 @@ const Toolbar = observer(() => {
                                         && <>
                                         <div className={cn(toolDivClass, "gap-2")}>
                                           <CustomSelect id="width" classname="w-12 m-auto h-7"
-                                                        value={textSize}
+                                                        value={settingState.textSize}
                                                         options={[8, 9, 10, 12, 14, 16, 18, 20, 24, 26, 30, 36, 40, 50, 100, 200]}
                                                         onChange={handleTextSizeTool}/>
                                           <label htmlFor="width" style={{fontSize: 10}} className="m-auto">Размер текста</label>
                                         </div>
                                         <div className={cn(toolDivClass, "gap-2")}>
                                           <CustomSelect id="width" classname="w-20 m-auto h-7"
-                                                        value={textFont}
+                                                        value={settingState.textFont}
                                                         options={fonts}
                                                         onChange={handleTextFontTool}/>
                                           <label htmlFor="width" style={{fontSize: 10}} className="m-auto">Шрифт</label>
                                         </div>
                                         <div className={cn(toolDivClass, "gap-2")}>
                                           <CustomSelect id="width" classname="w-20 m-auto h-7"
-                                                        value={fontWeight}
+                                                        value={settingState.fontWeight}
                                                         options={fontWeights}
                                                         onChange={handleTextWeightTool}/>
                                           <label htmlFor="width" style={{fontSize: 10}} className="m-auto">Насыщенность</label>
@@ -248,11 +239,6 @@ const Toolbar = observer(() => {
                                     }
                                     {toolPressed?.fillColor && <>
                                       <div className={cn(toolDivClass, "gap-3 color-input")}>
-                                        {/*<InputColor*/}
-                                        {/*  initialValue={fillColor?.hex || '#000'}*/}
-                                        {/*  onChange={handleFillColorTool}*/}
-                                        {/*  placement="right"*/}
-                                        {/*/>*/}
                                         <input type="color" value={settingState.fillColor}
                                                onChange={e=>handleFillColorTool(e.target.value)}
                                                name="fill" id="fill"/>
@@ -260,11 +246,6 @@ const Toolbar = observer(() => {
                                       </div>
                                     </>}
                                     {toolPressed?.strokeColor && <div className={cn(toolDivClass, "gap-3 color-input")}>
-                                      {/*<InputColor*/}
-                                      {/*  initialValue={strokeColor?.hex || '#000'}*/}
-                                      {/*  onChange={handleStrokeColorTool}*/}
-                                      {/*  placement="right"*/}
-                                      {/*/>*/}
                                       <input type="color" value={settingState.strokeColor}
                                              onChange={e=>handleStrokeColorTool(e.target.value)}
                                              name="stroke" id="stroke"/>
@@ -324,7 +305,7 @@ const Toolbar = observer(() => {
                                             <option value="square">Прямые с добавлением</option>
                                           </select>
                                         </div>}
-                                    { toolPressed?.name === "filling" &&
+                                    { toolPressed.name === "filling" &&
                                       <div className={cn(toolDivClass, "gap-2")}>
                                         <CustomSelect id="width" classname="w-12 m-auto h-7"
                                                       value={settingState.fillingTolerance}
@@ -333,7 +314,7 @@ const Toolbar = observer(() => {
                                         <label htmlFor="width" style={{fontSize: 10}} className="ml-1 m-auto">Допуск</label>
                                       </div>
                                     }
-                                    <div className={cn(toolDivClass, "gap-2")}>
+                                    { toolPressed.name !== "eraser" && <div className={cn(toolDivClass, "gap-2")}>
                                         <Slider
                                             max={100}
                                             step={1}
@@ -347,7 +328,7 @@ const Toolbar = observer(() => {
                                             className={cn("w-[200px]")}
                                         />
                                         <label htmlFor="width" style={{fontSize: 10}} className="ml-1 m-auto">Прозрачность</label>
-                                    </div>
+                                    </div>}
                                 </div>
                             </div>
                             <div className="flex gap-7 items-center">

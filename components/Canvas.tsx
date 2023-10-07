@@ -17,7 +17,7 @@ import {MessageSquare, Search, Terminal} from "lucide-react";
 import {Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle} from "@/components/ui/card";
 import {Alert, AlertDescription, AlertTitle} from "@/components/ui/alert";
 import websocketService from "@/lib/api/WebsocketService";
-
+import settingState from "@/store/settingState";
 
 const Canvas = observer(() => {
 
@@ -61,6 +61,8 @@ const Canvas = observer(() => {
                     })
                     .catch(e => console.log(e))
             }
+            canvasState.setCursor("cursor-none")
+
         }
 
     }, [mainCanvasRef, params.id]);
@@ -87,7 +89,12 @@ const Canvas = observer(() => {
         if(canvasContainer.current){
             canvasState.canvasContainer = canvasContainer.current;
         }
-    },[canvasContainer])
+    },[canvasContainer, circleOverlayRef])
+    useEffect(()=>{
+        if(circleOverlayRef.current){
+            canvasState.circleOverlayRef = circleOverlayRef.current;
+        }
+    },[circleOverlayRef])
     useEffect(() => {
         const fetchData = async () => {
             if (canvasState.canvasId) {
@@ -119,19 +126,24 @@ const Canvas = observer(() => {
         websocketService.websocketWorker(params)
     }, [userState.loading])
 
-    const mouseMoveHandler = (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
-        const circleOverlay = circleOverlayRef.current;
-        if (circleOverlay && canvasMain.current) {
+    const mouseMoveHandler = (e: React.MouseEvent<HTMLCanvasElement, MouseEvent>) => {
+        if(canvasState.canvasCursor === 'cursor-none'){
+            mouseEnterHandler()
+        }
+        drawCircleOverlay(e.clientX, e.clientY);
+    }
+    const drawCircleOverlay = (x: number, y: number) => {
+        if (canvasState.circleOverlayRef && canvasMain.current) {
             if(toolState.tool && (toolState.tool.type === "pencil" || toolState.tool.type === "eraser")){
-                circleOverlay.style.display = 'block';
-                const x = e.clientX - circleOverlay.clientWidth / 2 - 1 + 'px';
-                const y = e.clientY - canvasMain.current.offsetTop  - circleOverlay.clientHeight / 2 - 1 + 'px';
-                circleOverlay.style.transform = `translate(${x}, ${y}) scale(${canvasState.scale})`;
-                circleOverlay.style.width = String(`${canvasState.bufferCtx.lineWidth}px`);
-                circleOverlay.style.height = String(`${canvasState.bufferCtx.lineWidth}px`);
+                canvasState.circleOverlayRef.style.display = 'block';
+                const xTransform = x - canvasState.circleOverlayRef.clientWidth / 2 - 1 + 'px';
+                const yTransform = y - canvasMain.current.offsetTop  - canvasState.circleOverlayRef.clientHeight / 2 - 1 + 'px';
+                canvasState.circleOverlayRef.style.transform = `translate(${xTransform}, ${yTransform}) scale(${canvasState.scale})`;
+                canvasState.circleOverlayRef.style.width = String(`${settingState.strokeWidth}px`);
+                canvasState.circleOverlayRef.style.height = String(`${settingState.strokeWidth}px`);
             }
             else {
-                circleOverlay.style.display = 'none'
+                canvasState.circleOverlayRef.style.display = 'none'
             }
         }
     }
@@ -168,7 +180,6 @@ const Canvas = observer(() => {
 
     return (
         <div id="canvas" ref={canvasMain}
-             onMouseMove={(e: React.MouseEvent<HTMLDivElement, MouseEvent>) => mouseMoveHandler(e)}
             className="relative">
             <div className="absolute left-0 z-[500] p-1 flex gap-1">
                 <Search width={16} color="gray"></Search>
@@ -176,6 +187,7 @@ const Canvas = observer(() => {
             </div>
             <div className="canvas__container" id="canvas__container" ref={canvasContainer}>
                 <canvas className="canvas main_canvas"
+                        onMouseMove={(e: React.MouseEvent<HTMLCanvasElement, MouseEvent>) => mouseMoveHandler(e)}
                         ref={mainCanvasRef}
                         onMouseDown={(e: React.MouseEvent<HTMLCanvasElement, MouseEvent>) => mouseDownHandler(e)}
                         onTouchStart={(e: React.TouchEvent<HTMLCanvasElement>) => mouseDownHandler(e)}
@@ -217,7 +229,6 @@ const Canvas = observer(() => {
                                         </div>
                                     )
                                 }
-
                             </CardContent>
                             <CardFooter className="flex flex-col gap-6 py-4 end bg-card">
                                 <Input
@@ -240,13 +251,6 @@ const Canvas = observer(() => {
                     </PopoverContent>
                 </Popover>
             </div>
-            <input type="text" id="text-input" style={{
-                position: 'absolute',
-                top: -100,
-                left: -100,
-                width: 1,
-                height: 1,
-            }}/>
 
         </div>
     );

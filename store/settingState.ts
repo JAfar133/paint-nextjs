@@ -3,7 +3,7 @@ import canvasState from "@/store/canvasState";
 class SettingState {
     fillColor: string = 'rgba(0,0,0,1)';
     strokeColor: string = 'rgba(0,0,0,1)';
-    strokeWidth: number = 1;
+    strokeWidth: number = 20;
     textSize: number = 40;
     textFont: string = 'Arial';
     fontWeight: string = 'normal';
