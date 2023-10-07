@@ -63,7 +63,7 @@ export default class FillingTool extends Tool {
 }
 
 
-function floodFill(ctx: CanvasRenderingContext2D, startX: number, startY: number, newColor: string, tolerance: number = 5, globalAlpha: number): void {
+function floodFill(ctx: CanvasRenderingContext2D, startX: number, startY: number, newColor: string, tolerance: number = 5, globalAlpha: number = 1 ): void {
     const width = ctx.canvas.width;
     const height = ctx.canvas.height;
     const casData = ctx.getImageData(0, 0, width, height);
@@ -75,14 +75,23 @@ function floodFill(ctx: CanvasRenderingContext2D, startX: number, startY: number
         b: casData.data[i + 2],
         a: casData.data[i + 3]
     };
-
-    const replacementColor = normalizeColor(newColor);
-    if (!replacementColor) {
+    let replacementColor;
+    const normalizedColor = normalizeColor(newColor);
+    if(!normalizedColor){
         console.error("Invalid replacement color.");
         return;
     }
-    replacementColor.a = Math.floor(globalAlpha*255);
-    console.log(replacementColor)
+    if(globalAlpha !==1){
+        normalizedColor.a = globalAlpha*255;
+    }
+    if(colorsMatch(targetColor, normalizedColor)){
+        replacementColor = combineColors(targetColor, normalizedColor);
+        replacementColor.a = Math.floor(globalAlpha*255);
+    }
+    else {
+        replacementColor = combineColors(targetColor, normalizedColor);
+    }
+    console.log(targetColor, replacementColor)
     if (colorsMatch(targetColor, replacementColor)) {
         return;
     }
@@ -137,7 +146,7 @@ function colorsMatchWithTolerance(color1: Color, color2: Color, tolerance: numbe
         Math.abs(color1.r - color2.r) <= tolerance &&
         Math.abs(color1.g - color2.g) <= tolerance &&
         Math.abs(color1.b - color2.b) <= tolerance &&
-        Math.abs(color1.a - color2.a) <= 255
+        Math.abs(color1.a - color2.a) <= tolerance
     );
 }
 function colorsMatch(color1: Color, color2: Color): boolean {
@@ -149,7 +158,7 @@ function colorsMatch(color1: Color, color2: Color): boolean {
     );
 }
 
-export function normalizeColor(color: string): { r: number; g: number; b: number; a: number } | null {
+export function normalizeColor(color: string): Color | null {
     if (color.startsWith("#")) {
         const hex = color.slice(1);
         const bigint = parseInt(hex, 16);
@@ -169,4 +178,12 @@ export function normalizeColor(color: string): { r: number; g: number; b: number
     }
 
     return null;
+}
+
+function combineColors(bg: Color, color: Color): Color {
+    const a = color.a/255;
+    const r = Math.round((1 - a) * bg.r + a * color.r);
+    const g = Math.round((1 - a) * bg.g + a * color.g);
+    const b = Math.round((1 - a) * bg.b + a * color.b);
+    return {r, g, b, a: color.a};
 }

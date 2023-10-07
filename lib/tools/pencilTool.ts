@@ -32,6 +32,7 @@ export default class PencilTool extends Tool {
             this.mouseDown = true;
             this.tempCtx.globalAlpha = settingState.globalAlpha;
             this.tempCtx.lineWidth = settingState.strokeWidth;
+            this.tempCtx.strokeStyle = settingState.strokeColor;
             this.tempCtx.lineCap = "round";
             this.tempCtx.lineJoin = "round";
         }
