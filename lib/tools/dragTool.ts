@@ -72,7 +72,7 @@ export default class DragTool extends Tool {
         canvasState.drawBorder();
     }
 
-    mouseDownHandler(e: MouseEvent): void {
+    protected mouseDownHandler(e: MouseEvent): void {
         if(this.canDraw){
             const {scaledX, scaledY} = this.getScaledPoint(e.offsetX, e.offsetY, canvasState.canvasX, canvasState.canvasY, canvasState.scale)
             const mouseX = scaledX;
@@ -115,7 +115,7 @@ export default class DragTool extends Tool {
         }
     }
 
-    mouseUpHandler(e: MouseEvent) {
+    protected mouseUpHandler(e: MouseEvent) {
         super.mouseUpHandler(e);
         this.image.isDragging = false;
 
@@ -129,7 +129,7 @@ export default class DragTool extends Tool {
         canvasState.sendDataUrl(canvasState.bufferCanvas.toDataURL());
     }
 
-    mouseMoveHandler(e: MouseEvent): void {
+    protected mouseMoveHandler(e: MouseEvent): void {
         if(this.canDraw){
             const {scaledX, scaledY} = this.getScaledPoint(e.offsetX, e.offsetY, canvasState.canvasX, canvasState.canvasY, canvasState.scale)
             const mouseX = scaledX;
@@ -146,7 +146,7 @@ export default class DragTool extends Tool {
         }
     }
 
-    drugRotate(mouseX: number, mouseY: number) {
+    private drugRotate(mouseX: number, mouseY: number) {
             if (this.image.isRotating) {
                 this.imageCenter = this.getImageCenter(this.image);
                 const dx = mouseX - this.imageCenter.centerX;
@@ -176,7 +176,7 @@ export default class DragTool extends Tool {
             }
     }
 
-    drugResize(mouseX: number, mouseY: number) {
+    private drugResize(mouseX: number, mouseY: number) {
         if (this.image.isResizing) {
             this.imageCenter = this.getImageCenter(this.image);
             const mousePoint = this.getNewPointPosition(mouseX, mouseY, this.imageCenter.centerX, this.imageCenter.centerY, -this.image.angle)
@@ -196,8 +196,6 @@ export default class DragTool extends Tool {
             if (this.tempCtx) {
                 this.drawResizedImage(
                     this.tempCtx,
-                    canvasState.bufferCtx,
-                    canvasState.bufferCanvas,
                     this.tempCanvas,
                     this.image,
                     this.imageCanvas,
@@ -227,7 +225,7 @@ export default class DragTool extends Tool {
         }
     }
 
-    drugImage(mouseX: number, mouseY: number) {
+    private drugImage(mouseX: number, mouseY: number) {
         if (this.image.isDragging) {
             if (this.tempCtx) {
                 this.tempCtx.save();
@@ -253,7 +251,7 @@ export default class DragTool extends Tool {
         }
     }
 
-    isMouseOnImage(mouseX: number, mouseY: number) {
+    private isMouseOnImage(mouseX: number, mouseY: number) {
         const {x, y} = this.getNewPointPosition(mouseX, mouseY, this.imageCenter.centerX, this.imageCenter.centerY, this.image.angle);
         return x >= this.image.imageX &&
             x <= this.image.imageX + this.image.img.width &&
@@ -261,13 +259,13 @@ export default class DragTool extends Tool {
             y <= this.image.imageY + this.image.img.height
     }
 
-    isMouseOnResizingLeftTop(mouseX: number, mouseY: number) {
+    private isMouseOnResizingLeftTop(mouseX: number, mouseY: number) {
         const {x, y} = this.getNewPointPosition(this.image.imageX, this.image.imageY, this.imageCenter.centerX, this.imageCenter.centerY, this.image.angle)
         return Math.abs(mouseX - x) <= 5 &&
             Math.abs(mouseY - y) <= 5
     }
 
-    isMouseOnResizingRightTop(mouseX: number, mouseY: number) {
+    private isMouseOnResizingRightTop(mouseX: number, mouseY: number) {
         const {x, y} = this.getNewPointPosition(
             this.image.imageX + this.image.img.width,
             this.image.imageY,
@@ -276,7 +274,7 @@ export default class DragTool extends Tool {
             Math.abs(mouseY - y) <= 5
     }
 
-    isMouseOnResizingRightBottom(mouseX: number, mouseY: number) {
+    private isMouseOnResizingRightBottom(mouseX: number, mouseY: number) {
         const {x, y} = this.getNewPointPosition(
             this.image.imageX + this.image.img.width,
             this.image.imageY + this.image.img.height,
@@ -285,7 +283,7 @@ export default class DragTool extends Tool {
             Math.abs(mouseY - y) <= 5
     }
 
-    isMouseOnResizingLeftBottom(mouseX: number, mouseY: number) {
+    private isMouseOnResizingLeftBottom(mouseX: number, mouseY: number) {
         const {x, y} = this.getNewPointPosition(
             this.image.imageX,
             this.image.imageY + this.image.img.height,
@@ -294,35 +292,35 @@ export default class DragTool extends Tool {
             Math.abs(mouseY - y) <= 5
     }
 
-    isMouseOnResizingLeftSide(mouseX: number, mouseY: number) {
+    private isMouseOnResizingLeftSide(mouseX: number, mouseY: number) {
         const {x, y} = this.getNewPointPosition(mouseX, mouseY, this.imageCenter.centerX, this.imageCenter.centerY, -this.image.angle)
 
         return Math.abs(x - this.image.imageX) <= 5 &&
             Math.abs(y - this.image.imageY - this.image.img.height / 2) <= this.image.img.height / 2
     }
 
-    isMouseOnResizingRightSide(mouseX: number, mouseY: number) {
+    private isMouseOnResizingRightSide(mouseX: number, mouseY: number) {
         const {x, y} = this.getNewPointPosition(mouseX, mouseY, this.imageCenter.centerX, this.imageCenter.centerY, -this.image.angle)
 
         return Math.abs(x - this.image.imageX - this.image.img.width) <= 5 &&
             Math.abs(y - this.image.imageY - this.image.img.height / 2) <= this.image.img.height / 2
     }
 
-    isMouseOnResizingTopSide(mouseX: number, mouseY: number) {
+    private isMouseOnResizingTopSide(mouseX: number, mouseY: number) {
         const {x, y} = this.getNewPointPosition(mouseX, mouseY, this.imageCenter.centerX, this.imageCenter.centerY, -this.image.angle)
 
         return Math.abs(x - this.image.imageX - this.image.img.width / 2) <= this.image.img.width / 2 &&
             Math.abs(y - this.image.imageY) <= 5
     }
 
-    isMouseOnResizingBottomSide(mouseX: number, mouseY: number) {
+    private isMouseOnResizingBottomSide(mouseX: number, mouseY: number) {
         const {x, y} = this.getNewPointPosition(mouseX, mouseY, this.imageCenter.centerX, this.imageCenter.centerY, -this.image.angle)
 
         return Math.abs(x - this.image.imageX - this.image.img.width / 2) <= this.image.img.width / 2 &&
             Math.abs(y - this.image.imageY - this.image.img.height) <= 5
     }
 
-    getMouseResizePosition(mouseX: number, mouseY: number): resizePoint | null {
+    private getMouseResizePosition(mouseX: number, mouseY: number): resizePoint | null {
         if (this.isMouseOnResizingLeftTop(mouseX, mouseY)) return "leftTop";
         else if (this.isMouseOnResizingLeftBottom(mouseX, mouseY)) return "leftBottom";
         else if (this.isMouseOnResizingRightTop(mouseX, mouseY)) return "rightTop";
@@ -334,7 +332,7 @@ export default class DragTool extends Tool {
         else return null
     }
 
-    getMouseMoveCursor(mouseX: number, mouseY: number): cursorClass {
+    private getMouseMoveCursor(mouseX: number, mouseY: number): cursorClass {
         let angle = this.image.angle * 180 / Math.PI;
         if (angle > 360) angle %= 360;
         if (this.isMouseOnResizingLeftTop(mouseX, mouseY) || this.isMouseOnResizingRightBottom(mouseX, mouseY)) {
@@ -381,21 +379,21 @@ export default class DragTool extends Tool {
             return 'cursor-alias';
         }
     }
-    touchEndHandler(e: TouchEvent): void {
+    protected touchEndHandler(e: TouchEvent): void {
     }
 
-    touchMoveHandler(e: TouchEvent): void {
+    protected touchMoveHandler(e: TouchEvent): void {
     }
 
-    touchStartHandler(e: TouchEvent): void {
+    protected touchStartHandler(e: TouchEvent): void {
     }
-    getImageCenter(image: ImageForEdit):ImageCenter {
+    private getImageCenter(image: ImageForEdit):ImageCenter {
         const centerX = image.imageX + image.img.width / 2;
         const centerY = image.imageY + image.img.height / 2;
 
         return {centerX, centerY}
     }
-    getNewPointPosition(x: number, y: number, xm: number, ym: number, angle: number): Point {
+    private getNewPointPosition(x: number, y: number, xm: number, ym: number, angle: number): Point {
         const cos = Math.cos,
             sin = Math.sin,
             xr = (x - xm) * cos(angle) - (y - ym) * sin(angle) + xm,
@@ -403,7 +401,7 @@ export default class DragTool extends Tool {
 
         return {x: xr, y: yr};
     }
-    calculateNewSize(
+    private calculateNewSize(
         startImageX: number, startImageY: number,
         startWidth: number, startHeight: number, startX: number, startY: number,
         mouseX: number, mouseY: number, resizePoint: resizePoint) {
@@ -458,8 +456,7 @@ export default class DragTool extends Tool {
 
 
     }
-    drawResizedImage(tempCtx: CanvasRenderingContext2D, ctx: CanvasRenderingContext2D,
-                              canvas: HTMLCanvasElement, tempCanvas: HTMLCanvasElement, image: ImageForEdit, imageCanvas: HTMLCanvasElement, x: number, y: number,
+    private drawResizedImage(tempCtx: CanvasRenderingContext2D, tempCanvas: HTMLCanvasElement, image: ImageForEdit, imageCanvas: HTMLCanvasElement, x: number, y: number,
                               newWidth: number, newHeight: number) {
         tempCtx.save();
         this.rotateIfNeed(tempCanvas, tempCtx, image);
@@ -474,7 +471,7 @@ export default class DragTool extends Tool {
 
     }
 
-    rotateIfNeed(tempCanvas: HTMLCanvasElement, tempCtx: CanvasRenderingContext2D, image: ImageForEdit) {
+    private rotateIfNeed(tempCanvas: HTMLCanvasElement, tempCtx: CanvasRenderingContext2D, image: ImageForEdit) {
         tempCtx.clearRect(0, 0, tempCanvas.width, tempCanvas.height);
         if (image.angle !== 0) {
             this.imageCenter = this.getImageCenter(image);

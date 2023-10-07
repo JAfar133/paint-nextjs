@@ -12,31 +12,33 @@ class PrevKey {
 }
 
 export default class TextTool extends Tool {
-    startX: number = 0;
-    startY: number = 0;
-    prevKey: PrevKey = new PrevKey("", -1, -1);
-    prevKeyArray: PrevKey[] = [];
-    textInput = document.getElementById("text-input") as HTMLInputElement;
+    private startX: number = 0;
+    private startY: number = 0;
+    private prevKey: PrevKey = new PrevKey("", -1, -1);
+    private prevKeyArray: PrevKey[] = [];
+    private textInput = document.getElementById("text-input") as HTMLInputElement;
 
-    mouseUpHandler(e: MouseEvent) {
-        e.preventDefault();
-        this.mouseDown = false;
-        const {scaledX, scaledY} = this.getScaledPoint(e.offsetX, e.offsetY, canvasState.canvasX, canvasState.canvasY, canvasState.scale)
-        this.startX = scaledX;
-        this.startY = scaledY;
-        this.prevKeyArray = [];
-        this.prevKey = new PrevKey("", -1, -1);
-        document.onkeydown = this.inputEventHandler.bind(this);
-        document.onmousedown = this.handleGlobalMouseDown.bind(this);
+    protected mouseUpHandler(e: MouseEvent) {
+        if(this.mouseDown){
+            e.preventDefault();
+            this.mouseDown = false;
+            const {scaledX, scaledY} = this.getScaledPoint(e.offsetX, e.offsetY, canvasState.canvasX, canvasState.canvasY, canvasState.scale)
+            this.startX = scaledX;
+            this.startY = scaledY;
+            this.prevKeyArray = [];
+            this.prevKey = new PrevKey("", -1, -1);
+            document.onkeydown = this.inputEventHandler.bind(this);
+            document.onmousedown = this.handleGlobalMouseDown.bind(this);
+        }
     }
-    handleGlobalMouseDown(e: MouseEvent) {
+    protected handleGlobalMouseDown(e: MouseEvent) {
         const canvas = this.canvas as Node;
         if (e.target && !canvas.contains(e.target as Node)) {
             document.onkeydown = null;
             document.onmousedown = null;
         }
     }
-    inputEventHandler = (e: KeyboardEvent) => {
+    protected inputEventHandler = (e: KeyboardEvent) => {
         e.preventDefault();
         // @ts-ignore
         const key = e.key || e.target.value.toString().slice(-1)
@@ -94,7 +96,7 @@ export default class TextTool extends Tool {
             this.prevKey.y = this.startY;
         }
     };
-    print(text: string, startX: number, startY: number) {
+    protected print(text: string, startX: number, startY: number) {
         canvasState.bufferCtx.globalAlpha = settingState.globalAlpha;
         canvasState.bufferCtx.fillText(text, startX, startY);
         canvasState.draw();
@@ -102,8 +104,8 @@ export default class TextTool extends Tool {
     }
 
 
-    mouseDownHandler(e: MouseEvent) {
-        if(this.canDraw){
+    protected mouseDownHandler(e: MouseEvent) {
+        if(this.canDraw && e.button !== 1){
             this.mouseDown = true;
             this.prevKey.key = "";
             const {scaledX, scaledY} = this.getScaledPoint(e.offsetX, e.offsetY, canvasState.canvasX, canvasState.canvasY, canvasState.scale)
@@ -113,7 +115,7 @@ export default class TextTool extends Tool {
         }
     }
 
-    mouseMoveHandler(e: MouseEvent) {
+    protected mouseMoveHandler(e: MouseEvent) {
 
     }
 
@@ -126,17 +128,17 @@ export default class TextTool extends Tool {
         canvasState.draw();
     }
 
-    touchEndHandler(e: TouchEvent): void {
+    protected touchEndHandler(e: TouchEvent): void {
         this.mouseDown = false;
         this.prevKeyArray = [];
         this.prevKey = new PrevKey("", -1, -1);
         this.textInput.onkeydown = null;
     }
 
-    touchMoveHandler(e: TouchEvent): void {
+    protected touchMoveHandler(e: TouchEvent): void {
     }
 
-    touchStartHandler(e: TouchEvent): void {
+    protected touchStartHandler(e: TouchEvent): void {
         e.preventDefault();
         this.mouseDown = true;
         this.startX = e.touches[0].clientX - this.offsetLeft;

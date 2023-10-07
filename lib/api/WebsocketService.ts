@@ -19,6 +19,7 @@ import {FiveStarTool} from "@/lib/tools/shapes/stars/fiveStarTool";
 import {FourStarTool} from "@/lib/tools/shapes/stars/fourStarTool";
 import {SixStarTool} from "@/lib/tools/shapes/stars/SixStarTool";
 import FillingTool from "@/lib/tools/fillingTool";
+import Tool from "@/lib/tools/tool";
 
 class WebsocketService {
     websocketWorker(params: Params) {
@@ -64,6 +65,7 @@ class WebsocketService {
                         });
                         break;
                     case "disconnect":
+                        this.disconnect(msg);
                         toast({
                             description: `Пользователь ${msg.username} отключился`,
                         });
@@ -173,13 +175,25 @@ class WebsocketService {
             canvasState.fill()
         }
     }
+    private disconnect(msg: any){
+        const cursorElementId = `cursor-${msg.username}`;
+        let cursorElement = document.getElementById(cursorElementId);
+        if(cursorElement){
+            cursorElement.remove();
+        }
+        toast({
+            description: `Пользователь ${msg.username} отключился`,
+        });
+    }
 
     private figureDraw(
         ctx: CanvasRenderingContext2D,
         figure: any
     ) {
         const draw: { [key: string]: (ctx: CanvasRenderingContext2D, figure: any) => void } = {
-            "pencil": (ctx, figure) => PencilTool.draw(ctx, figure.x, figure.y, figure.strokeStyle, figure.strokeWidth,figure.globalAlpha),
+            "pencil": (ctx, figure) => {
+                PencilTool.draw(ctx, figure.mouse, figure.ppts, figure.strokeStyle, figure.strokeWidth,figure.globalAlpha)
+            },
             "square": (ctx, figure) => SquareTool.draw(ctx, figure.x, figure.y, figure.w, figure.h, figure.fillStyle, figure.strokeStyle, figure.strokeWidth, figure.isFill, figure.isStroke,figure.globalAlpha,figure.lineJoin as CanvasLineJoin),
             "eraser": (ctx, figure) => EraserTool.eraser(ctx, figure.x, figure.y, figure.strokeStyle, figure.strokeWidth),
             "line": (ctx, figure) => LineTool.draw(ctx, figure.x, figure.y, figure.w, figure.h, figure.strokeStyle, figure.strokeWidth,figure.globalAlpha,figure.lineCap as CanvasLineCap),
@@ -195,7 +209,12 @@ class WebsocketService {
             "four_star": (ctx, figure) => FourStarTool.draw(ctx, figure.x, figure.y, figure.w, figure.h, figure.fillStyle, figure.strokeStyle, figure.strokeWidth, figure.isFill, figure.isStroke,figure.globalAlpha,figure.lineJoin as CanvasLineJoin),
             "six_star": (ctx, figure) => SixStarTool.draw(ctx, figure.x, figure.y, figure.w, figure.h, figure.fillStyle, figure.strokeStyle, figure.strokeWidth, figure.isFill, figure.isStroke,figure.globalAlpha,figure.lineJoin as CanvasLineJoin),
             "filling": (ctx, figure) => FillingTool.draw(ctx, figure.x, figure.y, figure.fillStyle,figure.tolerance,figure.globalAlpha),
-            "finish": (ctx) => {
+            "finish": (ctx, msg) => {
+                if (msg.draw == true && Tool.tempCanvas){
+                    ctx.drawImage(Tool.tempCanvas,0,0);
+                    canvasState.draw();
+                    Tool.tempCtx?.clearRect(0,0, Tool.tempCanvas.width, Tool.tempCanvas.height)
+                }
                 ctx.beginPath()
             },
         };

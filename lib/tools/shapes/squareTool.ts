@@ -4,7 +4,7 @@ import settingState from "@/store/settingState";
 
 export default class SquareTool extends Shape {
 
-    mouseMoveHandler(e: MouseEvent) {
+    protected mouseMoveHandler(e: MouseEvent) {
         if (this.mouseDown && this.canDraw) {
             const {scaledX, scaledY} = this.getScaledPoint(e.offsetX, e.offsetY, canvasState.canvasX, canvasState.canvasY, canvasState.scale)
             this.width = scaledX - this.startX;
@@ -15,7 +15,7 @@ export default class SquareTool extends Shape {
         document.onmousemove = null;
     }
 
-    handleGlobalMouseMove(e: MouseEvent) {
+    protected handleGlobalMouseMove(e: MouseEvent) {
         if (this.mouseDown && this.canDraw) {
 
             this.width = e.offsetX - this.startX - this.offsetLeft;
@@ -32,7 +32,7 @@ export default class SquareTool extends Shape {
         }
     }
 
-    draw(x: number, y: number, w: number, h: number) {
+    protected draw(x: number, y: number, w: number, h: number) {
         canvasState.bufferCtx.clearRect(0, 0, canvasState.bufferCanvas.width, canvasState.bufferCanvas.height);
         canvasState.bufferCtx.drawImage(this.tempCanvas, 0, 0);
         canvasState.bufferCtx.globalAlpha = settingState.globalAlpha;

@@ -4,7 +4,7 @@ import settingState from "@/store/settingState";
 
 
 export default class ArrowTool extends LineTool {
-    draw(x: number, y: number, w: number, h: number) {
+    protected draw(x: number, y: number, w: number, h: number) {
         canvasState.bufferCtx.clearRect(0, 0, canvasState.bufferCanvas.width, canvasState.bufferCanvas.height);
         canvasState.bufferCtx.drawImage(this.tempCanvas, 0, 0);
         canvasState.bufferCtx.fillStyle = canvasState.bufferCtx.strokeStyle;

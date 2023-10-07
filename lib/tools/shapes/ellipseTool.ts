@@ -4,10 +4,7 @@ import settingState from "@/store/settingState";
 
 export default class EllipseTool extends Shape {
 
-    width: number = -1;
-    height: number = -1;
-
-    mouseMoveHandler(e: MouseEvent) {
+    protected mouseMoveHandler(e: MouseEvent) {
         if (this.mouseDown && this.canDraw) {
             const {scaledX, scaledY} = this.getScaledPoint(e.offsetX, e.offsetY, canvasState.canvasX, canvasState.canvasY, canvasState.scale)
             let width = scaledX - this.startX;
@@ -18,7 +15,7 @@ export default class EllipseTool extends Shape {
         }
         document.onmousemove = null;
     }
-    touchMoveHandler(e: TouchEvent) {
+    protected touchMoveHandler(e: TouchEvent) {
         if (this.mouseDown && this.canDraw) {
             const touch = e.touches[0];
             const x = touch.clientX - this.offsetLeft;
@@ -32,7 +29,7 @@ export default class EllipseTool extends Shape {
         document.onmousemove = null;
     }
 
-    handleGlobalMouseMove(e: MouseEvent) {
+    protected handleGlobalMouseMove(e: MouseEvent) {
         if (this.mouseDown && this.canDraw) {
             this.width = Math.abs(e.pageX - this.startX - this.offsetLeft);
             this.height = Math.abs(e.offsetY - this.startY - this.offsetTop);
@@ -40,7 +37,7 @@ export default class EllipseTool extends Shape {
         }
     }
 
-    draw(x: number, y: number, w: number, h: number) {
+    protected draw(x: number, y: number, w: number, h: number) {
         canvasState.bufferCtx.clearRect(0, 0, canvasState.bufferCanvas.width, canvasState.bufferCanvas.height);
         canvasState.bufferCtx.drawImage(this.tempCanvas, 0, 0);
         canvasState.bufferCtx.globalAlpha = settingState.globalAlpha;

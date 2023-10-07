@@ -5,13 +5,13 @@ import settingState from "@/store/settingState";
 
 export default abstract class Shape extends Tool {
 
-    startX: number = -1;
-    startY: number = -1;
-    width: number = -1;
-    height: number = -1;
+    protected startX: number = -1;
+    protected startY: number = -1;
+    protected width: number = -1;
+    protected height: number = -1;
 
-    mouseDownHandler(e: MouseEvent) {
-        if(this.canDraw && this.canDraw){
+    protected mouseDownHandler(e: MouseEvent) {
+        if(this.canDraw && this.canDraw && e.button !== 1){
             this.mouseDown = true;
             canvasState.bufferCtx.beginPath();
             const {scaledX, scaledY} = this.getScaledPoint(e.offsetX, e.offsetY, canvasState.canvasX, canvasState.canvasY, canvasState.scale)
@@ -20,12 +20,14 @@ export default abstract class Shape extends Tool {
             this.tempCtx.drawImage(canvasState.bufferCanvas, 0, 0);
         }
     }
-    mouseUpHandler(e: MouseEvent) {
-        super.mouseUpHandler(e)
-        this.mouseDown = false;
-        this.sendSocketDraw();
+    protected mouseUpHandler(e: MouseEvent) {
+        if(this.mouseDown){
+            super.mouseUpHandler(e)
+            this.mouseDown = false;
+            this.sendSocketDraw();
+        }
     }
-    sendSocketDraw(){
+    protected sendSocketDraw(){
         if(this.startX > -1 && this.startY > -1 && this.width !== -1){
             this.socket.send(JSON.stringify({
                 method: 'draw',
@@ -48,12 +50,12 @@ export default abstract class Shape extends Tool {
         }
         this.sendSocketFinish();
     }
-    touchEndHandler(e: TouchEvent): void {
+    protected touchEndHandler(e: TouchEvent): void {
         this.mouseDown = false;
         this.sendSocketDraw();
     }
 
-    touchMoveHandler(e: TouchEvent): void {
+    protected touchMoveHandler(e: TouchEvent): void {
         if (this.mouseDown) {
             const touch = e.touches[0];
             const x = touch.clientX - this.offsetLeft;
@@ -66,7 +68,7 @@ export default abstract class Shape extends Tool {
         document.ontouchmove = null;
     }
 
-    touchStartHandler(e: TouchEvent): void {
+    protected touchStartHandler(e: TouchEvent): void {
         this.mouseDown = true;
         this.ctx.beginPath();
         const touch = e.touches[0];
@@ -76,5 +78,5 @@ export default abstract class Shape extends Tool {
         this.startY = y;
         e.preventDefault();
     }
-    abstract draw(x: number, y: number, w: number, h: number): void
+    protected abstract draw(x: number, y: number, w: number, h: number): void
 }

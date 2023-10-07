@@ -5,7 +5,7 @@ import settingState from "@/store/settingState";
 
 export default class LineTool extends Shape {
 
-    mouseMoveHandler(e: MouseEvent) {
+    protected mouseMoveHandler(e: MouseEvent) {
         if (this.mouseDown && this.canDraw) {
             const {scaledX, scaledY} = this.getScaledPoint(e.offsetX, e.offsetY, canvasState.canvasX, canvasState.canvasY, canvasState.scale)
             this.width = scaledX;
@@ -15,7 +15,7 @@ export default class LineTool extends Shape {
         }
         document.onmousemove = null;
     }
-    touchMoveHandler(e: TouchEvent) {
+    protected touchMoveHandler(e: TouchEvent) {
         if (this.mouseDown && this.canDraw) {
             const touch = e.touches[0];
             this.width = touch.clientX - this.offsetLeft;
@@ -25,8 +25,8 @@ export default class LineTool extends Shape {
         document.ontouchmove = null;
     }
 
-    handleGlobalMouseMove(e: MouseEvent) {
-        if (this.mouseDown && this.canDraw) {
+    protected handleGlobalMouseMove(e: MouseEvent) {
+        if (this.mouseDown && this.canDraw && e.button !== 1) {
 
             this.width = e.pageX - this.offsetLeft;
             this.height = e.pageY - this.offsetTop;
@@ -34,7 +34,7 @@ export default class LineTool extends Shape {
             this.draw(this.startX, this.startY, this.width, this.height)
         }
     }
-    sendSocketDraw(){
+    protected sendSocketDraw(){
         if(this.startX > -1 && this.startY > -1 && this.width !== -1){
             this.socket.send(JSON.stringify({
                 method: 'draw',
@@ -56,7 +56,7 @@ export default class LineTool extends Shape {
                 }}))
         }
     }
-    draw(x: number, y: number, w: number, h: number) {
+    protected draw(x: number, y: number, w: number, h: number) {
         canvasState.bufferCtx.clearRect(0, 0, canvasState.bufferCanvas.width, canvasState.bufferCanvas.height);
         canvasState.bufferCtx.drawImage(this.tempCanvas, 0, 0);
         canvasState.bufferCtx.globalAlpha = settingState.globalAlpha;

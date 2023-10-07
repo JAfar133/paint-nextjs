@@ -1,37 +1,37 @@
 import {canvasSize, ToolName} from "@/lib/utils";
 
 export default abstract class Tool {
-    canvas: HTMLCanvasElement;
-    ctx: CanvasRenderingContext2D;
-    socket: WebSocket;
-    id: string | string[];
-    type: ToolName;
-    mouseDown: boolean = false;
-    offsetTop: number;
-    offsetLeft: number;
-    canDraw: boolean = true;
-    tempImage: HTMLImageElement;
-    tempCanvas: HTMLCanvasElement;
-    tempCtx: CanvasRenderingContext2D;
-
+    protected canvas: HTMLCanvasElement;
+    protected ctx: CanvasRenderingContext2D;
+    protected socket: WebSocket;
+    protected id: string | string[];
+    protected mouseDown: boolean = false;
+    protected offsetTop: number;
+    protected offsetLeft: number;
+    protected tempImage: HTMLImageElement;
+    private _type: ToolName;
+    private _canDraw: boolean = true;
+    private _tempCanvas: HTMLCanvasElement;
+    private _tempCtx: CanvasRenderingContext2D;
+    static tempCanvas: HTMLCanvasElement | null = null
+    static tempCtx: CanvasRenderingContext2D | null = null;
     constructor(canvas: HTMLCanvasElement, socket: WebSocket, id: string | string[], type: ToolName) {
         this.canvas = canvas;
         this.socket = socket;
         this.tempImage = new Image();
-        this.tempCanvas = document.createElement('canvas');
-        this.tempCtx = this.tempCanvas.getContext('2d')!;
-        this.tempCanvas.width = canvasSize.width;
-        this.tempCanvas.height = canvasSize.height;
+        this._tempCanvas = document.createElement('canvas');
+        this._tempCtx = this._tempCanvas.getContext('2d')!;
+        this._tempCanvas.width = canvasSize.width;
+        this._tempCanvas.height = canvasSize.height;
         this.offsetTop = canvas.getBoundingClientRect().top;
         this.offsetLeft = canvas.getBoundingClientRect().left;
-        this.type = type;
+        this._type = type;
         this.id = id;
         this.ctx = canvas?.getContext('2d')!;
         this.destroyEvents();
         this.listen();
-
     }
-    sendSocketFinish(){
+    protected sendSocketFinish(){
         this.socket.send(JSON.stringify({
             method: 'draw',
             id: this.id,
@@ -45,7 +45,7 @@ export default abstract class Tool {
         const scaledY = (y - canvasY) / scale;
         return {scaledX, scaledY}
     }
-    listen() {
+    protected listen() {
         this.canvas.onmousemove = this.mouseMoveHandler.bind(this);
         this.canvas.onmousedown = this.mouseDownHandler.bind(this);
         this.canvas.onmouseup = this.mouseUpHandler.bind(this);
@@ -56,34 +56,34 @@ export default abstract class Tool {
         this.canvas.ontouchend = this.touchEndHandler.bind(this);
     }
 
-    mouseUpHandler(e: MouseEvent) {
+    protected mouseUpHandler(e: MouseEvent) {
         document.onmousemove = null;
         document.onmouseup = null;
     }
 
-    abstract touchMoveHandler(e: TouchEvent): void;
+    protected abstract touchMoveHandler(e: TouchEvent): void;
 
-    abstract touchStartHandler(e: TouchEvent): void;
+    protected abstract touchStartHandler(e: TouchEvent): void;
 
-    abstract touchEndHandler(e: TouchEvent): void;
+    protected abstract touchEndHandler(e: TouchEvent): void;
 
-    abstract mouseDownHandler(e: MouseEvent): void;
+    protected abstract mouseDownHandler(e: MouseEvent): void;
 
-    abstract mouseMoveHandler(e: MouseEvent): void;
+    protected abstract mouseMoveHandler(e: MouseEvent): void;
 
-    handleGlobalMouseMove(e: MouseEvent) {
+    protected handleGlobalMouseMove(e: MouseEvent) {
         if (this.mouseDown) {
             this.mouseMoveHandler(e);
         }
     }
 
-    handleGlobalMouseUp(e: MouseEvent) {
+    protected handleGlobalMouseUp(e: MouseEvent) {
         if (this.mouseDown) {
             this.mouseUpHandler(e);
         }
     }
 
-    destroyEvents() {
+    protected destroyEvents() {
         document.onkeydown = null;
         document.onmousemove = null;
         document.onmouseup = null;
@@ -95,9 +95,41 @@ export default abstract class Tool {
         this.canvas.ontouchend = null;
     }
 
-    mouseOutHandler() {
+    protected mouseOutHandler() {
         document.onmousemove = this.handleGlobalMouseMove.bind(this);
         document.onmouseup = this.handleGlobalMouseUp.bind(this);
     }
 
+
+    get type(): ToolName {
+        return this._type;
+    }
+
+    set type(value: ToolName) {
+        this._type = value;
+    }
+
+    get canDraw(): boolean {
+        return this._canDraw;
+    }
+
+    set canDraw(value: boolean) {
+        this._canDraw = value;
+    }
+
+    get tempCanvas(): HTMLCanvasElement {
+        return this._tempCanvas;
+    }
+
+    set tempCanvas(value: HTMLCanvasElement) {
+        this._tempCanvas = value;
+    }
+
+    get tempCtx(): CanvasRenderingContext2D {
+        return this._tempCtx;
+    }
+
+    set tempCtx(value: CanvasRenderingContext2D) {
+        this._tempCtx = value;
+    }
 }

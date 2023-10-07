@@ -159,11 +159,9 @@ class CanvasState {
             ctx.setTransform(this.scale, 0, 0, this.scale, this.canvasX, this.canvasY);
             ctx.fillStyle = 'white'
             ctx.fillRect(0, 0, this.bufferCanvas.width, this.bufferCanvas.height);
+            ctx.drawImage(this.bufferCanvas, 0,0);
             if(canvas){
                 ctx.drawImage(canvas, 0, 0);
-            }
-            else {
-                ctx.drawImage(this.bufferCanvas, 0,0);
             }
             ctx.setTransform(1, 0, 0, 1, 0, 0);
             if (toolState.tool && toolState.tool.type === "drag") {
@@ -332,6 +330,7 @@ class CanvasState {
                 img: img, isDragging: false, isResizing: false, isRotating: false, isUpload: true, angle: 0
             });
             if (this.socket) {
+                const tool = new  DragTool(this.canvas, this.socket, this.canvasId, "drag");
                 toolState.setTool(new DragTool(this.canvas, this.socket, this.canvasId, "drag"))
             }
             img.onload = () => {

@@ -5,9 +5,9 @@ import settingState from "@/store/settingState";
 
 export default class CircleTool extends Shape {
 
-    radius: number = -1;
+    private radius: number = -1;
 
-    touchMoveHandler(e: TouchEvent) {
+    protected touchMoveHandler(e: TouchEvent) {
         if (this.mouseDown && this.canDraw) {
             const touch = e.touches[0];
             const x = touch.clientX - this.offsetLeft;
@@ -20,7 +20,7 @@ export default class CircleTool extends Shape {
         document.onmousemove = null;
     }
 
-    sendSocketDraw() {
+    protected sendSocketDraw() {
         if (this.startX !== -1 && this.startY !== -1 && this.radius !== -1) {
             this.socket.send(JSON.stringify({
                 method: 'draw',
@@ -43,7 +43,7 @@ export default class CircleTool extends Shape {
         }
     }
 
-    mouseMoveHandler(e: MouseEvent) {
+    protected mouseMoveHandler(e: MouseEvent) {
         if (this.mouseDown && this.canDraw) {
             const {scaledX, scaledY} = this.getScaledPoint(e.offsetX, e.offsetY, canvasState.canvasX, canvasState.canvasY, canvasState.scale)
             let width = scaledX - this.startX;
@@ -54,7 +54,7 @@ export default class CircleTool extends Shape {
         document.onmousemove = null;
     }
 
-    handleGlobalMouseMove(e: MouseEvent) {
+    protected handleGlobalMouseMove(e: MouseEvent) {
         if (this.mouseDown && this.canDraw) {
             const width = e.pageX - this.startX - this.offsetLeft;
             const height = e.offsetY - this.startY - this.offsetTop;
@@ -64,7 +64,7 @@ export default class CircleTool extends Shape {
         }
     }
 
-    draw(x: number, y: number, r: number) {
+    protected draw(x: number, y: number, r: number) {
         canvasState.bufferCtx.clearRect(0, 0, canvasState.bufferCanvas.width, canvasState.bufferCanvas.height);
         canvasState.bufferCtx.drawImage(this.tempCanvas, 0, 0);
         canvasState.bufferCtx.globalAlpha = settingState.globalAlpha;

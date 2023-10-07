@@ -3,7 +3,7 @@ import canvasState from "@/store/canvasState";
 import settingState from "@/store/settingState";
 
 export class ShitTool extends SquareTool {
-    draw(x: number, y: number, w: number, h: number) {
+    protected draw(x: number, y: number, w: number, h: number) {
         canvasState.bufferCtx.clearRect(0, 0, canvasState.bufferCanvas.width, canvasState.bufferCanvas.height);
         canvasState.bufferCtx.drawImage(this.tempCanvas, 0, 0);
         canvasState.bufferCtx.globalAlpha = settingState.globalAlpha;

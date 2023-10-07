@@ -2,6 +2,7 @@ import Tool from "@/lib/tools/tool";
 import userState from "@/store/userState";
 import canvasState from "@/store/canvasState";
 import settingState from "@/store/settingState";
+import ToolState from "@/store/toolState";
 
 export interface Point {
     x: number;
@@ -9,12 +10,10 @@ export interface Point {
 }
 
 export default class ArcTool extends Tool {
-    startPoint: Point | null = null;
-    controlPoint: Point | null = null;
-    endPoint: Point | null = null;
-    x: number = 0;
-    y: number = 0;
-    mouseDownHandler(e: MouseEvent) {
+    private startPoint: Point | null = null;
+    private controlPoint: Point | null = null;
+    private endPoint: Point | null = null;
+    protected mouseDownHandler(e: MouseEvent) {
         if(this.canDraw && this.canDraw && e.button !== 1){
             this.mouseDown = true;
             canvasState.bufferCtx.beginPath();
@@ -27,7 +26,7 @@ export default class ArcTool extends Tool {
             }
         }
     }
-    mouseMoveHandler(e: MouseEvent) {
+    protected mouseMoveHandler(e: MouseEvent) {
         if (this.mouseDown && this.canDraw && e.button !== 1) {
             const {scaledX, scaledY} = this.getScaledPoint(e.offsetX, e.offsetY, canvasState.canvasX, canvasState.canvasY, canvasState.scale)
             if(this.startPoint && !this.controlPoint ){
@@ -47,22 +46,22 @@ export default class ArcTool extends Tool {
         document.onmousemove = null;
     }
 
-    mouseUpHandler(e: MouseEvent) {
-        super.mouseUpHandler(e);
+    protected mouseUpHandler(e: MouseEvent) {
         if(e.button !== 1){
+            super.mouseUpHandler(e);
             const {scaledX, scaledY} = this.getScaledPoint(e.offsetX, e.offsetY, canvasState.canvasX, canvasState.canvasY, canvasState.scale)
 
             if(!this.controlPoint){
                 this.controlPoint = {x: scaledX, y: scaledY};
             }
             else {
-                this.sendWebSocket()
-
+                this.sendWebSocket();
+                this.tempCtx.clearRect(0,0, this.tempCanvas.width, this.tempCanvas.height);
             }
         }
         this.mouseDown = false;
     }
-    sendWebSocket(){
+    protected sendWebSocket(){
         if(this.startPoint && this.controlPoint && this.endPoint){
             this.startPoint.x = this.startPoint.x - canvasState.bufferCanvas.width/2
             this.controlPoint.x = this.controlPoint.x - canvasState.bufferCanvas.width/2

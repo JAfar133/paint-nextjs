@@ -4,10 +4,10 @@ import settingState from "@/store/settingState";
 import canvasState from "@/store/canvasState";
 
 export default class FillingTool extends Tool {
-    mouseDownHandler(e: MouseEvent): void {
+    protected mouseDownHandler(e: MouseEvent): void {
 
     }
-    touchStartHandler(e: TouchEvent): void {
+    protected touchStartHandler(e: TouchEvent): void {
         if(this.canDraw) {
             const touch = e.touches[0];
             const x = touch.clientX - this.offsetLeft;
@@ -16,7 +16,7 @@ export default class FillingTool extends Tool {
             this.sendDrawWebsocket(x, y)
         }
     }
-    sendDrawWebsocket(x: number, y: number){
+    private sendDrawWebsocket(x: number, y: number){
         this.socket.send(JSON.stringify({
             method: 'draw',
             id: this.id,
@@ -32,7 +32,7 @@ export default class FillingTool extends Tool {
         }));
     }
 
-    mouseUpHandler(e: MouseEvent) {
+    protected mouseUpHandler(e: MouseEvent) {
         if(this.canDraw && e.button !== 1){
             super.mouseUpHandler(e);
             const {scaledX, scaledY} = this.getScaledPoint(e.offsetX, e.offsetY, canvasState.canvasX, canvasState.canvasY, canvasState.scale)
@@ -43,16 +43,16 @@ export default class FillingTool extends Tool {
         }
     }
 
-    mouseMoveHandler(e: MouseEvent): void {
+    protected mouseMoveHandler(e: MouseEvent): void {
     }
 
-    touchEndHandler(e: TouchEvent): void {
+    protected touchEndHandler(e: TouchEvent): void {
     }
 
-    touchMoveHandler(e: TouchEvent): void {
+    protected touchMoveHandler(e: TouchEvent): void {
     }
 
-    draw(x: number, y: number, fillColor: string) {
+    protected draw(x: number, y: number, fillColor: string) {
         floodFill(canvasState.bufferCtx,x, y, fillColor, settingState.fillingTolerance, settingState.globalAlpha)
     }
 
@@ -149,7 +149,7 @@ function colorsMatch(color1: Color, color2: Color): boolean {
     );
 }
 
-function normalizeColor(color: string): { r: number; g: number; b: number; a: number } | null {
+export function normalizeColor(color: string): { r: number; g: number; b: number; a: number } | null {
     if (color.startsWith("#")) {
         const hex = color.slice(1);
         const bigint = parseInt(hex, 16);
