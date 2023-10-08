@@ -376,6 +376,7 @@ class CanvasState {
         this.bufferCtx.clearRect(0, 0, this.bufferCanvas.width, this.bufferCanvas.height)
         this.bufferCtx.fillStyle = 'rgba(255,255,255,1)';
         this.bufferCtx.fillRect(0,0, this.bufferCanvas.width, this.bufferCanvas.height);
+        this.bufferCtx.fillStyle = settingState.fillColor;
         this.draw();
     }
     set fillColor(color: string) {

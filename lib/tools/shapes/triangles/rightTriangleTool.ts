@@ -9,7 +9,6 @@ export default class RightTriangleTool extends Triangle {
         canvasState.bufferCtx.clearRect(0, 0, canvasState.bufferCanvas.width, canvasState.bufferCanvas.height);
         canvasState.bufferCtx.drawImage(this.tempCanvas, 0, 0);
         canvasState.bufferCtx.globalAlpha = settingState.globalAlpha;
-        canvasState.bufferCtx.lineJoin = settingState.lineJoin;
         drawTriangle(canvasState.bufferCtx, x, y, x1, y1, canvasState.isFill, canvasState.isStroke);
     }
     protected sendSocketDraw(){

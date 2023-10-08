@@ -8,7 +8,6 @@ export class FourStarTool extends FiveStarTool {
         canvasState.bufferCtx.clearRect(0, 0, canvasState.bufferCanvas.width, canvasState.bufferCanvas.height);
         canvasState.bufferCtx.drawImage(this.tempCanvas, 0, 0);
         canvasState.bufferCtx.globalAlpha = settingState.globalAlpha;
-        canvasState.bufferCtx.lineJoin = settingState.lineJoin;
         drawStar(canvasState.bufferCtx, x, y, w, h, angleCount, canvasState.isFill, canvasState.isStroke)
     }
 

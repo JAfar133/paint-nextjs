@@ -52,10 +52,10 @@ const Page = observer(() => {
                     drawings.map((image, index) => (
                         < div className="m-5 max-w-md" key={image.image_name}>
                             <div
-                                className="border-2 border-primary hover:bg-gray-400 transition duration-300 cursor-pointer"
+                                className="border-2 w-[450px] h-[250px] h border-primary hover:bg-gray-400 transition duration-300 cursor-pointer"
                                 onClick={() => redirectToDraw(image.image_name)}
                             >
-                                <NextImage width={500} height={400} src={image.src} alt=""/>
+                                <img style={{height: '100%', width: '100%'}} src={image.src} alt=""/>
                             </div>
                         </div>
                     ))
