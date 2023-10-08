@@ -11,7 +11,7 @@ const inter = Inter({subsets: ['latin']})
 
 export const metadata: Metadata = {
     title: 'Gallery',
-    description: 'Твори, рисуй, удивляй',
+    description: 'Draw with your friends',
 }
 
 export default function RootLayout({

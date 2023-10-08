@@ -36,6 +36,7 @@ export default class SquareTool extends Shape {
         canvasState.bufferCtx.clearRect(0, 0, canvasState.bufferCanvas.width, canvasState.bufferCanvas.height);
         canvasState.bufferCtx.drawImage(this.tempCanvas, 0, 0);
         canvasState.bufferCtx.globalAlpha = settingState.globalAlpha;
+        canvasState.bufferCtx.lineJoin = settingState.lineJoin;
         drawRect(canvasState.bufferCtx, x, y, w, h, canvasState.isFill, canvasState.isStroke)
     }
     static draw(ctx: CanvasRenderingContext2D, x: number, y: number, w: number,

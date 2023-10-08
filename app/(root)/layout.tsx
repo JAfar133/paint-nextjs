@@ -10,8 +10,8 @@ import {cn} from "@/lib/utils";
 const inter = Inter({subsets: ['latin']})
 
 export const metadata: Metadata = {
-    title: 'Paint',
-    description: 'Твори, рисуй, удивляй',
+    title: 'Real paint',
+    description: 'Draw with your friend',
 }
 
 export default function RootLayout({

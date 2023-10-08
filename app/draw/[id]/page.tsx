@@ -39,7 +39,7 @@ const DrawPage = observer(() => {
             <Toaster/>
             <Toolbar/>
             <Canvas/>
-            <ImageLayers/>
+            {/*<ImageLayers/>*/}
         </div>
     );
 });

@@ -12,7 +12,7 @@ const inter = Inter({subsets: ['latin']})
 
 export const metadata: Metadata = {
     title: 'Draw',
-    description: 'Твори, рисуй, удивляй',
+    description: 'Draw with tour friends',
     viewport: 'width=device-width, initial-scale=1.0'
 }
 
