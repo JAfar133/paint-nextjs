@@ -138,27 +138,59 @@ class CanvasState {
         let scaleFactor = e.deltaY > 0 ? 1 - zoomSpeed : 1 + zoomSpeed;
 
         this.scale *= scaleFactor;
+        if(Math.abs(this.scale-1)<=0.05) this.scale = 1
 
         this.canvasX -= (e.offsetX - this.canvasX) * (scaleFactor - 1);
         this.canvasY -= (e.offsetY - this.canvasY) * (scaleFactor - 1);
+        if(this.circleOverlayRef){
+            const xTransform = e.offsetX - this.circleOverlayRef.clientWidth / 2 + 'px';
+            const yTransform = e.offsetY - this.circleOverlayRef.clientHeight / 2 + 'px';
+            this.circleOverlayRef.style.transform = `translate(${xTransform}, ${yTransform})`;
+            this.circleOverlayRef.style.width = String(`${settingState.strokeWidth*this.scale}px`);
+            this.circleOverlayRef.style.height = String(`${settingState.strokeWidth*this.scale}px`);
+        }
         this.draw();
     }
 
-    draw(canvas?: HTMLCanvasElement){
+    draw(canvas?: HTMLCanvasElement): void {
         const ctx = this.canvas.getContext('2d')
         if(ctx){
             this.bufferCtx.globalAlpha = 1;
+
             ctx.clearRect(0, 0, this.bufferCanvas.width, this.bufferCanvas.height);
-            ctx.setTransform(this.scale, 0, 0, this.scale, this.canvasX, this.canvasY);
+            ctx.transform(this.scale, 0, 0, this.scale, this.canvasX, this.canvasY);
+            ctx.imageSmoothingEnabled = this.scale <= 3;
+            ctx.imageSmoothingQuality = "high";
             ctx.fillStyle = 'white'
             ctx.fillRect(0, 0, this.bufferCanvas.width, this.bufferCanvas.height);
             ctx.drawImage(this.bufferCanvas, 0,0);
             if(canvas){
                 ctx.drawImage(canvas, 0, 0);
             }
-            ctx.setTransform(1, 0, 0, 1, 0, 0);
+            ctx.resetTransform();
             if (toolState.tool && toolState.tool.type === "drag") {
                 this.drawBorder();
+            }
+        }
+    }
+    fit(contains:boolean) {
+        return (parentWidth: number, parentHeight: number, childWidth: number, childHeight: number, scale = 1, offsetX = 0.5, offsetY = 0.5) => {
+            const childRatio = childWidth / childHeight
+            const parentRatio = parentWidth / parentHeight
+            let width = parentWidth * scale
+            let height = parentHeight * scale
+
+            if (contains ? (childRatio > parentRatio) : (childRatio < parentRatio)) {
+                height = width / childRatio
+            } else {
+                width = height * childRatio
+            }
+
+            return {
+                width,
+                height,
+                offsetX: (parentWidth - width) * offsetX,
+                offsetY: (parentHeight - height) * offsetY
             }
         }
     }
@@ -410,6 +442,13 @@ class CanvasState {
         this.font = settingState.font;
         this.lineCap = settingState.lineCap;
         this.lineJoin = settingState.lineJoin;
+    }
+    createTempCanvas(width: number, height: number):{tempCanvas: HTMLCanvasElement, tempCtx: CanvasRenderingContext2D}{
+        const tempCanvas = document.createElement('canvas');
+        tempCanvas.width = width;
+        tempCanvas.height = height;
+        const tempCtx = tempCanvas.getContext('2d')!;
+        return {tempCanvas, tempCtx}
     }
 }
 

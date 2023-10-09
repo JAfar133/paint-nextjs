@@ -30,8 +30,13 @@ const Canvas = observer(() => {
     const messagesRef = useRef<HTMLDivElement>(null);
     useEffect(() => {
         if(mainCanvasRef.current){
-            mainCanvasRef.current.width = window.innerWidth - 300;
-            mainCanvasRef.current.height = window.innerHeight - 155;
+            const width = window.innerWidth - 300;
+            const height = window.innerHeight - 155;
+            mainCanvasRef.current.width = width;
+            mainCanvasRef.current.height = height;
+            mainCanvasRef.current.style.width = `${width}px`;
+            mainCanvasRef.current.style.height = `${height}px`;
+            mainCanvasRef.current.style.aspectRatio = `auto ${width} / ${height}`
         }
     }, [mainCanvasRef]);
 
@@ -144,9 +149,9 @@ const Canvas = observer(() => {
                 canvasState.circleOverlayRef.style.display = 'block';
                 const xTransform = x - canvasState.circleOverlayRef.clientWidth / 2 - 1 + 'px';
                 const yTransform = y - canvasMain.current.offsetTop  - canvasState.circleOverlayRef.clientHeight / 2 - 1 + 'px';
-                canvasState.circleOverlayRef.style.transform = `translate(${xTransform}, ${yTransform}) scale(${canvasState.scale})`;
-                canvasState.circleOverlayRef.style.width = String(`${settingState.strokeWidth}px`);
-                canvasState.circleOverlayRef.style.height = String(`${settingState.strokeWidth}px`);
+                canvasState.circleOverlayRef.style.transform = `translate(${xTransform}, ${yTransform})`;
+                canvasState.circleOverlayRef.style.width = String(`${settingState.strokeWidth*canvasState.scale}px`);
+                canvasState.circleOverlayRef.style.height = String(`${settingState.strokeWidth*canvasState.scale}px`);
             }
             else {
                 canvasState.circleOverlayRef.style.display = 'none'
