@@ -17,7 +17,7 @@ export default class ArcTool extends Tool {
         if(this.canDraw && this.canDraw && e.button !== 1){
             this.mouseDown = true;
             canvasState.bufferCtx.beginPath();
-            const {scaledX, scaledY} = this.getScaledPoint(e.offsetX, e.offsetY, canvasState.canvasX, canvasState.canvasY, canvasState.scale)
+            const {scaledX, scaledY} = canvasState.getScaledPoint(e.offsetX, e.offsetY)
             if(!this.startPoint){
                 this.tempCtx.drawImage(canvasState.bufferCanvas, 0, 0);
                 this.startPoint = {x: scaledX, y: scaledY}
@@ -28,7 +28,7 @@ export default class ArcTool extends Tool {
     }
     protected mouseMoveHandler(e: MouseEvent) {
         if (this.mouseDown && this.canDraw && e.button !== 1) {
-            const {scaledX, scaledY} = this.getScaledPoint(e.offsetX, e.offsetY, canvasState.canvasX, canvasState.canvasY, canvasState.scale)
+            const {scaledX, scaledY} = canvasState.getScaledPoint(e.offsetX, e.offsetY)
             if(this.startPoint && !this.controlPoint ){
                 canvasState.bufferCtx.clearRect(0, 0, canvasState.bufferCanvas.width, canvasState.bufferCanvas.height);
                 canvasState.bufferCtx.drawImage(this.tempCanvas, 0, 0);
@@ -49,7 +49,7 @@ export default class ArcTool extends Tool {
     protected mouseUpHandler(e: MouseEvent) {
         if(e.button !== 1){
             super.mouseUpHandler(e);
-            const {scaledX, scaledY} = this.getScaledPoint(e.offsetX, e.offsetY, canvasState.canvasX, canvasState.canvasY, canvasState.scale)
+            const {scaledX, scaledY} = canvasState.getScaledPoint(e.offsetX, e.offsetY)
 
             if(!this.controlPoint){
                 this.controlPoint = {x: scaledX, y: scaledY};

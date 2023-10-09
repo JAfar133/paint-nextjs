@@ -22,7 +22,7 @@ export default class TextTool extends Tool {
         if(this.mouseDown){
             e.preventDefault();
             this.mouseDown = false;
-            const {scaledX, scaledY} = this.getScaledPoint(e.offsetX, e.offsetY, canvasState.canvasX, canvasState.canvasY, canvasState.scale)
+            const {scaledX, scaledY} = canvasState.getScaledPoint(e.offsetX, e.offsetY)
             this.startX = scaledX;
             this.startY = scaledY;
             this.prevKeyArray = [];
@@ -108,7 +108,7 @@ export default class TextTool extends Tool {
         if(this.canDraw && e.button !== 1){
             this.mouseDown = true;
             this.prevKey.key = "";
-            const {scaledX, scaledY} = this.getScaledPoint(e.offsetX, e.offsetY, canvasState.canvasX, canvasState.canvasY, canvasState.scale)
+            const {scaledX, scaledY} = canvasState.getScaledPoint(e.offsetX, e.offsetY)
             canvasState.bufferCtx.font = settingState.font;
             canvasState.bufferCtx.beginPath();
             canvasState.bufferCtx.moveTo(scaledX,scaledY);

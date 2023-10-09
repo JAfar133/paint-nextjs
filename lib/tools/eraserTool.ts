@@ -21,7 +21,7 @@ export default class EraserTool extends Tool {
     mouseDownHandler(e: MouseEvent) {
         if(this.canDraw && canvasState.bufferCtx){
             this.mouseDown = true;
-            const {scaledX, scaledY} = this.getScaledPoint(e.offsetX, e.offsetY, canvasState.canvasX, canvasState.canvasY, canvasState.scale)
+            const {scaledX, scaledY} = canvasState.getScaledPoint(e.offsetX, e.offsetY)
             canvasState.bufferCtx.beginPath();
             canvasState.bufferCtx.moveTo(scaledX, scaledY);
         }
@@ -29,7 +29,7 @@ export default class EraserTool extends Tool {
 
     mouseMoveHandler(e: MouseEvent) {
         if (this.mouseDown && this.canDraw) {
-            const {scaledX, scaledY} = this.getScaledPoint(e.offsetX, e.offsetY, canvasState.canvasX, canvasState.canvasY, canvasState.scale)
+            const {scaledX, scaledY} = canvasState.getScaledPoint(e.offsetX, e.offsetY)
             this.sendSocketDraw(scaledX, scaledY);
             this.draw(scaledX, scaledY);
         }

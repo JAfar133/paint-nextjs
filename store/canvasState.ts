@@ -34,7 +34,7 @@ class CanvasState {
     messages: Message[] = []
     isFill: boolean = false;
     isStroke: boolean = true;
-    scale: number = 0.5;
+    scale: number = 1;
     offsetX: number = 0;
     offsetY: number = 0;
     savedCanvasWithoutImage: HTMLCanvasElement | null = null;
@@ -137,17 +137,26 @@ class CanvasState {
         const zoomSpeed = 0.1;
         let scaleFactor = e.deltaY > 0 ? 1 - zoomSpeed : 1 + zoomSpeed;
 
-        this.scale *= scaleFactor;
+        this.scale = parseFloat((this.scale * scaleFactor).toFixed(3));
+
         if(Math.abs(this.scale-1)<=0.05) this.scale = 1
 
-        this.canvasX -= (e.offsetX - this.canvasX) * (scaleFactor - 1);
-        this.canvasY -= (e.offsetY - this.canvasY) * (scaleFactor - 1);
+        const deltaX = Math.floor((e.offsetX - this.canvasX) * (scaleFactor - 1));
+        const deltaY = Math.floor((e.offsetY - this.canvasY) * (scaleFactor - 1));
+
+        this.canvasX -= deltaX;
+        this.canvasY -= deltaY;
         if(this.circleOverlayRef){
             const xTransform = e.offsetX - this.circleOverlayRef.clientWidth / 2 + 'px';
             const yTransform = e.offsetY - this.circleOverlayRef.clientHeight / 2 + 'px';
             this.circleOverlayRef.style.transform = `translate(${xTransform}, ${yTransform})`;
-            this.circleOverlayRef.style.width = String(`${settingState.strokeWidth*this.scale}px`);
-            this.circleOverlayRef.style.height = String(`${settingState.strokeWidth*this.scale}px`);
+            this.circleOverlayRef.style.width = String(`${Math.floor(settingState.strokeWidth*this.scale)}px`);
+            this.circleOverlayRef.style.height = String(`${Math.floor(settingState.strokeWidth*this.scale)}px`);
+        }
+        if(settingState.strokeWidth===1){
+            this.circleOverlayRef!.style.borderRadius = '0';
+        } else {
+            this.circleOverlayRef!.style.borderRadius = '50%';
         }
         this.draw();
     }
@@ -156,11 +165,9 @@ class CanvasState {
         const ctx = this.canvas.getContext('2d')
         if(ctx){
             this.bufferCtx.globalAlpha = 1;
-
             ctx.clearRect(0, 0, this.bufferCanvas.width, this.bufferCanvas.height);
             ctx.transform(this.scale, 0, 0, this.scale, this.canvasX, this.canvasY);
             ctx.imageSmoothingEnabled = this.scale <= 3;
-            ctx.imageSmoothingQuality = "high";
             ctx.fillStyle = 'white'
             ctx.fillRect(0, 0, this.bufferCanvas.width, this.bufferCanvas.height);
             ctx.drawImage(this.bufferCanvas, 0,0);
@@ -173,27 +180,35 @@ class CanvasState {
             }
         }
     }
-    fit(contains:boolean) {
-        return (parentWidth: number, parentHeight: number, childWidth: number, childHeight: number, scale = 1, offsetX = 0.5, offsetY = 0.5) => {
-            const childRatio = childWidth / childHeight
-            const parentRatio = parentWidth / parentHeight
-            let width = parentWidth * scale
-            let height = parentHeight * scale
+    setCanvas(canvas: HTMLCanvasElement) {
+        this.canvas = canvas;
+        this.bufferCanvas = document.createElement('canvas');
+        this.savedCanvasWithoutImage = document.createElement('canvas');
+        this.bufferCtx = this.bufferCanvas.getContext('2d')!;
+        this.bufferCtx.imageSmoothingEnabled = false;
+        this.savedCtxWithoutImage = this.savedCanvasWithoutImage.getContext('2d')!;
+        this.bufferCanvas.width = this.rectWidth;
+        this.bufferCanvas.height = this.rectHeight;
+        this.savedCanvasWithoutImage.width = this.rectWidth;
+        this.savedCanvasWithoutImage.height = this.rectHeight;
+        setTimeout(()=>{
+            if(this.canvasMain){
+                this.canvasMain.onwheel = this.wheelHandler.bind(this);
+                this.canvasMain.onmousemove = this.mouseMoveHandler.bind(this)
+                this.canvasMain.onmousedown = this.mouseDownHandler.bind(this)
+                window.onmouseup = this.mouseUpHandler.bind(this)
 
-            if (contains ? (childRatio > parentRatio) : (childRatio < parentRatio)) {
-                height = width / childRatio
-            } else {
-                width = height * childRatio
             }
+        },100)
+        this.canvas.onwheel = this.wheelHandler.bind(this);
+        this.canvasX = this.canvas.width /2 - this.rectWidth/2*this.scale
+        this.canvasY = 50;
+        this.centerX =  this.canvas.width / 2;
+        this.centerY =  this.canvas.height / 2 + this.canvasY + 50;
 
-            return {
-                width,
-                height,
-                offsetX: (parentWidth - width) * offsetX,
-                offsetY: (parentHeight - height) * offsetY
-            }
-        }
+        this.draw();
     }
+
     mouseMoveHandler(e: MouseEvent) {
         if (this.mouseDown && this.canvasContainer) {
             e.preventDefault()
@@ -256,34 +271,6 @@ class CanvasState {
 
     setSocket(socket: WebSocket) {
         this.socket = socket;
-    }
-
-    setCanvas(canvas: HTMLCanvasElement) {
-        this.canvas = canvas;
-        this.bufferCanvas = document.createElement('canvas');
-        this.savedCanvasWithoutImage = document.createElement('canvas');
-        this.bufferCtx = this.bufferCanvas.getContext('2d')!;
-        this.savedCtxWithoutImage = this.savedCanvasWithoutImage.getContext('2d')!;
-        this.bufferCanvas.width = this.rectWidth;
-        this.bufferCanvas.height = this.rectHeight;
-        this.savedCanvasWithoutImage.width = this.rectWidth;
-        this.savedCanvasWithoutImage.height = this.rectHeight;
-        setTimeout(()=>{
-            if(this.canvasMain){
-                this.canvasMain.onwheel = this.wheelHandler.bind(this);
-                this.canvasMain.onmousemove = this.mouseMoveHandler.bind(this)
-                this.canvasMain.onmousedown = this.mouseDownHandler.bind(this)
-                window.onmouseup = this.mouseUpHandler.bind(this)
-
-            }
-        },100)
-        this.canvas.onwheel = this.wheelHandler.bind(this);
-        this.canvasX = this.canvas.width /2 - this.rectWidth/2*this.scale
-        this.canvasY = 50;
-        this.centerX =  this.canvas.width / 2;
-        this.centerY =  this.canvas.height / 2 + this.canvasY + 50;
-
-        this.draw();
     }
 
     addUndo(data: any) {
@@ -443,12 +430,60 @@ class CanvasState {
         this.lineCap = settingState.lineCap;
         this.lineJoin = settingState.lineJoin;
     }
+    getScaledPoint(x: number, y: number){
+        let scaledX = Math.floor((x - this.canvasX) / this.scale);
+        let scaledY = Math.floor((y - this.canvasY) / this.scale);
+        if(settingState.strokeWidth%2 !== 0){
+            scaledX+=0.5;
+            scaledY+=0.5;
+        }
+
+        return {scaledX, scaledY}
+    }
     createTempCanvas(width: number, height: number):{tempCanvas: HTMLCanvasElement, tempCtx: CanvasRenderingContext2D}{
         const tempCanvas = document.createElement('canvas');
         tempCanvas.width = width;
         tempCanvas.height = height;
         const tempCtx = tempCanvas.getContext('2d')!;
         return {tempCanvas, tempCtx}
+    }
+    fix_dpi() {
+        const canvas = this.canvas;
+        let style = {
+            height() {
+                return + getComputedStyle(canvas).getPropertyValue('height').slice(0,-2);
+            },
+            width() {
+                return + getComputedStyle(canvas).getPropertyValue('width').slice(0,-2);
+            }
+        }
+        const width = (style.width() * window.devicePixelRatio).toString();
+        const height = (style.height() * window.devicePixelRatio).toString();
+        canvas.setAttribute('width', width);
+        canvas.setAttribute('height', height);
+
+
+    }
+    fit(contains:boolean) {
+        return (parentWidth: number, parentHeight: number, childWidth: number, childHeight: number, scale = 1, offsetX = 0.5, offsetY = 0.5) => {
+            const childRatio = childWidth / childHeight
+            const parentRatio = parentWidth / parentHeight
+            let width = parentWidth * scale
+            let height = parentHeight * scale
+
+            if (contains ? (childRatio > parentRatio) : (childRatio < parentRatio)) {
+                height = width / childRatio
+            } else {
+                width = height * childRatio
+            }
+
+            return {
+                width,
+                height,
+                offsetX: (parentWidth - width) * offsetX,
+                offsetY: (parentHeight - height) * offsetY
+            }
+        }
     }
 }
 

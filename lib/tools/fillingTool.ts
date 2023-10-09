@@ -35,7 +35,7 @@ export default class FillingTool extends Tool {
     protected mouseUpHandler(e: MouseEvent) {
         if(this.canDraw && e.button !== 1){
             super.mouseUpHandler(e);
-            const {scaledX, scaledY} = this.getScaledPoint(e.offsetX, e.offsetY, canvasState.canvasX, canvasState.canvasY, canvasState.scale)
+            const {scaledX, scaledY} = canvasState.getScaledPoint(e.offsetX, e.offsetY)
             const x = Math.floor(scaledX),
                 y = Math.floor(scaledY);
             floodFill(canvasState.bufferCtx,x, y, settingState.fillColor, settingState.fillingTolerance, settingState.globalAlpha)

@@ -6,7 +6,7 @@ export default class SquareTool extends Shape {
 
     protected mouseMoveHandler(e: MouseEvent) {
         if (this.mouseDown && this.canDraw) {
-            const {scaledX, scaledY} = this.getScaledPoint(e.offsetX, e.offsetY, canvasState.canvasX, canvasState.canvasY, canvasState.scale)
+            const {scaledX, scaledY} = canvasState.getScaledPoint(e.offsetX, e.offsetY)
             this.width = scaledX - this.startX;
             this.height = scaledY - this.startY;
 

@@ -269,6 +269,12 @@ const Toolbar = observer(() => {
                             {toolPressed?.strokeWidth && <div className="flex gap-3 items-center">
                               <label htmlFor="width" className="w-[80px] mr-2">Толщина</label>
                               <RangeSlider
+                                onWheel={e=>{
+                                    const value = e.deltaY > 0
+                                        ? Math.max(1, settingState.strokeWidth - 1)
+                                        : Math.min(200, settingState.strokeWidth + 1);
+                                    handleStrokeWidthTool(value);
+                                }}
                                 min={1}
                                 max={200}
                                 className="w-100"
@@ -288,6 +294,12 @@ const Toolbar = observer(() => {
                                     max={200}
                                     className="w-100"
                                     value={settingState.textSize}
+                                    onWheel={e=>{
+                                        const value = e.deltaY > 0
+                                            ? Math.max(1, settingState.textSize - 1)
+                                            : Math.min(200, settingState.textSize + 1);
+                                        handleTextSizeTool(value);
+                                    }}
                                     onChange={e => {
                                         handleTextSizeTool(parseInt(e.target.value))
                                     }}
@@ -378,6 +390,12 @@ const Toolbar = observer(() => {
                                   max={255}
                                   className="w-100"
                                   value={settingState.fillingTolerance}
+                                  onWheel={e=>{
+                                      const value = e.deltaY > 0
+                                          ? Math.max(1, settingState.fillingTolerance - 1)
+                                          : Math.min(255, settingState.fillingTolerance + 1);
+                                      handleFillingTolerance(value);
+                                  }}
                                   onChange={e => {
                                       handleFillingTolerance(parseInt(e.target.value))
                                   }}
@@ -390,6 +408,12 @@ const Toolbar = observer(() => {
                               <RangeSlider
                                 className="w-100"
                                 value={Math.round(settingState.globalAlpha * 100)}
+                                onWheel={e=>{
+                                    const value = e.deltaY > 0
+                                        ? Math.max(0, settingState.globalAlpha-1/100)
+                                        : Math.min(1, settingState.globalAlpha+1/100);
+                                    settingState.setGlobalAlpha(value);
+                                }}
                                 onChange={e => {
                                     const newValue = parseFloat(e.target.value);
                                     settingState.setGlobalAlpha(newValue / 100);

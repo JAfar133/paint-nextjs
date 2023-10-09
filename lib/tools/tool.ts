@@ -1,4 +1,5 @@
 import {canvasSize, ToolName} from "@/lib/utils";
+import settingState from "@/store/settingState";
 
 export default abstract class Tool {
     protected canvas: HTMLCanvasElement;
@@ -23,6 +24,7 @@ export default abstract class Tool {
         this._tempCtx = this._tempCanvas.getContext('2d')!;
         this._tempCanvas.width = canvasSize.width;
         this._tempCanvas.height = canvasSize.height;
+        this._tempCtx.imageSmoothingEnabled = false;
         this.offsetTop = canvas.getBoundingClientRect().top;
         this.offsetLeft = canvas.getBoundingClientRect().left;
         this._type = type;
@@ -39,11 +41,6 @@ export default abstract class Tool {
                 type: 'finish',
             }
         }));
-    }
-    protected getScaledPoint(x: number, y: number, canvasX: number, canvasY: number, scale: number){
-        const scaledX = (x - canvasX) / scale;
-        const scaledY = (y - canvasY) / scale;
-        return {scaledX, scaledY}
     }
     protected listen() {
         this.canvas.onmousemove = this.mouseMoveHandler.bind(this);

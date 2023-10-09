@@ -30,7 +30,8 @@ export default class PencilTool extends Tool {
         }));
     }
     protected mouseDownHandler(e: MouseEvent) {
-        if(this.canDraw){
+        if(this.canDraw && e.button !==1){
+            const {scaledX, scaledY} = canvasState.getScaledPoint(e.offsetX, e.offsetY)
             this.mouseDown = true;
             if(settingState.globalAlpha !== 1){
                 this.tempCtx.globalAlpha = settingState.globalAlpha;
@@ -38,18 +39,24 @@ export default class PencilTool extends Tool {
                 this.tempCtx.strokeStyle = settingState.strokeColor;
                 this.tempCtx.lineCap = "round";
                 this.tempCtx.lineJoin = "round";
+                this.ppts.push({x: this.mouse.x, y: this.mouse.y});
+                this.draw(scaledX, scaledY);
             }
             else {
-                const {scaledX, scaledY} = this.getScaledPoint(e.offsetX, e.offsetY, canvasState.canvasX, canvasState.canvasY, canvasState.scale)
                 canvasState.bufferCtx.beginPath();
                 canvasState.bufferCtx.moveTo(scaledX, scaledY);
+                canvasState.bufferCtx.lineWidth = settingState.strokeWidth;
+                canvasState.bufferCtx.strokeStyle = settingState.strokeColor;
+                canvasState.bufferCtx.lineCap = "round";
+                canvasState.bufferCtx.lineJoin = "round";
+                draw(canvasState.bufferCtx, this.mouse.x, this.mouse.y);
             }
 
         }
     }
 
     protected mouseMoveHandler(e: MouseEvent) {
-        const {scaledX, scaledY} = this.getScaledPoint(e.offsetX, e.offsetY, canvasState.canvasX, canvasState.canvasY, canvasState.scale)
+        const {scaledX, scaledY} = canvasState.getScaledPoint(e.offsetX, e.offsetY)
         this.mouse.x = scaledX;
         this.mouse.y = scaledY;
         if (this.mouseDown && this.canDraw) {
@@ -59,10 +66,6 @@ export default class PencilTool extends Tool {
                 this.draw(scaledX, scaledY);
             }
             else {
-                canvasState.bufferCtx.lineWidth = settingState.strokeWidth;
-                canvasState.bufferCtx.strokeStyle = settingState.strokeColor;
-                canvasState.bufferCtx.lineCap = "round";
-                canvasState.bufferCtx.lineJoin = "round";
                 draw(canvasState.bufferCtx, this.mouse.x, this.mouse.y);
             }
         }
@@ -162,8 +165,8 @@ export default class PencilTool extends Tool {
     }
 
     protected draw(x: number, y: number) {
+        this.ppts.push({x: this.mouse.x, y: this.mouse.y});
         drawLine(this.tempCtx, this.mouse, this.ppts);
-        canvasState.draw(this.tempCtx.canvas);
     }
 }
 
@@ -174,6 +177,7 @@ function draw(ctx: CanvasRenderingContext2D, x: number, y: number) {
 }
 
 function drawLine(tempCtx: CanvasRenderingContext2D, mouse: Point, ppts: Point[]) {
+    ppts.push({x: mouse.x, y: mouse.y});
     if(ppts.length < 3){
         const b = ppts[0];
         if(b){
@@ -199,4 +203,5 @@ function drawLine(tempCtx: CanvasRenderingContext2D, mouse: Point, ppts: Point[]
         ppts[i + 1].y
     );
     tempCtx.stroke();
+    canvasState.draw(tempCtx.canvas);
 }

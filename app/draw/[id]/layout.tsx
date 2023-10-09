@@ -6,14 +6,13 @@ import React from "react";
 import {ThemeProvider} from "@/components/theme-provider";
 import 'react-bootstrap-range-slider/dist/react-bootstrap-range-slider.css';
 import {cn} from "@/lib/utils";
-import Toolbar from "@/components/Toolbar";
 
 const inter = Inter({subsets: ['latin']})
 
 export const metadata: Metadata = {
     title: 'Draw',
     description: 'Draw with tour friends',
-    viewport: 'width=device-width, initial-scale=1.0'
+    viewport: 'width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0'
 }
 
 export default function DrawLayout({

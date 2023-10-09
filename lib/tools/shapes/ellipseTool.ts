@@ -6,7 +6,7 @@ export default class EllipseTool extends Shape {
 
     protected mouseMoveHandler(e: MouseEvent) {
         if (this.mouseDown && this.canDraw) {
-            const {scaledX, scaledY} = this.getScaledPoint(e.offsetX, e.offsetY, canvasState.canvasX, canvasState.canvasY, canvasState.scale)
+            const {scaledX, scaledY} = canvasState.getScaledPoint(e.offsetX, e.offsetY)
             let width = scaledX - this.startX;
             let height = scaledY - this.startY;
             this.width = Math.abs(width);

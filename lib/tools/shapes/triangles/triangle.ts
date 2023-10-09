@@ -4,7 +4,7 @@ import canvasState from "@/store/canvasState";
 export default abstract class Triangle extends Shape {
     protected mouseMoveHandler(e: MouseEvent) {
         if (this.mouseDown && this.canDraw) {
-            const {scaledX, scaledY} = this.getScaledPoint(e.offsetX, e.offsetY, canvasState.canvasX, canvasState.canvasY, canvasState.scale)
+            const {scaledX, scaledY} = canvasState.getScaledPoint(e.offsetX, e.offsetY)
             this.width = scaledX;
             this.height = scaledY;
             this.draw(this.startX, this.startY, this.width, this.height)

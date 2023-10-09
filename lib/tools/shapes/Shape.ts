@@ -11,10 +11,10 @@ export default abstract class Shape extends Tool {
     protected height: number = -1;
 
     protected mouseDownHandler(e: MouseEvent) {
-        if(this.canDraw && this.canDraw && e.button !== 1){
+        if(this.canDraw && e.button !== 1){
             this.mouseDown = true;
             canvasState.bufferCtx.beginPath();
-            const {scaledX, scaledY} = this.getScaledPoint(e.offsetX, e.offsetY, canvasState.canvasX, canvasState.canvasY, canvasState.scale)
+            const {scaledX, scaledY} = canvasState.getScaledPoint(e.offsetX, e.offsetY)
             this.startX = scaledX;
             this.startY = scaledY;
             this.tempCtx.clearRect(0,0,this.tempCanvas.width, this.tempCanvas.height)

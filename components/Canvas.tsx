@@ -152,6 +152,11 @@ const Canvas = observer(() => {
                 canvasState.circleOverlayRef.style.transform = `translate(${xTransform}, ${yTransform})`;
                 canvasState.circleOverlayRef.style.width = String(`${settingState.strokeWidth*canvasState.scale}px`);
                 canvasState.circleOverlayRef.style.height = String(`${settingState.strokeWidth*canvasState.scale}px`);
+                if(settingState.strokeWidth===1){
+                    canvasState.circleOverlayRef.style.borderRadius = '0';
+                } else {
+                    canvasState.circleOverlayRef.style.borderRadius = '50%';
+                }
             }
             else {
                 canvasState.circleOverlayRef.style.display = 'none'
