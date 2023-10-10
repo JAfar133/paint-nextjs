@@ -197,6 +197,7 @@ const Canvas = observer(() => {
     return (
         <div id="canvas" ref={canvasMain}
             className="relative">
+            <div className="grid-container" id="grid-container"></div>
             <div className="absolute left-0 z-[500] p-1 flex gap-1">
                 <Search width={16} color="gray"></Search>
                 <span className="text-gray-400">{Math.floor(canvasState.scale*100)}%</span>

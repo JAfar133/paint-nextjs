@@ -77,10 +77,9 @@ export default class DragTool extends Tool {
             const {scaledX, scaledY} = canvasState.getScaledPoint(e.offsetX, e.offsetY)
             const mouseX = scaledX;
             const mouseY = scaledY;
-            const centerX = this.image.imageX + this.image.img.width / 2;
-            const centerY = this.image.imageY + this.image.img.height / 2;
-            const dx = mouseX - centerX;
-            const dy = mouseY - centerY;
+            this.imageCenter = this.getImageCenter(this.image)
+            const dx = mouseX - this.imageCenter.centerX;
+            const dy = mouseY - this.imageCenter.centerY;
             if (this.image.angle !== 0) {
                 this.startAngle = Math.atan2(dy, dx) - this.image.angle;
             } else {
@@ -88,8 +87,9 @@ export default class DragTool extends Tool {
             }
             this.startX = mouseX;
             this.startY = mouseY;
-            this.startImageX = this.image.imageX;
-            this.startImageY = this.image.imageY;
+            const {x, y} = this.getNewPointPosition(this.image.imageX, this.image.imageY, this.imageCenter.centerX,this.imageCenter.centerY, this.image.angle)
+            this.startImageX = x;
+            this.startImageY = y;
             this.startWidth = this.image.img.width;
             this.startHeight = this.image.img.height;
             const mouseResizePosition: resizePoint | null = this.getMouseResizePosition(mouseX, mouseY);
@@ -179,8 +179,8 @@ export default class DragTool extends Tool {
     private drugResize(mouseX: number, mouseY: number) {
         if (this.image.isResizing) {
             this.imageCenter = this.getImageCenter(this.image);
-            const mousePoint = this.getNewPointPosition(mouseX, mouseY, this.imageCenter.centerX, this.imageCenter.centerY, -this.image.angle)
             const startImageXYPoint = this.getNewPointPosition(this.startImageX, this.startImageY, this.imageCenter.centerX, this.imageCenter.centerY, -this.image.angle)
+            const mousePoint = this.getNewPointPosition(mouseX, mouseY, this.imageCenter.centerX, this.imageCenter.centerY, -this.image.angle)
             this.imageXY = this.getNewPointPosition(this.startX, this.startY, this.imageCenter.centerX, this.imageCenter.centerY, -this.image.angle)
             const {newWidth, newHeight, newX, newY} = this.calculateNewSize(
                 startImageXYPoint.x,
@@ -252,11 +252,12 @@ export default class DragTool extends Tool {
     }
 
     private isMouseOnImage(mouseX: number, mouseY: number) {
-        const {x, y} = this.getNewPointPosition(mouseX, mouseY, this.imageCenter.centerX, this.imageCenter.centerY, this.image.angle);
-        return x >= this.image.imageX &&
-            x <= this.image.imageX + this.image.img.width &&
-            y >= this.image.imageY &&
-            y <= this.image.imageY + this.image.img.height
+        const mouse = this.getNewPointPosition(mouseX, mouseY, this.imageCenter.centerX, this.imageCenter.centerY, -this.image.angle);
+        const image = {x: this.image.imageX, y: this.image.imageY}
+        return mouse.x >= image.x &&
+            mouse.x <= image.x + this.image.img.width &&
+            mouse.y >= image.y &&
+            mouse.y <= image.y + this.image.img.height
     }
 
     private isMouseOnResizingLeftTop(mouseX: number, mouseY: number) {
@@ -334,51 +335,59 @@ export default class DragTool extends Tool {
 
     private getMouseMoveCursor(mouseX: number, mouseY: number): cursorClass {
         let angle = this.image.angle * 180 / Math.PI;
-        if (angle > 360) angle %= 360;
+        if (angle < 0) {
+            angle += 360;
+        }
+
+        const roundedAngle = Math.round(angle / 45) * 45;
+
         if (this.isMouseOnResizingLeftTop(mouseX, mouseY) || this.isMouseOnResizingRightBottom(mouseX, mouseY)) {
-            if (Math.abs(Math.abs(angle) - 45) <= 20 || Math.abs(Math.abs(angle) - 225) <= 20) {
+            if (roundedAngle === 45 || roundedAngle === 225) {
                 return 'cursor-ns-resize';
-            }
-            if (Math.abs(Math.abs(angle) - 90) <= 20 || Math.abs(Math.abs(angle) - 270) <= 20) {
+            } else if (roundedAngle === 90 || roundedAngle === 270) {
                 return 'cursor-nesw-resize';
-            }
-            if (Math.abs(Math.abs(angle) - 135) <= 20 || Math.abs(Math.abs(angle) - 315) <= 20) {
+            } else if (roundedAngle === 135 || roundedAngle === 315) {
                 return 'cursor-ew-resize';
+            } else {
+                return 'cursor-nwse-resize';
             }
-            return 'cursor-nwse-resize';
         } else if (this.isMouseOnResizingRightTop(mouseX, mouseY) || this.isMouseOnResizingLeftBottom(mouseX, mouseY)) {
-            if (Math.abs(Math.abs(angle) - 45) <= 20 || Math.abs(Math.abs(angle) - 225) <= 20) {
+            if (roundedAngle === 45 || roundedAngle === 225) {
                 return 'cursor-ew-resize';
-            }
-            if (Math.abs(Math.abs(angle) - 90) <= 20 || Math.abs(Math.abs(angle) - 270) <= 20) {
+            } else if (roundedAngle === 90 || roundedAngle === 270) {
                 return 'cursor-nwse-resize';
-            }
-            if (Math.abs(Math.abs(angle) - 135) <= 20 || Math.abs(Math.abs(angle) - 315) <= 20) {
+            } else if (roundedAngle === 135 || roundedAngle === 315) {
                 return 'cursor-ns-resize';
-            }
-            return 'cursor-nesw-resize';
-        } else if (this.isMouseOnResizingLeftSide(mouseX, mouseY) || this.isMouseOnResizingRightSide(mouseX, mouseY)) {
-            if (Math.abs(Math.abs(angle) - 45) <= 20 || Math.abs(Math.abs(angle) - 225) <= 20) {
-                return 'cursor-nwse-resize';
-            }
-            if (Math.abs(Math.abs(angle) - 90) <= 20 || Math.abs(Math.abs(angle) - 270) <= 20) {
-                return 'cursor-ns-resize';
-            }
-            return 'cursor-ew-resize';
-        } else if (this.isMouseOnResizingTopSide(mouseX, mouseY) || this.isMouseOnResizingBottomSide(mouseX, mouseY)) {
-            if (Math.abs(Math.abs(angle) - 45) <= 20 || Math.abs(Math.abs(angle) - 225) <= 20) {
+            } else {
                 return 'cursor-nesw-resize';
             }
-            if (Math.abs(Math.abs(angle) - 90) <= 20 || Math.abs(Math.abs(angle) - 270) <= 20) {
+        } else if (this.isMouseOnResizingLeftSide(mouseX, mouseY) || this.isMouseOnResizingRightSide(mouseX, mouseY)) {
+            if (roundedAngle === 45 || roundedAngle === 225) {
+                return 'cursor-nwse-resize';
+            } else if (roundedAngle === 90 || roundedAngle === 270) {
+                return 'cursor-ns-resize';
+            } else if (roundedAngle === 135 || roundedAngle === 315) {
+                return 'cursor-nesw-resize';
+            } else {
                 return 'cursor-ew-resize';
             }
-            return 'cursor-ns-resize';
+        } else if (this.isMouseOnResizingTopSide(mouseX, mouseY) || this.isMouseOnResizingBottomSide(mouseX, mouseY)) {
+            if (roundedAngle === 45 || roundedAngle === 225) {
+                return 'cursor-nesw-resize';
+            } else if (roundedAngle === 90 || roundedAngle === 270) {
+                return 'cursor-ew-resize';
+            } else if (roundedAngle === 135 || roundedAngle === 315) {
+                return 'cursor-nwse-resize';
+            } else {
+                return 'cursor-ns-resize';
+            }
         } else if (this.isMouseOnImage(mouseX, mouseY)) {
             return this.image.isDragging ? 'cursor-grabbing' : 'cursor-grab';
         } else {
             return 'cursor-alias';
         }
     }
+
     protected touchEndHandler(e: TouchEvent): void {
     }
 
@@ -409,7 +418,6 @@ export default class DragTool extends Tool {
         let newHeight = startHeight;
         let newX = mouseX;
         let newY = mouseY;
-
         switch (resizePoint) {
             case "leftTop":
                 newWidth = startX - mouseX + startWidth;
@@ -456,8 +464,8 @@ export default class DragTool extends Tool {
 
 
     }
-    private drawResizedImage(tempCtx: CanvasRenderingContext2D, tempCanvas: HTMLCanvasElement, image: ImageForEdit, imageCanvas: HTMLCanvasElement, x: number, y: number,
-                              newWidth: number, newHeight: number) {
+    private drawResizedImage(tempCtx: CanvasRenderingContext2D, tempCanvas: HTMLCanvasElement, image: ImageForEdit, imageCanvas: HTMLCanvasElement,
+                             x: number, y: number, newWidth: number, newHeight: number) {
         tempCtx.save();
         this.rotateIfNeed(tempCanvas, tempCtx, image);
         tempCtx.drawImage(

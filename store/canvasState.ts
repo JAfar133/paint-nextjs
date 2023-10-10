@@ -34,7 +34,7 @@ class CanvasState {
     messages: Message[] = []
     isFill: boolean = false;
     isStroke: boolean = true;
-    scale: number = 1;
+    scale: number = 0.5;
     offsetX: number = 0;
     offsetY: number = 0;
     savedCanvasWithoutImage: HTMLCanvasElement | null = null;
@@ -58,6 +58,8 @@ class CanvasState {
     bufferCanvas: HTMLCanvasElement;
     // @ts-ignore
     bufferCtx: CanvasRenderingContext2D;
+    gridCanvas: HTMLCanvasElement | null= null;
+    gridCtx: CanvasRenderingContext2D | null= null;
     constructor() {
         this.canvas_id = `f${(+new Date).toString(16)}`;
         makeAutoObservable(this);
@@ -137,15 +139,11 @@ class CanvasState {
         const zoomSpeed = 0.1;
         let scaleFactor = e.deltaY > 0 ? 1 - zoomSpeed : 1 + zoomSpeed;
 
-        this.scale = parseFloat((this.scale * scaleFactor).toFixed(3));
+        this.scale = this.scale * scaleFactor;
 
-        if(Math.abs(this.scale-1)<=0.05) this.scale = 1
-
-        const deltaX = Math.floor((e.offsetX - this.canvasX) * (scaleFactor - 1));
-        const deltaY = Math.floor((e.offsetY - this.canvasY) * (scaleFactor - 1));
-
-        this.canvasX -= deltaX;
-        this.canvasY -= deltaY;
+        this.canvasX -= (e.offsetX - this.canvasX) * (scaleFactor - 1);
+        this.canvasY -= (e.offsetY - this.canvasY) * (scaleFactor - 1);
+        this.draw();
         if(this.circleOverlayRef){
             const xTransform = e.offsetX - this.circleOverlayRef.clientWidth / 2 + 'px';
             const yTransform = e.offsetY - this.circleOverlayRef.clientHeight / 2 + 'px';
@@ -158,7 +156,6 @@ class CanvasState {
         } else {
             this.circleOverlayRef!.style.borderRadius = '50%';
         }
-        this.draw();
     }
 
     draw(canvas?: HTMLCanvasElement): void {
@@ -166,7 +163,7 @@ class CanvasState {
         if(ctx){
             this.bufferCtx.globalAlpha = 1;
             ctx.clearRect(0, 0, this.bufferCanvas.width, this.bufferCanvas.height);
-            ctx.transform(this.scale, 0, 0, this.scale, this.canvasX, this.canvasY);
+            ctx.setTransform(this.scale, 0, 0, this.scale, this.canvasX, this.canvasY);
             ctx.imageSmoothingEnabled = this.scale <= 3;
             ctx.fillStyle = 'white'
             ctx.fillRect(0, 0, this.bufferCanvas.width, this.bufferCanvas.height);
@@ -175,6 +172,8 @@ class CanvasState {
                 ctx.drawImage(canvas, 0, 0);
             }
             ctx.resetTransform();
+            // this.grid()
+
             if (toolState.tool && toolState.tool.type === "drag") {
                 this.drawBorder();
             }
@@ -205,7 +204,6 @@ class CanvasState {
         this.canvasY = 50;
         this.centerX =  this.canvas.width / 2;
         this.centerY =  this.canvas.height / 2 + this.canvasY + 50;
-
         this.draw();
     }
 
@@ -439,6 +437,29 @@ class CanvasState {
         }
 
         return {scaledX, scaledY}
+    }
+    grid(){
+        const gridContainer = document.getElementById('grid-container');
+        if(gridContainer){
+            gridContainer.style.position = 'absolute';
+            gridContainer.style.left = `0`
+            gridContainer.style.top = `0`
+            gridContainer.style.transform = `scale(${this.scale})`
+            gridContainer.style.width = `${this.bufferCanvas.width}px`
+            gridContainer.style.height = `${this.bufferCanvas.height}px`
+            gridContainer.style.gridTemplateColumns = `repeat(${this.bufferCanvas.width},1px)`
+            gridContainer.style.zIndex = '1000'
+        }
+    }
+    drawGrid(canvas: HTMLCanvasElement, ctx: CanvasRenderingContext2D){
+        const pixelSize = 2; // Размер пикселя (ширина и высота)
+        ctx.strokeStyle = 'gray'
+        // Рисуем сетку из пикселей
+        for (let x = 0; x < canvas.width; x += pixelSize) {
+            for (let y = 0; y < canvas.height; y += pixelSize) {
+                ctx.strokeRect(x+0.5, y+0.5, pixelSize, pixelSize);
+            }
+        }
     }
     createTempCanvas(width: number, height: number):{tempCanvas: HTMLCanvasElement, tempCtx: CanvasRenderingContext2D}{
         const tempCanvas = document.createElement('canvas');

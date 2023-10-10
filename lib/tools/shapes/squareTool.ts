@@ -53,6 +53,15 @@ export default class SquareTool extends Shape {
 function drawRect(ctx: CanvasRenderingContext2D, x: number, y: number, w: number,
                   h: number, isFill: boolean, isStroke: boolean) {
     ctx.beginPath();
+    if(isFill && !isStroke) {
+        w = w>=0 ? w+1 : w-1;
+        h = h>=0 ? h+1 : h-1;
+        if(ctx.lineWidth %2 !== 0){
+            x = w>=0 ? x-0.5 : x+0.5;
+            y = h>=0 ? y-0.5 : y+0.5;
+        }
+
+    }
     ctx.rect(x, y, w, h);
     isFill && ctx.fill();
     isStroke && ctx.stroke();

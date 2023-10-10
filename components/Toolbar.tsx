@@ -350,7 +350,7 @@ const Toolbar = observer(() => {
                                     <option value="false">Без контура</option>
                                   </select>
                                 </div>
-                                  { toolPressed.name !== "circle" && toolPressed.name !== "ellipse" &&
+                                  { toolPressed.name !== "circle" && toolPressed.name !== "ellipse" && canvasState.isStroke &&
                                     <div className="flex gap-3 items-center">
                                         <label htmlFor="lineJoin" className="w-[80px] mr-2">Углы</label>
                                         <select
