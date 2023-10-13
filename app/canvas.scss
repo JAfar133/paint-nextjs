@@ -145,3 +145,23 @@ input[type="color"] {
     border: 1px dashed white; /* Устанавливаем белую границу */
   }
 }
+#vline{
+  width: 1px;
+  background: #000;
+  position: absolute;
+  top: 0;
+  left: 0;
+  opacity: 1; /* Начальная прозрачность */
+  visibility: visible; /* Начальная видимость */
+  animation: fadeInOut 1.5s ease infinite;
+}
+@keyframes fadeInOut {
+  0%, 25%, 100% {
+    opacity: 1; /* Блок видим */
+    visibility: visible;
+  }
+  26%, 99% {
+    opacity: 0; /* Блок невидим */
+    visibility: hidden;
+  }
+}

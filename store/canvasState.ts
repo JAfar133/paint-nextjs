@@ -60,6 +60,8 @@ class CanvasState {
     bufferCtx: CanvasRenderingContext2D;
     gridCanvas: HTMLCanvasElement | null= null;
     gridCtx: CanvasRenderingContext2D | null= null;
+    textX: number | null = null;
+    textY: number | null = null;
     constructor() {
         this.canvas_id = `f${(+new Date).toString(16)}`;
         makeAutoObservable(this);
@@ -101,9 +103,29 @@ class CanvasState {
             this.imageContainer.appendChild(leftBottom);
             this.imageContainer.appendChild(rightTop);
             this.imageContainer.appendChild(rightBottom);
+
         }
     }
-
+    drawTextLine(x: number, y: number){
+        document.getElementById("vline")?.remove();
+        this.textX = x;
+        this.textY = y;
+        const vline = document.createElement('div');
+        vline.id = "vline"
+        vline.style.height = `${settingState.textSize*this.scale}px`
+        vline.style.width = '1px';
+        vline.style.background = '#000';
+        vline.style.position = 'absolute';
+        vline.style.top = '0'
+        vline.style.left = '0'
+        vline.style.transform = `translate(${this.canvasX + x*this.scale}px, ${this.canvasY + y*this.scale - settingState.textSize*this.scale/2-2}px)`
+        this.canvasContainer?.appendChild(vline);
+    }
+    deleteTextLine(){
+        document.getElementById("vline")?.remove();
+        this.textX = null;
+        this.textY = null;
+    }
     deleteBorder() {
         if (this.imageContainer) {
             this.imageContainer.remove();
@@ -160,6 +182,13 @@ class CanvasState {
 
     draw(canvas?: HTMLCanvasElement): void {
         const ctx = this.canvas.getContext('2d')
+        if(toolState.tool?.type === "text"){
+            if(this.textX && this.textY)
+            this.drawTextLine(this.textX, this.textY)
+        }
+        else {
+            this.deleteTextLine();
+        }
         if(ctx){
             this.bufferCtx.globalAlpha = 1;
             ctx.clearRect(0, 0, this.bufferCanvas.width, this.bufferCanvas.height);
@@ -284,14 +313,13 @@ class CanvasState {
     }
 
     undo() {
+        this.addRedo(this.bufferCanvas.toDataURL());
         if (this.undoList.length) {
             let dataUrl = this.undoList.pop();
-            this.addRedo(this.bufferCanvas.toDataURL());
 
             this.drawCanvas(dataUrl);
             this.sendDataUrl(dataUrl);
         } else {
-            this.addRedo(this.bufferCanvas.toDataURL());
             this.clear();
             this.saveCanvas();
         }

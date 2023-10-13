@@ -24,13 +24,13 @@ export default class EraserTool extends Tool {
             const {scaledX, scaledY} = canvasState.getScaledPoint(e.offsetX, e.offsetY)
             canvasState.bufferCtx.beginPath();
             canvasState.bufferCtx.moveTo(scaledX, scaledY);
+            this.draw(scaledX, scaledY);
         }
     }
 
     mouseMoveHandler(e: MouseEvent) {
         if (this.mouseDown && this.canDraw) {
             const {scaledX, scaledY} = canvasState.getScaledPoint(e.offsetX, e.offsetY)
-            this.sendSocketDraw(scaledX, scaledY);
             this.draw(scaledX, scaledY);
         }
         document.onmousemove = null;
@@ -50,7 +50,6 @@ export default class EraserTool extends Tool {
                 x = e.offsetX - this.offsetLeft;
                 y = e.offsetY + this.offsetTop;
             }
-            this.sendSocketDraw(x, y);
             this.draw(x, y)
         }
     }
@@ -60,7 +59,6 @@ export default class EraserTool extends Tool {
             const touch = e.touches[0];
             const x = touch.clientX - this.offsetLeft;
             const y = touch.clientY - this.offsetTop;
-            this.sendSocketDraw(x, y);
             this.draw(x, y);
         }
         e.preventDefault();
@@ -100,6 +98,7 @@ export default class EraserTool extends Tool {
     }
 
     draw(x: number, y: number) {
+        this.sendSocketDraw(x,y);
         canvasState.bufferCtx.lineCap = "round";
         canvasState.bufferCtx.lineJoin = "round";
         canvasState.bufferCtx.strokeStyle = "white";

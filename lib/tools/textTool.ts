@@ -29,6 +29,7 @@ export default class TextTool extends Tool {
             this.prevKey = new PrevKey("", -1, -1);
             document.onkeydown = this.inputEventHandler.bind(this);
             document.onmousedown = this.handleGlobalMouseDown.bind(this);
+            canvasState.drawTextLine(scaledX, scaledY)
         }
     }
     protected handleGlobalMouseDown(e: MouseEvent) {
@@ -49,6 +50,8 @@ export default class TextTool extends Tool {
                 const prevKey = this.prevKeyArray.pop();
                 this.startX = prevKey?.x || this.startX;
                 this.startY = prevKey?.y || this.startY;
+                canvasState.drawTextLine(this.startX, this.startY)
+                canvasState.undo();
             }
             return
         }
@@ -58,19 +61,12 @@ export default class TextTool extends Tool {
                 const prevKey = this.prevKeyArray.pop();
                 this.startX = prevKey?.x || this.startX;
                 this.startY = prevKey?.y || this.startY;
+                canvasState.drawTextLine(this.startX, this.startY)
                 canvasState.undo();
             }
         }
         if (key.length === 1) {
             canvasState.addUndo(canvasState.bufferCanvas.toDataURL());
-            const prevKeyLength = this.prevKey ? canvasState.bufferCtx.measureText(this.prevKey.key).width : 0;
-            this.prevKey.key = key;
-
-            this.prevKey.x = this.startX;
-            this.prevKey.y = this.startY;
-            this.prevKeyArray.push(new PrevKey(this.prevKey.key, this.prevKey.x, this.prevKey.y));
-
-            this.startX += prevKeyLength;
             this.print(key, this.startX, this.startY + Number(px) * 0.2)
             this.socket.send(JSON.stringify({
                 method: 'draw',
@@ -86,7 +82,14 @@ export default class TextTool extends Tool {
                     startY: this.startY + Number(px) * 0.2
                 }
             }));
+            canvasState.drawTextLine(this.startX + canvasState.bufferCtx.measureText(e.key).width, this.startY)
+            this.prevKey.key = key;
 
+            this.prevKey.x = this.startX;
+            this.prevKey.y = this.startY;
+            this.prevKeyArray.push(new PrevKey(this.prevKey.key, this.prevKey.x, this.prevKey.y));
+
+            this.startX += canvasState.bufferCtx.measureText(e.key).width;
 
         } else if (key === "Enter") {
             this.startX = this.prevKeyArray[0].x || this.startX;
@@ -94,11 +97,14 @@ export default class TextTool extends Tool {
             this.prevKey.key = "";
             this.prevKey.x = this.startX;
             this.prevKey.y = this.startY;
+            canvasState.drawTextLine(this.startX, this.startY)
         }
+
     };
     protected print(text: string, startX: number, startY: number) {
         canvasState.bufferCtx.globalAlpha = settingState.globalAlpha;
         canvasState.bufferCtx.fillText(text, startX, startY);
+
         canvasState.draw();
         canvasState.bufferCtx.beginPath();
     }

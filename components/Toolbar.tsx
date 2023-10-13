@@ -18,9 +18,11 @@ import {AiOutlineClear, AiOutlinePlusSquare} from "react-icons/ai";
 import {IoReturnUpBackOutline, IoReturnUpForward} from "react-icons/io5";
 import _ from 'lodash'
 import {ClientTool, cn, fonts, fontWeights, toolClasses, ToolName, tools} from "@/lib/utils";
-import {Popover, PopoverContent, PopoverTrigger} from "@/components/ui/popover";
 import RangeSlider from "react-bootstrap-range-slider";
 import {useTheme} from "next-themes";
+import {Popover, PopoverContent, PopoverTrigger} from "@/components/ui/popover";
+import {log} from "util";
+import {HoverCard, HoverCardContent, HoverCardTrigger} from "@/components/ui/hover-card";
 
 const toolDivClass = "ml-3 flex flex-col content-center";
 
@@ -38,6 +40,7 @@ const Toolbar = observer(() => {
                 if (toolPressed && toolName === toolPressed.name) setToolPressed(tools[1]);
                 else setToolPressed(findToolByName(toolName));
                 canvasState.fill();
+                canvasState.deleteTextLine();
             }
 
             useEffect(() => {
@@ -205,14 +208,14 @@ const Toolbar = observer(() => {
                                 </div>
                             </div>
                             <div className="flex gap-7 items-center">
-                                <Popover>
-                                    <PopoverTrigger>
+                                <HoverCard>
+                                    <HoverCardTrigger>
                                         <div className="flex gap-1">
                                             <span>{canvasState.userCount}</span>
                                             <Users/>
                                         </div>
-                                    </PopoverTrigger>
-                                    <PopoverContent>
+                                    </HoverCardTrigger>
+                                    <HoverCardContent>
                                         <p>подключенные пользователи</p>
                                         {
                                             canvasState.users !== null && canvasState.users.map((user, idx) =>
@@ -222,8 +225,8 @@ const Toolbar = observer(() => {
                                                 </p>
                                             )
                                         }
-                                    </PopoverContent>
-                                </Popover>
+                                    </HoverCardContent>
+                                </HoverCard>
                                 <ThemeToggle/>
                                 <NavbarAvatar/>
                             </div>

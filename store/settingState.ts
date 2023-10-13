@@ -1,9 +1,9 @@
 import {makeAutoObservable} from "mobx";
 import canvasState from "@/store/canvasState";
 class SettingState {
-    fillColor: string = 'rgba(0,0,0,1)';
-    strokeColor: string = 'rgba(0,0,0,1)';
-    strokeWidth: number = 20;
+    fillColor: string = '#000000';
+    strokeColor: string = '#000000';
+    strokeWidth: number = 10;
     textSize: number = 40;
     textFont: string = 'Arial';
     fontWeight: string = 'normal';
@@ -48,10 +48,6 @@ class SettingState {
     setFontWeight(weight: string){
         this.fontWeight = weight;
     }
-    fillCtx(){
-        canvasState.fill();
-    }
-
 }
 
 export default new SettingState();

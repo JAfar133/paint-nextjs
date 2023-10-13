@@ -193,25 +193,28 @@ export default class DragTool extends Tool {
                 mousePoint.y,
                 this.resizePoint
             );
+
             if (this.tempCtx) {
-                this.drawResizedImage(
-                    this.tempCtx,
-                    this.tempCanvas,
-                    this.image,
+                this.tempCtx.save();
+                this.rotateIfNeed(this.tempCanvas, this.tempCtx, this.image);
+                this.tempCtx.drawImage(
                     this.imageCanvas,
-                    newX, newY,
-                    newWidth, newHeight)
+                    newX,
+                    newY,
+                    newWidth,
+                    newHeight
+                );
+                this.tempCtx.restore();
             }
             this.image.img.width = Math.abs(newWidth);
             this.image.img.height = Math.abs(newHeight);
             const x1 = newWidth < 0 ? newX + newWidth : newX;
             const y1 = newHeight < 0 ? newY + newHeight : newY;
-
             let xm = this.image.imageX;
             let ym = this.image.imageY;
 
 
-            const {x, y} = this.getNewPointPosition(
+            let {x, y} = this.getNewPointPosition(
                 x1, y1, xm, ym, this.image.angle
             )
             this.image.imageX = x;
@@ -262,8 +265,8 @@ export default class DragTool extends Tool {
 
     private isMouseOnResizingLeftTop(mouseX: number, mouseY: number) {
         const {x, y} = this.getNewPointPosition(this.image.imageX, this.image.imageY, this.imageCenter.centerX, this.imageCenter.centerY, this.image.angle)
-        return Math.abs(mouseX - x) <= 5 &&
-            Math.abs(mouseY - y) <= 5
+        return Math.abs(mouseX - x) <= Math.min(Math.max(this.image.img.width*0.03/canvasState.scale,2), 10) &&
+            Math.abs(mouseY - y) <= Math.min(Math.max(this.image.img.height*0.03/canvasState.scale,2), 10)
     }
 
     private isMouseOnResizingRightTop(mouseX: number, mouseY: number) {
@@ -271,8 +274,8 @@ export default class DragTool extends Tool {
             this.image.imageX + this.image.img.width,
             this.image.imageY,
             this.imageCenter.centerX, this.imageCenter.centerY, this.image.angle)
-        return Math.abs(mouseX - x) <= 5 &&
-            Math.abs(mouseY - y) <= 5
+        return Math.abs(mouseX - x) <= 10/canvasState.scale &&
+            Math.abs(mouseY - y) <= 10/canvasState.scale
     }
 
     private isMouseOnResizingRightBottom(mouseX: number, mouseY: number) {
@@ -280,8 +283,8 @@ export default class DragTool extends Tool {
             this.image.imageX + this.image.img.width,
             this.image.imageY + this.image.img.height,
             this.imageCenter.centerX, this.imageCenter.centerY, this.image.angle)
-        return Math.abs(mouseX - x) <= 5 &&
-            Math.abs(mouseY - y) <= 5
+        return Math.abs(mouseX - x) <= 10/canvasState.scale &&
+            Math.abs(mouseY - y) <= 10/canvasState.scale
     }
 
     private isMouseOnResizingLeftBottom(mouseX: number, mouseY: number) {
@@ -403,6 +406,7 @@ export default class DragTool extends Tool {
         return {centerX, centerY}
     }
     private getNewPointPosition(x: number, y: number, xm: number, ym: number, angle: number): Point {
+        if(angle === 1) return  {x, y}
         const cos = Math.cos,
             sin = Math.sin,
             xr = (x - xm) * cos(angle) - (y - ym) * sin(angle) + xm,
@@ -462,20 +466,6 @@ export default class DragTool extends Tool {
         }
         return {newWidth, newHeight, newX, newY};
 
-
-    }
-    private drawResizedImage(tempCtx: CanvasRenderingContext2D, tempCanvas: HTMLCanvasElement, image: ImageForEdit, imageCanvas: HTMLCanvasElement,
-                             x: number, y: number, newWidth: number, newHeight: number) {
-        tempCtx.save();
-        this.rotateIfNeed(tempCanvas, tempCtx, image);
-        tempCtx.drawImage(
-            imageCanvas,
-            x,
-            y,
-            newWidth,
-            newHeight
-        );
-        tempCtx.restore();
 
     }
 

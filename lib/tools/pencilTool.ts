@@ -50,6 +50,7 @@ export default class PencilTool extends Tool {
                 canvasState.bufferCtx.lineCap = "round";
                 canvasState.bufferCtx.lineJoin = "round";
                 draw(canvasState.bufferCtx, this.mouse.x, this.mouse.y);
+                this.sendSocketDraw();
             }
 
         }
@@ -166,6 +167,7 @@ export default class PencilTool extends Tool {
 
     protected draw(x: number, y: number) {
         this.ppts.push({x: this.mouse.x, y: this.mouse.y});
+        this.sendSocketDraw();
         drawLine(this.tempCtx, this.mouse, this.ppts);
     }
 }

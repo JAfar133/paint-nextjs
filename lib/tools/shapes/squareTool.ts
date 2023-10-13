@@ -60,7 +60,6 @@ function drawRect(ctx: CanvasRenderingContext2D, x: number, y: number, w: number
             x = w>=0 ? x-0.5 : x+0.5;
             y = h>=0 ? y-0.5 : y+0.5;
         }
-
     }
     ctx.rect(x, y, w, h);
     isFill && ctx.fill();

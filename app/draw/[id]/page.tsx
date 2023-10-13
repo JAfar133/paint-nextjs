@@ -7,7 +7,6 @@ import userState from "@/store/userState";
 import {observer} from "mobx-react-lite";
 import Toolbar from "@/components/Toolbar";
 import {Toaster} from "@/components/ui/toaster";
-import ImageLayers from "@/components/ImageLayers";
 
 const DrawPage = observer(() => {
 

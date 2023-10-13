@@ -46,6 +46,12 @@ export default class StraightTriangleTool extends Triangle {
 
 function drawTriangle(ctx: CanvasRenderingContext2D, x: number, y: number, x1: number, y1: number, isFill: boolean, isStroke: boolean) {
     ctx.beginPath();
+    if(isFill && !isStroke) {
+        if(ctx.lineWidth %2 !== 0){
+            x = x1>=0 ? x-0.5 : x+0.5;
+            y1 = y1>=0 ? y1-0.5 : y1+0.5;
+        }
+    }
     ctx.moveTo(x, y);
     ctx.lineTo(x1, y1);
     ctx.lineTo(x, y1);
