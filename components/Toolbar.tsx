@@ -20,8 +20,6 @@ import _ from 'lodash'
 import {ClientTool, cn, fonts, fontWeights, toolClasses, ToolName, tools} from "@/lib/utils";
 import RangeSlider from "react-bootstrap-range-slider";
 import {useTheme} from "next-themes";
-import {Popover, PopoverContent, PopoverTrigger} from "@/components/ui/popover";
-import {log} from "util";
 import {HoverCard, HoverCardContent, HoverCardTrigger} from "@/components/ui/hover-card";
 
 const toolDivClass = "ml-3 flex flex-col content-center";
