@@ -146,22 +146,20 @@ input[type="color"] {
   }
 }
 #vline{
-  width: 1px;
+  width: 2px;
   background: #000;
+  border-right: 1px solid #fff;
   position: absolute;
   top: 0;
   left: 0;
-  opacity: 1; /* Начальная прозрачность */
-  visibility: visible; /* Начальная видимость */
-  animation: fadeInOut 1.5s ease infinite;
+  visibility: visible;
+  animation: fadeInOut 1s ease infinite;
 }
 @keyframes fadeInOut {
-  0%, 25%, 100% {
-    opacity: 1; /* Блок видим */
+  0%, 50%, 100% {
     visibility: visible;
   }
-  26%, 99% {
-    opacity: 0; /* Блок невидим */
+  51%, 99% {
     visibility: hidden;
   }
 }

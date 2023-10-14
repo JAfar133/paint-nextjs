@@ -4,6 +4,7 @@ import toolState from "@/store/toolState";
 import DragTool from "@/lib/tools/dragTool";
 import userState from "@/store/userState";
 import settingState from "@/store/settingState";
+import TextTool from "@/lib/tools/textTool";
 
 export type cursorClass =
     "cursor-move" | "cursor-grab" | "cursor-text" | "cursor-cell" |
@@ -106,20 +107,26 @@ class CanvasState {
 
         }
     }
+    debounceTimeOut: any = null;
     drawTextLine(x: number, y: number){
-        document.getElementById("vline")?.remove();
         this.textX = x;
         this.textY = y;
-        const vline = document.createElement('div');
-        vline.id = "vline"
+        let vline = document.getElementById('vline');
+        if(!vline){
+            vline = document.createElement('div');
+            vline.id = "vline";
+            this.canvasContainer?.appendChild(vline);
+        }
+        if (this.debounceTimeOut) {
+            vline.style.animation = 'none'
+            clearTimeout(this.debounceTimeOut);
+        }
+
+        this.debounceTimeOut = setTimeout(function() {
+            vline!.style.animation = 'fadeInOut 1s ease infinite'
+        }, 100);
         vline.style.height = `${settingState.textSize*this.scale}px`
-        vline.style.width = '1px';
-        vline.style.background = '#000';
-        vline.style.position = 'absolute';
-        vline.style.top = '0'
-        vline.style.left = '0'
-        vline.style.transform = `translate(${this.canvasX + x*this.scale}px, ${this.canvasY + y*this.scale - settingState.textSize*this.scale/2-2}px)`
-        this.canvasContainer?.appendChild(vline);
+        vline.style.transform = `translate(${this.canvasX + x*this.scale}px, ${this.canvasY + y*this.scale - settingState.textSize/2*this.scale}px)`
     }
     deleteTextLine(){
         document.getElementById("vline")?.remove();
@@ -203,7 +210,7 @@ class CanvasState {
             ctx.resetTransform();
             // this.grid()
 
-            if (toolState.tool && toolState.tool.type === "drag") {
+            if (toolState.tool instanceof DragTool) {
                 this.drawBorder();
             }
         }
@@ -319,6 +326,9 @@ class CanvasState {
 
             this.drawCanvas(dataUrl);
             this.sendDataUrl(dataUrl);
+            if(toolState.tool instanceof TextTool){
+                toolState.tool.undo(true);
+            }
         } else {
             this.clear();
             this.saveCanvas();
@@ -368,7 +378,6 @@ class CanvasState {
                 img: img, isDragging: false, isResizing: false, isRotating: false, isUpload: true, angle: 0
             });
             if (this.socket) {
-                const tool = new  DragTool(this.canvas, this.socket, this.canvasId, "drag");
                 toolState.setTool(new DragTool(this.canvas, this.socket, this.canvasId, "drag"))
             }
             img.onload = () => {
@@ -393,6 +402,9 @@ class CanvasState {
         this.clear()
         this.saveCanvas();
         this.deleteBorder();
+        if(toolState.tool instanceof TextTool){
+            toolState.tool.clearPrevKeyArray();
+        }
         if (this.socket) {
             this.socket.send(JSON.stringify({
                 method: "clear",

@@ -16,10 +16,13 @@ export default class TextTool extends Tool {
     private startY: number = 0;
     private prevKey: PrevKey = new PrevKey("", -1, -1);
     private prevKeyArray: PrevKey[] = [];
-    private textInput = document.getElementById("text-input") as HTMLInputElement;
+
+    clearPrevKeyArray() {
+        this.prevKeyArray = []
+    }
 
     protected mouseUpHandler(e: MouseEvent) {
-        if(this.mouseDown){
+        if (this.mouseDown) {
             e.preventDefault();
             this.mouseDown = false;
             const {scaledX, scaledY} = canvasState.getScaledPoint(e.offsetX, e.offsetY)
@@ -32,42 +35,50 @@ export default class TextTool extends Tool {
             canvasState.drawTextLine(scaledX, scaledY)
         }
     }
+
     protected handleGlobalMouseDown(e: MouseEvent) {
         const canvas = this.canvas as Node;
         if (e.target && !canvas.contains(e.target as Node)) {
-            document.onkeydown = null;
             document.onmousedown = null;
         }
     }
+
+    public undo(fromToolbar?: boolean) {
+        const prevKey = this.prevKeyArray.pop();
+        if (fromToolbar) {
+            if (prevKey?.key === "Enter" || prevKey?.key === "Tab") {
+                this.undo(true);
+                return;
+            }
+        }
+        this.startX = prevKey?.x || this.startX;
+        this.startY = prevKey?.y || this.startY;
+        canvasState.drawTextLine(this.startX, this.startY);
+    }
+
     protected inputEventHandler = (e: KeyboardEvent) => {
         e.preventDefault();
         // @ts-ignore
         const key = e.key || e.target.value.toString().slice(-1)
 
         const px = (canvasState.bufferCtx.font.match(/\d+(?=px)/) || [0])[0];
-        if ((e.ctrlKey || e.metaKey) && (key === 'z' || key === 'я')) {
-            if (this.prevKeyArray?.length) {
-                const prevKey = this.prevKeyArray.pop();
-                this.startX = prevKey?.x || this.startX;
-                this.startY = prevKey?.y || this.startY;
-                canvasState.drawTextLine(this.startX, this.startY)
-                canvasState.undo();
-            }
+        if (e.ctrlKey || e.metaKey) {
             return
         }
         if (key === "Backspace") {
-            e.preventDefault();
-            if (this.prevKeyArray.length) {
-                const prevKey = this.prevKeyArray.pop();
-                this.startX = prevKey?.x || this.startX;
-                this.startY = prevKey?.y || this.startY;
-                canvasState.drawTextLine(this.startX, this.startY)
-                canvasState.undo();
+            if (this.prevKeyArray.length > 0) {
+                if (this.prevKeyArray[this.prevKeyArray.length - 1].key === "Enter") {
+                    this.undo();
+                } else if (this.prevKeyArray[this.prevKeyArray.length - 1].key === "Tab") {
+                    this.undo();
+                } else {
+                    canvasState.undo();
+                }
             }
         }
         if (key.length === 1) {
             canvasState.addUndo(canvasState.bufferCanvas.toDataURL());
-            this.print(key, this.startX, this.startY + Number(px) * 0.2)
+            this.print(key, this.startX, this.startY + Number(px) / 4)
             this.socket.send(JSON.stringify({
                 method: 'draw',
                 id: this.id,
@@ -78,8 +89,8 @@ export default class TextTool extends Tool {
                     font: canvasState.bufferCtx.font,
                     type: this.type,
                     text: key,
-                    startX: this.startX - canvasState.bufferCanvas.width/2,
-                    startY: this.startY + Number(px) * 0.2
+                    startX: this.startX - canvasState.bufferCanvas.width / 2,
+                    startY: this.startY + Number(px) / 4
                 }
             }));
             canvasState.drawTextLine(this.startX + canvasState.bufferCtx.measureText(e.key).width, this.startY)
@@ -92,8 +103,16 @@ export default class TextTool extends Tool {
             this.startX += canvasState.bufferCtx.measureText(e.key).width;
 
         } else if (key === "Enter") {
+            this.prevKeyArray.push(new PrevKey("Enter", this.startX, this.startY));
             this.startX = this.prevKeyArray[0].x || this.startX;
-            this.startY = this.prevKeyArray[this.prevKeyArray.length - 1].y + Number(px) || this.startY + Number(px)
+            this.startY = this.startY + Number(px)
+            this.prevKey.key = "";
+            this.prevKey.x = this.startX;
+            this.prevKey.y = this.startY;
+            canvasState.drawTextLine(this.startX, this.startY)
+        } else if (key === "Tab") {
+            this.prevKeyArray.push(new PrevKey("Tab", this.startX, this.startY));
+            this.startX = this.startX + canvasState.bufferCtx.measureText(" ").width * 4;
             this.prevKey.key = "";
             this.prevKey.x = this.startX;
             this.prevKey.y = this.startY;
@@ -101,23 +120,22 @@ export default class TextTool extends Tool {
         }
 
     };
+
     protected print(text: string, startX: number, startY: number) {
         canvasState.bufferCtx.globalAlpha = settingState.globalAlpha;
         canvasState.bufferCtx.fillText(text, startX, startY);
-
         canvasState.draw();
         canvasState.bufferCtx.beginPath();
     }
 
-
     protected mouseDownHandler(e: MouseEvent) {
-        if(this.canDraw && e.button !== 1){
+        if (this.canDraw && e.button !== 1) {
             this.mouseDown = true;
             this.prevKey.key = "";
             const {scaledX, scaledY} = canvasState.getScaledPoint(e.offsetX, e.offsetY)
             canvasState.bufferCtx.font = settingState.font;
             canvasState.bufferCtx.beginPath();
-            canvasState.bufferCtx.moveTo(scaledX,scaledY);
+            canvasState.bufferCtx.moveTo(scaledX, scaledY - settingState.textSize / 2);
         }
     }
 
@@ -130,7 +148,7 @@ export default class TextTool extends Tool {
         ctx.font = font;
         ctx.fillStyle = fillStyle;
         ctx.globalAlpha = globalAlpha;
-        ctx.fillText(text, startX + ctx.canvas.width/2, startY);
+        ctx.fillText(text, startX + ctx.canvas.width / 2, startY);
         canvasState.draw();
     }
 
@@ -138,7 +156,6 @@ export default class TextTool extends Tool {
         this.mouseDown = false;
         this.prevKeyArray = [];
         this.prevKey = new PrevKey("", -1, -1);
-        this.textInput.onkeydown = null;
     }
 
     protected touchMoveHandler(e: TouchEvent): void {
@@ -153,10 +170,6 @@ export default class TextTool extends Tool {
         this.ctx.font = settingState.font;
         this.ctx.beginPath();
         this.ctx.moveTo(e.touches[0].clientX - this.offsetLeft, e.touches[0].clientY - this.offsetTop);
-        setTimeout(() => {
-            this.textInput.focus();
-            this.textInput.onkeydown = this.inputEventHandler.bind(this);
-        }, 200);
     }
 
 }
