@@ -22,7 +22,7 @@ export default function AuthLayout({
   return (
       <html lang="en">
       <body className={cn("bg-secondary", inter.className)}>
-      <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
+      <ThemeProvider attribute="class" defaultTheme="dark" enableSystem>
         <Navbar/>
         {children}
       </ThemeProvider>
