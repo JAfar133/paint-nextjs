@@ -522,8 +522,8 @@ const Toolbar = observer(() => {
                             <div className="videos overflow-y-auto max-h-[340px] w-full flex flex-col gap-3">
                             {
                               canvasState.ids.map(id=>
-                                  <div>
-                                    <video key={id} width="640" height="360" controls loop style={{display: 'none'}} id={id}>
+                                  <div key={id}>
+                                    <video width="640" height="360" controls loop style={{display: 'none'}} id={id}>
                                       <source src={`/${id}.mp4`} type="video/mp4" />
                                     </video>
                                     {(userState._isAuth || userState.canPlayVideo) &&<Button
