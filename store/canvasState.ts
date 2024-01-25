@@ -5,6 +5,7 @@ import DragTool from "@/lib/tools/dragTool";
 import userState from "@/store/userState";
 import settingState from "@/store/settingState";
 import TextTool from "@/lib/tools/textTool";
+import {confirmDialog} from "primereact/confirmdialog";
 
 export type cursorClass =
     "cursor-move" | "cursor-grab" | "cursor-text" | "cursor-cell" |
@@ -63,6 +64,10 @@ class CanvasState {
     gridCtx: CanvasRenderingContext2D | null= null;
     textX: number | null = null;
     textY: number | null = null;
+    tempCanvas: HTMLCanvasElement | null = null;
+    tempCtx: CanvasRenderingContext2D | null = null;
+    animationFrameId: number | null = null;
+    showModal: boolean = false
     constructor() {
         this.canvas_id = `f${(+new Date).toString(16)}`;
         makeAutoObservable(this);
@@ -546,6 +551,148 @@ class CanvasState {
             }
         }
     }
+
+    async playVideoById(id: string) {
+        const video = document.getElementById(id) as HTMLVideoElement
+        if(video !== null) {
+            this.playVideo(video)
+        }
+    }
+
+    stopVideoById(id: string) {
+        const video = document.getElementById(id) as HTMLVideoElement
+        if(video !== null) {
+            this.stopVideo(video)
+        }
+    }
+    ids: string[] = [
+        'hapi-hapi-hapi',
+        'hello_darkness_batman',
+        'heisenburger',
+        'dramatic_kitten',
+        'top_5_cat',
+        'heisenberg_smoke',
+        'no_tilted',
+        'dosvidos',
+        'skyler_white_yo',
+        'look_at_me_hector',
+        'pedalirovanie'
+    ]
+    isActivated: boolean = false;
+    currentVideoPlaying: HTMLVideoElement | null = null;
+    volumeLevel: number = 100;
+    activateAllVideo () {
+        if(!this.isActivated) {
+            this.ids.forEach(id=>{
+                const video = document.getElementById(id) as HTMLVideoElement
+                if(video) {
+                    video.play()
+                    video.pause()
+                }
+            })
+        }
+    }
+    stopAllVideos() {
+        this.ids.forEach(id=>{
+            const video = document.getElementById(id) as HTMLVideoElement
+            if(video) {
+                this.stopVideo(video)
+            }
+        })
+    }
+    setVideoSound(volume: number) {
+        this.volumeLevel = volume
+        if(this.currentVideoPlaying !== null) {
+            this.currentVideoPlaying.volume = volume/100
+        }
+    }
+    confirm(accept: () => void, reject: () => void) {
+        confirmDialog({
+            message: 'Включить звук?',
+            icon: 'pi pi-exclamation-triangle',
+            accept: () => accept(),
+            reject: () => reject()
+        })
+    }
+    frames: number = -1;
+    funnyScaleCanvas() {
+        const zoomSpeed = 0.01;
+        let scaleFactor = this.frames > 0 ? 1 + zoomSpeed : 1 - zoomSpeed;
+        this.frames += zoomSpeed
+        if (this.frames > 1) {
+            this.frames = -1;
+        }
+        this.scale = this.scale * scaleFactor;
+        this.canvasX -= this.canvasX * (scaleFactor - 1);
+        this.canvasY -= this.canvasY * (scaleFactor - 1);
+
+    }
+    playVideo(video: HTMLVideoElement) {
+        // this.stopAllVideos()
+        if (this.currentVideoPlaying !== null) {
+            this.stopVideo(this.currentVideoPlaying)
+        }
+        if(this.tempCanvas === null || this.tempCtx === null) {
+            const { tempCanvas, tempCtx } = this.createTempCanvas(this.bufferCanvas.width, this.bufferCanvas.height);
+            this.tempCanvas = tempCanvas
+            this.tempCtx = tempCtx;
+        }
+        this.tempCtx.clearRect(0,0, this.tempCanvas.width, this.tempCanvas.height)
+        this.tempCtx.drawImage(this.bufferCanvas, 0, 0);
+        video.muted = false;
+        video.currentTime = 0;
+        video.volume = this.volumeLevel/100
+        const promise = video.play();
+
+        if(promise !== undefined){
+            promise.then(() => {
+            }).catch(async error => {
+                video.muted = true;
+                video.play();
+                this.confirm(()=>{
+                    video.muted = false;
+                }, ()=>{
+
+                });
+            });
+            this.currentVideoPlaying = video
+        }
+        const drawFrame = () => {
+            this.bufferCtx.drawImage(video, 0, 0, this.bufferCanvas.width, this.bufferCanvas.height);
+            this.animationFrameId = requestAnimationFrame(drawFrame);
+            this.draw();
+            // this.funnyScaleCanvas()
+        };
+
+        drawFrame();
+
+    }
+
+    stopVideo(video: HTMLVideoElement) {
+        video.pause();
+        if(this.currentVideoPlaying) {
+            this.currentVideoPlaying = null;
+        }
+        if(this.animationFrameId !== null) {
+            cancelAnimationFrame(this.animationFrameId);
+        }
+
+        if (this.tempCtx !== null && this.tempCanvas !== null) {
+            this.bufferCtx.clearRect(
+                0,
+                0,
+                this.bufferCanvas.width,
+                this.bufferCanvas.height
+            );
+            this.bufferCtx.drawImage(this.tempCanvas, 0, 0);
+            this.draw();
+            this.tempCanvas = null;
+            this.tempCtx = null;
+        }
+    }
 }
+
+
+
 
 export default new CanvasState();

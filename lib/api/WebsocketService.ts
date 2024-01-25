@@ -82,11 +82,53 @@ class WebsocketService {
                     case "user_cursor":
                         this.cursorCanvasContainerHandler(msg);
                         break;
+                    case "play_video":
+                        canvasState.playVideoById(msg.video_id);
+                        break;
+                    case "stop_video":
+                        canvasState.stopVideoById(msg.video_id);
+                        break;
+                    case "play_audio":
+                        this.handleAudio(msg.audio_id, true)
+                        break;
+                    case "stop_audio":
+                        this.handleAudio(msg.audio_id, false)
+                        break;
+                    case "give_play_video":
+                        userState.canPlayVideo = true;
+                        break;
+                    case "giveaway_play_video":
+                        userState.canPlayVideo = false;
+                        break;
 
                 }
             }
         };
     };
+
+    handleAudio(id: string, start: boolean) {
+        const audio = document.getElementById(id) as HTMLAudioElement
+        console.log(id, start)
+        if(audio) {
+            if(start) {
+                const promise = audio.play();
+
+                if(promise !== undefined){
+                    promise.then(() => {
+                    }).catch(async error => {
+                        canvasState.confirm(()=>{
+                            audio.play();
+                        }, ()=>{
+
+                        });
+                    });
+                }
+            } else {
+                audio.pause()
+            }
+
+        }
+    }
 
     handleMouseMove(e: MouseEvent) {
         if(canvasState.canvasMain){
@@ -130,14 +172,18 @@ class WebsocketService {
         }
     }
     sendWebsocketMessage(message: string) {
+        this.sendWebsocket(JSON.stringify({
+            method: "message",
+            id: canvasState.canvasId,
+            username: userState.user?.username,
+            message: message,
+            color: userState.color
+        }))
+    }
+
+    sendWebsocket(message: string) {
         if (canvasState.socket) {
-            canvasState.socket.send(JSON.stringify({
-                method: "message",
-                id: canvasState.canvasId,
-                username: userState.user?.username,
-                message: message,
-                color: userState.color
-            }))
+            canvasState.socket.send(message)
         }
     }
 

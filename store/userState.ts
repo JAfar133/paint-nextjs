@@ -4,13 +4,14 @@ interface User {
     _id: number;
     username: string;
     email: string;
+    role: string;
 }
 class UserState {
     _isAuth: boolean;
     _user: User | null;
     _loading: boolean = true;
     _color: string = "foreground"
-
+    canPlayVideo = false;
     constructor() {
         this._isAuth = false;
         this._user = null;
@@ -26,6 +27,7 @@ class UserState {
     setUser(user: User | null){
         this._user = user;
     }
+
     setLoading(loading: boolean){
         this._loading = loading;
     }
@@ -47,7 +49,8 @@ class UserState {
         return {
             _id: (+new Date()),
             username: `Гость${(+new Date).toString(16)}`,
-            email: `email${(+new Date).toString(16)}`
+            email: `email${(+new Date).toString(16)}`,
+            role: 'user'
         }
     }
 

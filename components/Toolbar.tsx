@@ -1,6 +1,6 @@
 "use client";
 
-import React, {ChangeEvent, useEffect, useState} from 'react';
+import React, {ChangeEvent, useEffect, useRef, useState} from 'react';
 import NavbarAvatar from "@/components/NavbarAvatar";
 import ThemeToggle from "@/components/theme-toggle";
 import {Download, Save, Upload, Users} from "lucide-react";
@@ -21,15 +21,21 @@ import {ClientTool, cn, fonts, fontWeights, toolClasses, ToolName, tools} from "
 import RangeSlider from "react-bootstrap-range-slider";
 import {useTheme} from "next-themes";
 import {HoverCard, HoverCardContent, HoverCardTrigger} from "@/components/ui/hover-card";
+import websocketService from "@/lib/api/WebsocketService";
+import {Modal} from "react-bootstrap";
+import {ConfirmDialog} from "primereact/confirmdialog";
 
 const toolDivClass = "ml-3 flex flex-col content-center";
 
 const Toolbar = observer(() => {
 
             const params = useParams();
-
+            const audioTestRef = useRef<HTMLAudioElement | null>(null);
+            const [videoPlay, setVideoPlay] = useState<boolean>(false)
+            const [audioPlay, setAudioPlay] = useState<boolean>(false)
+            const [videoPlaying, setVideoPlaying] = useState<HTMLVideoElement | null>(null)
+            const [audioPlaying, setAudioPlaying] = useState<HTMLAudioElement | null>(null)
             const [toolPressed, setToolPressed] = useState<ClientTool>(tools[1])
-
             const findToolByName = (name: ToolName): ClientTool => {
                 const tool = _.find(tools, {name: name})
                 return tool || tools[1];
@@ -158,6 +164,58 @@ const Toolbar = observer(() => {
                     reader.readAsDataURL(file);
                 }
             };
+
+
+            const playVideo = (id: string) => {
+              const video = document.getElementById(id) as HTMLVideoElement;
+              if(video != null) {
+                if (!videoPlay || (canvasState.currentVideoPlaying !== null && video !== canvasState.currentVideoPlaying)) {
+                  canvasState.playVideo(video)
+                  setVideoPlay(true)
+                  websocketService.sendWebsocket(JSON.stringify({
+                    method: "play_video",
+                    video_id: video.id,
+                    id: canvasState.canvasId,
+                    username: userState.user?.username,
+                  }))
+                } else {
+                  canvasState.stopVideo(video)
+                  setVideoPlay(false)
+                  websocketService.sendWebsocket(JSON.stringify({
+                    method: "stop_video",
+                    video_id: video.id,
+                    id: canvasState.canvasId,
+                    username: userState.user?.username,
+                  }))
+                }
+              }
+            };
+
+            const playAudio = (audioRef: React.MutableRefObject<HTMLAudioElement | null>) => {
+              const audio = audioRef.current
+
+              if(audio) {
+                if(!audioPlay) {
+                  // audio.play()
+                  websocketService.sendWebsocket(JSON.stringify({
+                    method: "play_audio",
+                    audio_id: audio.id,
+                    id: canvasState.canvasId,
+                    username: userState.user?.username,
+                  }))
+                  setAudioPlay(true)
+                } else {
+                  // audio.pause()
+                  websocketService.sendWebsocket(JSON.stringify({
+                    method: "stop_audio",
+                    audio_id: audio.id,
+                    id: canvasState.canvasId,
+                    username: userState.user?.username,
+                  }))
+                  setAudioPlay(false)
+                }
+              }
+            }
             return (
                 <>
                     <div className="toolbar-top fixed bg-toolbar top-0 w-full z-[99] max-h-[155px]">
@@ -422,7 +480,65 @@ const Toolbar = observer(() => {
                                 variant={useTheme().theme === "dark" ? "secondary" : "light"}
                               />
                             </div>}
+                          { canvasState.currentVideoPlaying !== null && <div className="flex gap-3 items-center">
+                            <label htmlFor="volume" className="w-[80px] mr-2">Звук</label>
+                            <RangeSlider
+                                className="w-100"
+                                value={canvasState.volumeLevel}
+                                onWheel={e=>{
+                                  const value = e.deltaY > 0
+                                      ? Math.max(1, canvasState.volumeLevel - 1)
+                                      : Math.min(100, canvasState.volumeLevel + 1);
+                                  canvasState.setVideoSound(value);
+                                }}
+                                onChange={e => {
+                                  const newValue = parseInt(e.target.value);
+                                  canvasState.setVideoSound(newValue);
+                                }}
+                                variant={useTheme().theme === "dark" ? "secondary" : "light"}
+                            />
+                          </div> }
+                          {userState._isAuth && userState.user?.role == 'admin' &&
+                            <>
+                              <Button variant='destructive' size='sm' onClick={()=>{
+                              websocketService.sendWebsocket(JSON.stringify({
+                                method: "give_play_video",
+                                id: canvasState.canvasId,
+                                username: userState.user?.username,
+                                color: userState.color
+                              }))
+                            }}>Дать доступ к видео</Button>
+                              <Button variant='destructive' size='sm' onClick={()=>{
+                                websocketService.sendWebsocket(JSON.stringify({
+                                  method: "giveaway_play_video",
+                                  id: canvasState.canvasId,
+                                  username: userState.user?.username,
+                                  color: userState.color
+                                }))
+                              }}>Забрать доступ к видео</Button>
+                            </>
+                          }
+
+                            <div className="videos overflow-y-auto max-h-[340px] w-full flex flex-col gap-3">
+                            {
+                              canvasState.ids.map(id=>
+                                  <div>
+                                    <video key={id} width="640" height="360" controls loop style={{display: 'none'}} id={id}>
+                                      <source src={`/${id}.mp4`} type="video/mp4" />
+                                    </video>
+                                    {(userState._isAuth || userState.canPlayVideo) &&<Button
+                                        className="w-full"
+                                        variant={
+                                      canvasState.currentVideoPlaying !== null
+                                            && canvasState.currentVideoPlaying.id === id ? "premium" : "default"} size="sm" onClick={()=>{ playVideo(id) }}>{id}</Button>
+                                    }
+                                  </div>
+                              )
+                            }
+                          </div>
+                          <ConfirmDialog id="dlg_confirmation" icon="pi pi-exclamation-triangle"/>
                         </div>
+
                     </div>
                 </>
             );

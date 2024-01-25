@@ -193,7 +193,6 @@ const Canvas = observer(() => {
         websocketService.sendWebsocketMessage(message);
         setMessage("");
     }
-
     return (
         <div id="canvas" ref={canvasMain}
             className="relative">
@@ -204,6 +203,7 @@ const Canvas = observer(() => {
             </div>
             <div className="canvas__container" id="canvas__container" ref={canvasContainer}>
                 <canvas className="canvas main_canvas"
+                        onClick={()=>canvasState.activateAllVideo()}
                         onMouseMove={(e: React.MouseEvent<HTMLCanvasElement, MouseEvent>) => mouseMoveHandler(e)}
                         ref={mainCanvasRef}
                         onMouseDown={(e: React.MouseEvent<HTMLCanvasElement, MouseEvent>) => mouseDownHandler(e)}

@@ -19,6 +19,27 @@ a:hover {
     z-index: 1000;
   }
 }
+.p-dialog-mask {
+  align-items: start !important;
+}
+.p-dialog {
+  background-color: rgba(0,0,0,0.7);
+  padding: 8px;
+  border-radius: 1rem;
+  min-width: 250px;
+  min-height: 100px;
+  margin-top: 50px;
+  .p-dialog-footer {
+    display:flex;
+    justify-content:end;
+    button {
+      background-color: #000;
+      padding: 4px;
+      margin: 4px !important;
+      border-radius:0.5rem;
+    }
+  }
+}
 @layer base {
   :root {
     --background: 0 0% 100%;

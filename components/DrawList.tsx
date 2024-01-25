@@ -21,7 +21,7 @@ const DrawList = () => {
             AuthService.check()
                 .then(response => {
                     const user = response.data.user;
-                    userState.setUser({_id: user._id, username: user.username, email: user.email});
+                    userState.setUser({_id: user._id, username: user.username, email: user.email, role: user.role});
                     userState.setIsAuth(true);
                     UserService.getImages()
                         .then(res => {
