@@ -23,6 +23,7 @@ export default class PencilTool extends Tool {
         this.socket.send(JSON.stringify({
             method: 'draw',
             id: this.id,
+            username: userState.user?.username,
             figure: {
                 type: 'finish',
                 draw: true
@@ -33,6 +34,9 @@ export default class PencilTool extends Tool {
         if(this.canDraw && e.button !==1){
             const {scaledX, scaledY} = canvasState.getScaledPoint(e.offsetX, e.offsetY)
             this.mouseDown = true;
+            const {tempCtx, tempCanvas} = canvasState.createTempCanvas();
+            tempCtx.drawImage(canvasState.bufferCanvas,0,0)
+            canvasState.addUndo(tempCanvas);
             if(settingState.globalAlpha !== 1){
                 this.tempCtx.globalAlpha = settingState.globalAlpha;
                 this.tempCtx.lineWidth = settingState.strokeWidth;
@@ -151,16 +155,15 @@ export default class PencilTool extends Tool {
             Tool.tempCtx.lineWidth = strokeWidth;
             Tool.tempCtx.globalAlpha = globalAlpha;
             mouse.x+=Tool.tempCtx.canvas.width/2;
-            drawLine(Tool.tempCtx, mouse, ppts);
-            canvasState.draw(Tool.tempCanvas!);
+            drawLine(Tool.tempCtx, mouse, ppts, true);
         }
         else {
-            canvasState.bufferCtx.lineCap = "round";
-            canvasState.bufferCtx.lineJoin = "round";
-            canvasState.bufferCtx.strokeStyle = strokeStyle;
-            canvasState.bufferCtx.lineWidth = strokeWidth;
-            mouse.x+=canvasState.bufferCanvas.width/2;
-            draw(ctx, mouse.x, mouse.y)
+            ctx.lineCap = "round";
+            ctx.lineJoin = "round";
+            ctx.strokeStyle = strokeStyle;
+            ctx.lineWidth = strokeWidth;
+            mouse.x+=ctx.canvas.width/2;
+            draw(ctx, mouse.x, mouse.y, true)
         }
 
     }
@@ -172,13 +175,13 @@ export default class PencilTool extends Tool {
     }
 }
 
-function draw(ctx: CanvasRenderingContext2D, x: number, y: number) {
+function draw(ctx: CanvasRenderingContext2D, x: number, y: number, websocket: boolean = false) {
     ctx.lineTo(x, y);
     ctx.stroke();
-    canvasState.draw();
+    canvasState.draw(undefined, websocket);
 }
 
-function drawLine(tempCtx: CanvasRenderingContext2D, mouse: Point, ppts: Point[]) {
+function drawLine(tempCtx: CanvasRenderingContext2D, mouse: Point, ppts: Point[], websocket: boolean = false) {
     ppts.push({x: mouse.x, y: mouse.y});
     if(ppts.length < 3){
         const b = ppts[0];
@@ -205,5 +208,5 @@ function drawLine(tempCtx: CanvasRenderingContext2D, mouse: Point, ppts: Point[]
         ppts[i + 1].y
     );
     tempCtx.stroke();
-    canvasState.draw(tempCtx.canvas);
+    canvasState.draw(tempCtx.canvas, websocket);
 }

@@ -7,12 +7,20 @@ import Link from "next/link";
 import AuthService from "@/lib/api/AuthService";
 import userState from "@/store/userState";
 import canvasState from "@/store/canvasState";
+import UserService from "@/lib/api/UserService";
 
 const RootPage = () => {
 
     const [variant, setVariant] = useState<ButtonVariant>("premium");
 
     useEffect(()=>{
+        UserService.getData()
+            .then((res)=>{
+                console.log(res);
+            })
+            .catch((err)=>{
+                console.log(err);
+            })
         AuthService.check()
             .then(response=>{
                 const user = response.data.user;

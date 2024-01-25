@@ -18,6 +18,8 @@ import {Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle} f
 import {Alert, AlertDescription, AlertTitle} from "@/components/ui/alert";
 import websocketService from "@/lib/api/WebsocketService";
 import settingState from "@/store/settingState";
+import TextTool from "@/lib/tools/textTool";
+import PencilTool from "@/lib/tools/pencilTool";
 
 const Canvas = observer(() => {
 
@@ -73,7 +75,11 @@ const Canvas = observer(() => {
     }, [mainCanvasRef, params.id]);
     useEffect(() => {
         const handleKeyDown = (e: KeyboardEvent) => {
-            if ((e.ctrlKey || e.metaKey) && (e.key === 'z' || e.key === 'я')) {
+            if ((e.ctrlKey || e.metaKey) && e.shiftKey && (e.key === 'Z' || e.key === 'Я')) {
+                e.preventDefault();
+                canvasState.redo();
+            }
+            else if ((e.ctrlKey || e.metaKey) && (e.key === 'z' || e.key === 'я')) {
                 e.preventDefault();
                 canvasState.undo();
             }
@@ -167,7 +173,11 @@ const Canvas = observer(() => {
         if ((e.nativeEvent instanceof MouseEvent && e.nativeEvent.button !== 1) || e.nativeEvent instanceof TouchEvent) {
             window.addEventListener('mouseup', mouseUpHandler);
             window.addEventListener('touchend', mouseUpHandler);
-            if (toolState.tool && toolState.tool.type !== "text") canvasState.addUndo(canvasState.bufferCanvas.toDataURL());
+            if (!(toolState.tool instanceof TextTool || toolState.tool instanceof PencilTool)) {
+                const {tempCtx, tempCanvas} = canvasState.createTempCanvas();
+                tempCtx.drawImage(canvasState.bufferCanvas,0,0)
+                canvasState.addUndo(tempCanvas);
+            }
         }
     }
     const mouseUpHandler = () => {

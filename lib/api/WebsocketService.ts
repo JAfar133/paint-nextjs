@@ -20,8 +20,20 @@ import {FourStarTool} from "@/lib/tools/shapes/stars/fourStarTool";
 import {SixStarTool} from "@/lib/tools/shapes/stars/SixStarTool";
 import FillingTool from "@/lib/tools/fillingTool";
 import Tool from "@/lib/tools/tool";
+import _ from "lodash";
 
 class WebsocketService {
+    getUserCanvas(msg: any) {
+        let userCanvas = canvasState.userCanvases.get(msg.username);
+        if (userCanvas === undefined) {
+            const {tempCanvas, tempCtx} = canvasState.createTempCanvas();
+            const order = _.indexOf(msg.users, msg.username)
+            userCanvas = {id: canvasState.canvasId, username: msg.username, canvas: tempCanvas, ctx: tempCtx, order: order}
+            canvasState.userCanvases.set(msg.username, userCanvas)
+        }
+        return userCanvas
+    }
+
     websocketWorker(params: Params) {
 
         const socket = new WebSocket(BASE_SOCKET_URL);
@@ -52,6 +64,8 @@ class WebsocketService {
             if (msg.count) canvasState.setUserCount(msg.count);
             if (msg.users) canvasState.setUsers(msg.users);
             if (msg.method === "connection" && msg.username === userState.user?.username && msg.color) {
+                canvasState.layerOrder = _.indexOf(msg.users, msg.username);
+                console.log(canvasState.layerOrder);
                 userState.setColor(msg.color);
             }
             if (msg.method === "message") {
@@ -74,10 +88,20 @@ class WebsocketService {
                         this.drawHandler(msg);
                         break;
                     case "clear":
+                        Array.from(canvasState.userCanvases.values()).forEach((c)=>{
+                            c.ctx.clearRect(0,0,c.canvas.width,c.canvas.height);
+                        })
                         canvasState.clear();
                         break;
                     case "draw_url":
-                        canvasState.drawByDataUrl(msg.dataUrl);
+                        const userCanvas = this.getUserCanvas(msg);
+                        const img = new Image();
+                        img.src = msg.dataUrl
+                        img.onload = () => {
+                            userCanvas?.ctx.clearRect(0, 0, userCanvas.canvas.width, userCanvas.canvas.height)
+                            userCanvas?.ctx.drawImage(img, 0, 0);
+                            canvasState.draw();
+                        }
                         break;
                     case "user_cursor":
                         this.cursorCanvasContainerHandler(msg);
@@ -89,9 +113,9 @@ class WebsocketService {
     };
 
     handleMouseMove(e: MouseEvent) {
-        if(canvasState.canvasMain){
-            const centerX = canvasState.canvasX + canvasState.rectWidth/2*canvasState.scale;
-            const centerY = canvasState.canvasY + canvasState.rectHeight/2*canvasState.scale + canvasState.canvas.getBoundingClientRect().top;
+        if (canvasState.canvasMain) {
+            const centerX = canvasState.canvasX + canvasState.rectWidth / 2 * canvasState.scale;
+            const centerY = canvasState.canvasY + canvasState.rectHeight / 2 * canvasState.scale + canvasState.canvas.getBoundingClientRect().top;
             const offsetX = e.pageX - centerX;
             const offsetY = e.pageY - centerY;
             if (canvasState.socket) {
@@ -129,6 +153,7 @@ class WebsocketService {
             }));
         }
     }
+
     sendWebsocketMessage(message: string) {
         if (canvasState.socket) {
             canvasState.socket.send(JSON.stringify({
@@ -150,20 +175,20 @@ class WebsocketService {
                 const newCursorElement = document.createElement("div");
                 newCursorElement.id = cursorElementId;
                 newCursorElement.classList.add("user-cursor");
-                if(canvasState.canvasContainer){
+                if (canvasState.canvasContainer) {
                     canvasState.canvasContainer.appendChild(newCursorElement);
                 }
                 cursorElement = newCursorElement;
             }
-            const centerX = canvasState.canvasX + canvasState.rectWidth/2*canvasState.scale;
-            const centerY = canvasState.canvasY + canvasState.rectHeight/2*canvasState.scale;
+            const centerX = canvasState.canvasX + canvasState.rectWidth / 2 * canvasState.scale;
+            const centerY = canvasState.canvasY + canvasState.rectHeight / 2 * canvasState.scale;
             cursorElement.style.left = `${centerX}px`;
             cursorElement.style.top = `${centerY}px`;
             cursorElement.style.color = msg.color;
             let cursorX = msg.point.x;
             let cursorY = msg.point.y;
             cursorElement.textContent = msg.username;
-            cursorElement.style.transform = `translate(${cursorX*canvasState.scale/msg.scale-10}px, ${cursorY*canvasState.scale/msg.scale}px)`;
+            cursorElement.style.transform = `translate(${cursorX * canvasState.scale / msg.scale - 10}px, ${cursorY * canvasState.scale / msg.scale}px)`;
 
         }
     }
@@ -171,14 +196,15 @@ class WebsocketService {
     private drawHandler(msg: any) {
         if (canvasState.canvas) {
             const figure = msg.figure;
-            this.figureDraw(canvasState.bufferCtx, figure)
-            canvasState.fill()
+            const userCanvas = this.getUserCanvas(msg);
+            this.figureDraw(userCanvas.ctx, figure)
         }
     }
-    private disconnect(msg: any){
+
+    private disconnect(msg: any) {
         const cursorElementId = `cursor-${msg.username}`;
         let cursorElement = document.getElementById(cursorElementId);
-        if(cursorElement){
+        if (cursorElement) {
             cursorElement.remove();
         }
         toast({
@@ -192,28 +218,28 @@ class WebsocketService {
     ) {
         const draw: { [key: string]: (ctx: CanvasRenderingContext2D, figure: any) => void } = {
             "pencil": (ctx, figure) => {
-                PencilTool.draw(ctx, figure.mouse, figure.ppts, figure.strokeStyle, figure.strokeWidth,figure.globalAlpha)
+                PencilTool.draw(ctx, figure.mouse, figure.ppts, figure.strokeStyle, figure.strokeWidth, figure.globalAlpha)
             },
-            "square": (ctx, figure) => SquareTool.draw(ctx, figure.x, figure.y, figure.w, figure.h, figure.fillStyle, figure.strokeStyle, figure.strokeWidth, figure.isFill, figure.isStroke,figure.globalAlpha,figure.lineJoin as CanvasLineJoin),
+            "square": (ctx, figure) => SquareTool.draw(ctx, figure.x, figure.y, figure.w, figure.h, figure.fillStyle, figure.strokeStyle, figure.strokeWidth, figure.isFill, figure.isStroke, figure.globalAlpha, figure.lineJoin as CanvasLineJoin),
             "eraser": (ctx, figure) => EraserTool.eraser(ctx, figure.x, figure.y, figure.strokeStyle, figure.strokeWidth),
-            "line": (ctx, figure) => LineTool.draw(ctx, figure.x, figure.y, figure.w, figure.h, figure.strokeStyle, figure.strokeWidth,figure.globalAlpha,figure.lineCap as CanvasLineCap),
-            "circle": (ctx, figure) => CircleTool.draw(ctx, figure.x, figure.y, figure.r, figure.fillStyle, figure.strokeStyle, figure.strokeWidth, figure.isFill, figure.isStroke,figure.globalAlpha,figure.lineJoin as CanvasLineJoin),
-            "ellipse": (ctx, figure) => EllipseTool.draw(ctx, figure.x, figure.y, figure.w, figure.h, figure.fillStyle, figure.strokeStyle, figure.strokeWidth, figure.isFill, figure.isStroke,figure.globalAlpha,figure.lineJoin as CanvasLineJoin),
-            "right-triangle": (ctx, figure) => RightTriangleTool.draw(ctx, figure.x, figure.y, figure.w, figure.h, figure.fillStyle, figure.strokeStyle, figure.strokeWidth, figure.isFill, figure.isStroke,figure.globalAlpha,figure.lineJoin as CanvasLineJoin),
-            "straight-triangle": (ctx, figure) => StraightTriangleTool.draw(ctx, figure.x, figure.y, figure.w, figure.h, figure.fillStyle, figure.strokeStyle, figure.strokeWidth, figure.isFill, figure.isStroke,figure.globalAlpha,figure.lineJoin as CanvasLineJoin),
-            "text": (ctx, figure) => TextTool.draw(ctx, figure.text, figure.startX, figure.startY, figure.fillStyle, figure.font,figure.globalAlpha),
-            "arc": (ctx, figure) => ArcTool.draw(ctx, figure.startPoint, figure.endPoint, figure.controlPoint, figure.strokeStyle, figure.strokeWidth,figure.globalAlpha,figure.lineCap as CanvasLineCap),
-            "arrow": (ctx, figure) => ArrowTool.draw(ctx, figure.x, figure.y, figure.w, figure.h, figure.strokeStyle, figure.strokeWidth,figure.globalAlpha,figure.lineCap as CanvasLineCap),
-            "shit": (ctx, figure) => ShitTool.draw(ctx, figure.x, figure.y, figure.w, figure.h, figure.fillStyle, figure.strokeStyle, figure.strokeWidth, figure.isFill, figure.isStroke,figure.globalAlpha,figure.lineJoin as CanvasLineJoin),
-            "five_star": (ctx, figure) => FiveStarTool.draw(ctx, figure.x, figure.y, figure.w, figure.h, figure.fillStyle, figure.strokeStyle, figure.strokeWidth, figure.isFill, figure.isStroke,figure.globalAlpha,figure.lineJoin as CanvasLineJoin),
-            "four_star": (ctx, figure) => FourStarTool.draw(ctx, figure.x, figure.y, figure.w, figure.h, figure.fillStyle, figure.strokeStyle, figure.strokeWidth, figure.isFill, figure.isStroke,figure.globalAlpha,figure.lineJoin as CanvasLineJoin),
-            "six_star": (ctx, figure) => SixStarTool.draw(ctx, figure.x, figure.y, figure.w, figure.h, figure.fillStyle, figure.strokeStyle, figure.strokeWidth, figure.isFill, figure.isStroke,figure.globalAlpha,figure.lineJoin as CanvasLineJoin),
-            "filling": (ctx, figure) => FillingTool.draw(ctx, figure.x, figure.y, figure.fillStyle,figure.tolerance,figure.globalAlpha),
+            "line": (ctx, figure) => LineTool.draw(ctx, figure.x, figure.y, figure.w, figure.h, figure.strokeStyle, figure.strokeWidth, figure.globalAlpha, figure.lineCap as CanvasLineCap),
+            "circle": (ctx, figure) => CircleTool.draw(ctx, figure.x, figure.y, figure.r, figure.fillStyle, figure.strokeStyle, figure.strokeWidth, figure.isFill, figure.isStroke, figure.globalAlpha, figure.lineJoin as CanvasLineJoin),
+            "ellipse": (ctx, figure) => EllipseTool.draw(ctx, figure.x, figure.y, figure.w, figure.h, figure.fillStyle, figure.strokeStyle, figure.strokeWidth, figure.isFill, figure.isStroke, figure.globalAlpha, figure.lineJoin as CanvasLineJoin),
+            "right-triangle": (ctx, figure) => RightTriangleTool.draw(ctx, figure.x, figure.y, figure.w, figure.h, figure.fillStyle, figure.strokeStyle, figure.strokeWidth, figure.isFill, figure.isStroke, figure.globalAlpha, figure.lineJoin as CanvasLineJoin),
+            "straight-triangle": (ctx, figure) => StraightTriangleTool.draw(ctx, figure.x, figure.y, figure.w, figure.h, figure.fillStyle, figure.strokeStyle, figure.strokeWidth, figure.isFill, figure.isStroke, figure.globalAlpha, figure.lineJoin as CanvasLineJoin),
+            "text": (ctx, figure) => TextTool.draw(ctx, figure.text, figure.startX, figure.startY, figure.fillStyle, figure.font, figure.globalAlpha),
+            "arc": (ctx, figure) => ArcTool.draw(ctx, figure.startPoint, figure.endPoint, figure.controlPoint, figure.strokeStyle, figure.strokeWidth, figure.globalAlpha, figure.lineCap as CanvasLineCap),
+            "arrow": (ctx, figure) => ArrowTool.draw(ctx, figure.x, figure.y, figure.w, figure.h, figure.strokeStyle, figure.strokeWidth, figure.globalAlpha, figure.lineCap as CanvasLineCap),
+            "shit": (ctx, figure) => ShitTool.draw(ctx, figure.x, figure.y, figure.w, figure.h, figure.fillStyle, figure.strokeStyle, figure.strokeWidth, figure.isFill, figure.isStroke, figure.globalAlpha, figure.lineJoin as CanvasLineJoin),
+            "five_star": (ctx, figure) => FiveStarTool.draw(ctx, figure.x, figure.y, figure.w, figure.h, figure.fillStyle, figure.strokeStyle, figure.strokeWidth, figure.isFill, figure.isStroke, figure.globalAlpha, figure.lineJoin as CanvasLineJoin),
+            "four_star": (ctx, figure) => FourStarTool.draw(ctx, figure.x, figure.y, figure.w, figure.h, figure.fillStyle, figure.strokeStyle, figure.strokeWidth, figure.isFill, figure.isStroke, figure.globalAlpha, figure.lineJoin as CanvasLineJoin),
+            "six_star": (ctx, figure) => SixStarTool.draw(ctx, figure.x, figure.y, figure.w, figure.h, figure.fillStyle, figure.strokeStyle, figure.strokeWidth, figure.isFill, figure.isStroke, figure.globalAlpha, figure.lineJoin as CanvasLineJoin),
+            "filling": (ctx, figure) => FillingTool.draw(ctx, figure.x, figure.y, figure.fillStyle, figure.tolerance, figure.globalAlpha),
             "finish": (ctx, msg) => {
-                if (msg.draw == true && Tool.tempCanvas){
-                    ctx.drawImage(Tool.tempCanvas,0,0);
+                if (msg.draw == true && Tool.tempCanvas) {
+                    ctx.drawImage(Tool.tempCanvas, 0, 0);
                     canvasState.draw();
-                    Tool.tempCtx?.clearRect(0,0, Tool.tempCanvas.width, Tool.tempCanvas.height)
+                    Tool.tempCtx?.clearRect(0, 0, Tool.tempCanvas.width, Tool.tempCanvas.height)
                 }
                 ctx.beginPath()
             },

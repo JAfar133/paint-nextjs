@@ -22,14 +22,21 @@ export interface Message {
     date: Date,
     color: string
 }
+export interface UserCanvas {
+    id: string,
+    username: string,
+    canvas: HTMLCanvasElement,
+    ctx: CanvasRenderingContext2D,
+    order: number
+}
 
 class CanvasState {
     // @ts-ignore
     canvas: HTMLCanvasElement;
     canvas_id: string;
     socket: WebSocket | null = null;
-    undoList: any = [];
-    redoList: any = [];
+    undoList: HTMLCanvasElement[] = [];
+    redoList: HTMLCanvasElement[] = [];
     userCount: number = 0;
     users: string[] | null = null;
     messages: Message[] = []
@@ -63,6 +70,8 @@ class CanvasState {
     gridCtx: CanvasRenderingContext2D | null= null;
     textX: number | null = null;
     textY: number | null = null;
+    userCanvases: Map<string, UserCanvas> = new Map<string, UserCanvas>();
+    layerOrder: number = 0;
     constructor() {
         this.canvas_id = `f${(+new Date).toString(16)}`;
         makeAutoObservable(this);
@@ -104,7 +113,6 @@ class CanvasState {
             this.imageContainer.appendChild(leftBottom);
             this.imageContainer.appendChild(rightTop);
             this.imageContainer.appendChild(rightBottom);
-
         }
     }
     debounceTimeOut: any = null;
@@ -187,7 +195,7 @@ class CanvasState {
         }
     }
 
-    draw(canvas?: HTMLCanvasElement): void {
+    draw(canvas?: HTMLCanvasElement, websocket?: boolean): void {
         const ctx = this.canvas.getContext('2d')
         if(toolState.tool?.type === "text"){
             if(this.textX && this.textY)
@@ -196,6 +204,7 @@ class CanvasState {
         else {
             this.deleteTextLine();
         }
+        const usersCanvases = Array.from(this.userCanvases.values());
         if(ctx){
             this.bufferCtx.globalAlpha = 1;
             ctx.clearRect(0, 0, this.bufferCanvas.width, this.bufferCanvas.height);
@@ -203,7 +212,19 @@ class CanvasState {
             ctx.imageSmoothingEnabled = this.scale <= 3;
             ctx.fillStyle = 'white'
             ctx.fillRect(0, 0, this.bufferCanvas.width, this.bufferCanvas.height);
-            ctx.drawImage(this.bufferCanvas, 0,0);
+            if(usersCanvases.length > 0){
+                usersCanvases
+                    .sort((a, b) => a.order - b.order)
+                    .forEach(ucanvas=>{
+                        if(ucanvas.order > this.layerOrder){
+                            ctx.drawImage(this.bufferCanvas, 0,0);
+                        }
+                        ctx.drawImage(ucanvas.canvas, 0, 0)
+                    })
+            } else {
+                ctx.drawImage(this.bufferCanvas, 0,0);
+            }
+
             if(canvas){
                 ctx.drawImage(canvas, 0, 0);
             }
@@ -307,40 +328,40 @@ class CanvasState {
         this.socket = socket;
     }
 
-    addUndo(data: any) {
+    addUndo(data: HTMLCanvasElement) {
         this.undoList.push(data);
     }
 
-    addRedo(data: any) {
+    addRedo(data: HTMLCanvasElement) {
         this.redoList.push(data);
     }
 
-    addCurrentContextToUndo() {
-        this.undoList.push(this.bufferCanvas.toDataURL())
-    }
-
     undo() {
-        this.addRedo(this.bufferCanvas.toDataURL());
         if (this.undoList.length) {
-            let dataUrl = this.undoList.pop();
-
-            this.drawCanvas(dataUrl);
-            this.sendDataUrl(dataUrl);
-            if(toolState.tool instanceof TextTool){
-                toolState.tool.undo(true);
+            const {tempCtx, tempCanvas} = this.createTempCanvas();
+            tempCtx.drawImage(this.bufferCanvas,0,0)
+            this.addRedo(tempCanvas);
+            let canvas = this.undoList.pop();
+            if(canvas){
+                this.drawCanvas(canvas);
+                if(toolState.tool instanceof TextTool){
+                    toolState.tool.undo(true);
+                }
             }
-        } else {
-            this.clear();
-            this.saveCanvas();
         }
+        this.sendDataUrl(this.bufferCanvas.toDataURL());
     }
 
     redo() {
         if (this.redoList.length) {
-            let dataUrl = this.redoList.pop();
-            this.addUndo(this.bufferCanvas.toDataURL())
-            this.drawCanvas(dataUrl);
-            this.sendDataUrl(dataUrl);
+            const canvas = this.redoList.pop();
+            if(canvas){
+                const {tempCtx, tempCanvas} = this.createTempCanvas();
+                tempCtx.drawImage(this.bufferCanvas,0,0)
+                this.addUndo(tempCanvas);
+                this.drawCanvas(canvas);
+                this.sendDataUrl(canvas.toDataURL());
+            }
         }
     }
 
@@ -355,14 +376,10 @@ class CanvasState {
         }
     }
 
-    drawCanvas(dataUrl: string) {
-        const img = new Image();
-        img.src = dataUrl;
-        img.onload = () => {
-            this.bufferCtx.clearRect(0, 0, this.bufferCanvas.width, this.bufferCanvas.height);
-            this.bufferCtx.drawImage(img, 0, 0);
-            this.draw();
-        }
+    drawCanvas(canvas: HTMLCanvasElement) {
+        this.bufferCtx.clearRect(0, 0, this.bufferCanvas.width, this.bufferCanvas.height);
+        this.bufferCtx.drawImage(canvas, 0, 0);
+        this.draw();
     }
 
     drawByDataUrl(dataUrl: string, options: { clearRect: boolean, imageEdit: boolean } = {
@@ -392,6 +409,9 @@ class CanvasState {
                 if (img.width > 0 && img.height > 0) {
                     options.clearRect && this.bufferCtx.clearRect(0, 0, this.canvas.width, this.canvas.height);
                     this.bufferCtx.drawImage(img, 0, 0, this.bufferCanvas.width, this.bufferCanvas.height);
+                    const {tempCtx, tempCanvas} = this.createTempCanvas();
+                    tempCtx.drawImage(this.bufferCanvas,0,0);
+                    this.undoList.push(tempCanvas);
                     this.draw();
                 }
             }
@@ -399,6 +419,9 @@ class CanvasState {
     }
 
     clearCanvas() {
+        Array.from(this.userCanvases.values()).forEach((c)=>{
+            c.ctx.clearRect(0,0,c.canvas.width,c.canvas.height);
+        })
         this.clear()
         this.saveCanvas();
         this.deleteBorder();
@@ -408,13 +431,19 @@ class CanvasState {
         if (this.socket) {
             this.socket.send(JSON.stringify({
                 method: "clear",
+                username: userState.user?.username,
                 id: this.canvasId,
             }))
         }
     }
 
     saveCanvas() {
-        UserService.saveImage(this.canvasId, this.bufferCanvas.toDataURL())
+        const {tempCanvas, tempCtx} = this.createTempCanvas();
+        Array.from(this.userCanvases.values()).forEach(ucanvas=>{
+            tempCtx.drawImage(ucanvas.canvas, 0, 0)
+        })
+        tempCtx.drawImage(this.bufferCanvas, 0,0);
+        UserService.saveImage(this.canvasId, tempCanvas.toDataURL())
             .catch(e => console.log(e))
         localStorage.removeItem("image")
     }
@@ -430,10 +459,7 @@ class CanvasState {
         if(toolState.tool){
             toolState.tool.tempCtx.clearRect(0,0,toolState.tool.tempCanvas.width, toolState.tool.tempCanvas.height)
         }
-        this.bufferCtx.clearRect(0, 0, this.bufferCanvas.width, this.bufferCanvas.height)
-        this.bufferCtx.fillStyle = 'rgba(255,255,255,1)';
-        this.bufferCtx.fillRect(0,0, this.bufferCanvas.width, this.bufferCanvas.height);
-        this.bufferCtx.fillStyle = settingState.fillColor;
+        this.bufferCtx.clearRect(0, 0, this.bufferCanvas.width, this.bufferCanvas.height);
         this.draw();
     }
     set fillColor(color: string) {
@@ -501,10 +527,10 @@ class CanvasState {
             }
         }
     }
-    createTempCanvas(width: number, height: number):{tempCanvas: HTMLCanvasElement, tempCtx: CanvasRenderingContext2D}{
+    createTempCanvas(width?: number, height?: number):{tempCanvas: HTMLCanvasElement, tempCtx: CanvasRenderingContext2D}{
         const tempCanvas = document.createElement('canvas');
-        tempCanvas.width = width;
-        tempCanvas.height = height;
+        tempCanvas.width = width || this.bufferCanvas.width;
+        tempCanvas.height = height || this.bufferCanvas.height;
         const tempCtx = tempCanvas.getContext('2d')!;
         return {tempCanvas, tempCtx}
     }

@@ -12,6 +12,10 @@ export default class UserService {
         return $host.post(`/image?id=${id}`, {img: dataUrl})
     }
 
+    static getData(){
+        return $host.get('/ecmwf');
+    }
+
     static getImage(id: string | string[]){
         return $host.get(`/image?id=${id}`);
     }

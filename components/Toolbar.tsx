@@ -149,7 +149,9 @@ const Toolbar = observer(() => {
                     reader.onload = (event) => {
                         if (event.target) {
                             const dataUrl = event.target.result as string;
-                            canvasState.addCurrentContextToUndo();
+                            const {tempCtx, tempCanvas} = canvasState.createTempCanvas();
+                            tempCtx.drawImage(canvasState.bufferCanvas, 0,0)
+                            canvasState.addUndo(tempCanvas);
                             canvasState.drawByDataUrl(dataUrl, {clearRect: false, imageEdit: true});
                             canvasState.sendDataUrl(canvasState.bufferCanvas.toDataURL());
                             canvasState.saveCanvas();
