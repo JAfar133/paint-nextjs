@@ -490,7 +490,7 @@ const Toolbar = observer(() => {
                                     <video width="640" height="360" controls loop style={{display: 'none'}} id={id}>
                                       <source src={`/${id}.mp4`} type="video/mp4" />
                                     </video>
-                                    {(userState._isAuth && userState.canPlayVideo || userState.isAdmin()) &&<Button
+                                    {((userState._isAuth && userState.canPlayVideo) || userState.canPlayVideo || userState.isAdmin()) &&<Button
                                         className="w-full"
                                         variant={
                                       canvasState.currentVideoPlaying !== null
