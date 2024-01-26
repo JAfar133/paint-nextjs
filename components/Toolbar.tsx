@@ -480,44 +480,6 @@ const Toolbar = observer(() => {
                                 variant={useTheme().theme === "dark" ? "secondary" : "light"}
                               />
                             </div>}
-                          { canvasState.currentVideoPlaying !== null && <div className="flex gap-3 items-center">
-                            <label htmlFor="volume" className="w-[80px] mr-2">Звук</label>
-                            <RangeSlider
-                                className="w-100"
-                                value={canvasState.volumeLevel}
-                                onWheel={e=>{
-                                  const value = e.deltaY > 0
-                                      ? Math.max(1, canvasState.volumeLevel - 1)
-                                      : Math.min(100, canvasState.volumeLevel + 1);
-                                  canvasState.setVideoSound(value);
-                                }}
-                                onChange={e => {
-                                  const newValue = parseInt(e.target.value);
-                                  canvasState.setVideoSound(newValue);
-                                }}
-                                variant={useTheme().theme === "dark" ? "secondary" : "light"}
-                            />
-                          </div> }
-                          {userState._isAuth && userState.user?.role == 'admin' &&
-                            <>
-                              <Button variant='destructive' size='sm' onClick={()=>{
-                              websocketService.sendWebsocket(JSON.stringify({
-                                method: "give_play_video",
-                                id: canvasState.canvasId,
-                                username: userState.user?.username,
-                                color: userState.color
-                              }))
-                            }}>Дать доступ к видео</Button>
-                              <Button variant='destructive' size='sm' onClick={()=>{
-                                websocketService.sendWebsocket(JSON.stringify({
-                                  method: "giveaway_play_video",
-                                  id: canvasState.canvasId,
-                                  username: userState.user?.username,
-                                  color: userState.color
-                                }))
-                              }}>Забрать доступ к видео</Button>
-                            </>
-                          }
 
                             <div className="videos overflow-y-auto max-h-[340px] w-full flex flex-col gap-3">
                             {

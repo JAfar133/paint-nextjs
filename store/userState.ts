@@ -12,6 +12,9 @@ class UserState {
     _loading: boolean = true;
     _color: string = "foreground"
     canPlayVideo = false;
+    canPauseVideo = true;
+    unreadMessages = 0;
+    isChatOpen = false;
     constructor() {
         this._isAuth = false;
         this._user = null;

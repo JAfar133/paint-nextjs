@@ -569,6 +569,7 @@ class CanvasState {
         'hapi-hapi-hapi',
         'hello_darkness_batman',
         'heisenburger',
+        'napoleon',
         'dramatic_kitten',
         'top_5_cat',
         'heisenberg_smoke',
@@ -576,7 +577,8 @@ class CanvasState {
         'dosvidos',
         'skyler_white_yo',
         'look_at_me_hector',
-        'pedalirovanie'
+        'pedalirovanie',
+        'naruto'
     ]
     isActivated: boolean = false;
     currentVideoPlaying: HTMLVideoElement | null = null;
@@ -590,6 +592,7 @@ class CanvasState {
                     video.pause()
                 }
             })
+            this.isActivated = true
         }
     }
     stopAllVideos() {
@@ -614,6 +617,19 @@ class CanvasState {
             reject: () => reject()
         })
     }
+    toggleVideoPlay() {
+        if(this.currentVideoPlaying) {
+            if(this.animationFrameId) {
+                cancelAnimationFrame(this.animationFrameId)
+                this.animationFrameId = null
+                this.currentVideoPlaying.pause()
+            } else {
+                this.videoAnimate(this.currentVideoPlaying)
+                this.currentVideoPlaying.volume = this.volumeLevel/100
+                this.currentVideoPlaying.play()
+            }
+        }
+    }
     frames: number = -1;
     funnyScaleCanvas() {
         const zoomSpeed = 0.01;
@@ -628,7 +644,7 @@ class CanvasState {
 
     }
     playVideo(video: HTMLVideoElement) {
-        // this.stopAllVideos()
+        this.activateAllVideo()
         if (this.currentVideoPlaying !== null) {
             this.stopVideo(this.currentVideoPlaying)
         }
@@ -657,6 +673,10 @@ class CanvasState {
             });
             this.currentVideoPlaying = video
         }
+        this.videoAnimate(video)
+
+    }
+    videoAnimate(video: HTMLVideoElement) {
         const drawFrame = () => {
             this.bufferCtx.drawImage(video, 0, 0, this.bufferCanvas.width, this.bufferCanvas.height);
             this.animationFrameId = requestAnimationFrame(drawFrame);
@@ -665,9 +685,7 @@ class CanvasState {
         };
 
         drawFrame();
-
     }
-
     stopVideo(video: HTMLVideoElement) {
         video.pause();
         if(this.currentVideoPlaying) {
@@ -675,6 +693,7 @@ class CanvasState {
         }
         if(this.animationFrameId !== null) {
             cancelAnimationFrame(this.animationFrameId);
+            this.animationFrameId = null
         }
 
         if (this.tempCtx !== null && this.tempCanvas !== null) {

@@ -1,6 +1,6 @@
 "use client";
 
-import React, {useEffect, useRef, useState} from 'react';
+import React, {Ref, useEffect, useRef, useState} from 'react';
 import '../app/canvas.scss'
 import {cn} from "@/lib/utils";
 import {observer} from "mobx-react-lite";
@@ -13,11 +13,14 @@ import toolState from "@/store/toolState";
 import {Popover, PopoverContent, PopoverTrigger} from "@/components/ui/popover";
 import {Button} from "@/components/ui/button";
 import {Input} from "@/components/ui/input";
-import {MessageSquare, Search, Terminal} from "lucide-react";
+import {ChevronLeft, ChevronRight, MessageSquare, Pause, Play, Search, Terminal} from "lucide-react";
 import {Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle} from "@/components/ui/card";
 import {Alert, AlertDescription, AlertTitle} from "@/components/ui/alert";
 import websocketService from "@/lib/api/WebsocketService";
 import settingState from "@/store/settingState";
+import RangeSlider from "react-bootstrap-range-slider";
+import {useTheme} from "next-themes";
+import {Toggle} from "@/components/ui/toggle";
 
 const Canvas = observer(() => {
 
@@ -26,8 +29,11 @@ const Canvas = observer(() => {
     const canvasContainer = useRef<HTMLDivElement>(null);
     const circleOverlayRef = useRef<HTMLDivElement>(null);
     const [message, setMessage] = useState<string>("");
+    const chatRef = useRef<HTMLDivElement | null>(null);
+    const chatBtnRef = useRef<HTMLButtonElement | null>(null);
     const params = useParams();
     const messagesRef = useRef<HTMLDivElement>(null);
+    const [isAdminPanelOpen, setIsAdminPanelOpen] = useState(false);
     useEffect(() => {
         if(mainCanvasRef.current){
             const width = window.innerWidth - 300;
@@ -193,9 +199,35 @@ const Canvas = observer(() => {
         websocketService.sendWebsocketMessage(message);
         setMessage("");
     }
+    const handleChatOpen = () => {
+        if(userState.isChatOpen) {
+            userState.isChatOpen = false;
+        } else {
+            userState.unreadMessages = 0;
+            userState.isChatOpen = true;
+        }
+    }
+    useEffect(()=>{
+        console.log(userState.isChatOpen);
+    }, [userState.isChatOpen])
+    useEffect(() => {
+        // @ts-ignore
+        const handleWindowClick = (event) => {
+            if (chatRef.current && !chatRef.current.contains(event.target) && chatBtnRef.current && !chatBtnRef.current.contains(event.target)) {
+                userState.isChatOpen = false;
+            }
+        };
+
+        window.addEventListener('click', handleWindowClick);
+
+        return () => {
+            window.removeEventListener('click', handleWindowClick);
+        };
+    }, []);
     return (
         <div id="canvas" ref={canvasMain}
             className="relative">
+
             <div className="grid-container" id="grid-container"></div>
             <div className="absolute left-0 z-[500] p-1 flex gap-1">
                 <Search width={16} color="gray"></Search>
@@ -212,14 +244,102 @@ const Canvas = observer(() => {
                         onMouseLeave={() => canvasState.mouseLeaveHandler()}
                 >
                 </canvas>
+                { canvasState.currentVideoPlaying !== null &&
+                    <div className="absolute right-3 z-[500] flex items-center">
+
+                        {userState.canPauseVideo && <Toggle size="sm"
+                                pressed={canvasState.animationFrameId === null}
+                                className="mr-4"
+                                onClick={() => {
+                                    canvasState.toggleVideoPlay();
+                                    websocketService.sendWebsocket(JSON.stringify({
+                                        method: "toggle_video_play",
+                                        id: canvasState.canvasId,
+                                        username: userState.user?.username,
+                                    }))
+                                }}>
+                            {canvasState.animationFrameId !== null ? <Pause/> : <Play/>}
+                        </Toggle>}
+                        <RangeSlider
+                            className="w-100"
+                            value={canvasState.volumeLevel}
+                            onWheel={e=>{
+                                const value = e.deltaY > 0
+                                    ? Math.max(1, canvasState.volumeLevel - 1)
+                                    : Math.min(100, canvasState.volumeLevel + 1);
+                                canvasState.setVideoSound(value);
+                            }}
+                            onChange={e => {
+                                const newValue = parseInt(e.target.value);
+                                canvasState.setVideoSound(newValue);
+                            }}
+                            variant={useTheme().theme === "dark" ? "secondary" : "light"}
+                        />
+                    </div> }
+                {userState._isAuth && userState.user?.role == 'admin' &&
+                    <div className="absolute left-0 top-10 gap-2 p-2">
+                        <Button className="relative" size='icon' variant="default"
+                                onClick={()=>setIsAdminPanelOpen(!isAdminPanelOpen)}>
+                            {!isAdminPanelOpen ? <ChevronRight/> : <ChevronLeft/>}
+                        </Button>
+                        <div
+                            className={`admin_panel w-max flex flex-col absolute left-0 top-10 gap-2 p-2 bg-opacity-75 ${
+                                isAdminPanelOpen ? 'open' : ''
+                            }`}
+                        >   <Button variant='destructive' size='sm' onClick={()=>{
+                                websocketService.sendWebsocket(JSON.stringify({
+                                    method: "give_play_video",
+                                    id: canvasState.canvasId,
+                                    username: userState.user?.username,
+                                    color: userState.color
+                                }))
+                            }}>Дать доступ к видео</Button>
+                            <Button variant='destructive' size='sm' onClick={()=>{
+                                websocketService.sendWebsocket(JSON.stringify({
+                                    method: "giveaway_play_video",
+                                    id: canvasState.canvasId,
+                                    username: userState.user?.username,
+                                    color: userState.color
+                                }))
+                            }}>Забрать доступ к видео</Button>
+                            <Button variant='destructive' size='sm' onClick={()=>{
+                                websocketService.sendWebsocket(JSON.stringify({
+                                    method: "block_pause_video",
+                                    id: canvasState.canvasId,
+                                    username: userState.user?.username,
+                                    color: userState.color
+                                }))
+                            }}>Запретить ставить на паузу</Button>
+                            <Button variant='destructive' size='sm' onClick={()=>{
+                                websocketService.sendWebsocket(JSON.stringify({
+                                    method: "permit_pause_video",
+                                    id: canvasState.canvasId,
+                                    username: userState.user?.username,
+                                    color: userState.color
+                                }))
+                            }}>Разрешить ставить на паузу</Button>
+                        </div>
+                    </div>
+                }
             </div>
+
             <div ref={circleOverlayRef} className="circle-overlay"></div>
             <div className="fixed right-2 bottom-2 z-[200]">
                 <Popover>
-                    <PopoverTrigger asChild>
-                        <Button variant="outline" size="sm"><MessageSquare/></Button>
+                    <PopoverTrigger asChild ref={chatBtnRef}>
+                        <Button variant={userState.unreadMessages <  5 ? "outline" : "destructive"} onClick={handleChatOpen} size="sm">
+                            <MessageSquare/>
+                            <div className="absolute bottom-0 right-[5px]">
+                                {userState.unreadMessages > 0
+                                    ? <span className={userState.unreadMessages <  5 ? "bg-purple-900" : "bg-gray-900"} style={{borderRadius: '1rem', padding: '1px 5px', fontSize: 11}}>{userState.unreadMessages}</span>
+                                    : ''
+                                }
+                            </div>
+
+                        </Button>
+
                     </PopoverTrigger>
-                    <PopoverContent className="w-80 bg-transparent">
+                    <PopoverContent className="w-80 bg-transparent" ref={chatRef}>
                         <Card className="w-[350px] right-10 absolute border-black bottom-0 bg-transparent">
                             <CardHeader className="bg-card">
                                 <CardTitle>Чат</CardTitle>
