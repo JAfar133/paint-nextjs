@@ -55,7 +55,15 @@ class WebsocketService {
                 userState.setColor(msg.color);
             }
             if (msg.method === "message") {
+                if(!userState.isChatOpen){
+                    userState.unreadMessages+=1;
+                }
                 canvasState.setMessages([...canvasState.messages, msg.message])
+            }
+            if (msg.method === "admin_info" && userState.user?.role === "admin") {
+                toast({
+                    description: msg.info
+                })
             }
             if (msg.username != userState.user?.username) {
                 switch (msg.method) {
@@ -95,10 +103,23 @@ class WebsocketService {
                         this.handleAudio(msg.audio_id, false)
                         break;
                     case "give_play_video":
+                        this.sendAdminInfo(`Пользователь ${userState.user?.username} ${userState.user?.email} получил доступ к видео`)
                         userState.canPlayVideo = true;
                         break;
                     case "giveaway_play_video":
+                        this.sendAdminInfo(`Пользователь ${userState.user?.username} ${userState.user?.email} лишился доступа к видео`)
                         userState.canPlayVideo = false;
+                        break;
+                    case "toggle_video_play":
+                        canvasState.toggleVideoPlay();
+                        break;
+                    case "block_pause_video":
+                        this.sendAdminInfo(`Пользователю ${userState.user?.username} ${userState.user?.email} запрещено ставить на паузу`)
+                        userState.canPauseVideo = false;
+                        break;
+                    case "permit_pause_video":
+                        this.sendAdminInfo(`Пользователю ${userState.user?.username} ${userState.user?.email} разрешено ставить на паузу`)
+                        userState.canPauseVideo = true;
                         break;
 
                 }
@@ -185,6 +206,15 @@ class WebsocketService {
         if (canvasState.socket) {
             canvasState.socket.send(message)
         }
+    }
+    sendAdminInfo(info: string) {
+        this.sendWebsocket(JSON.stringify({
+            method: "admin_info",
+            id: canvasState.canvasId,
+            username: userState.user?.username,
+            info: info,
+            color: userState.color
+        }))
     }
 
     private cursorCanvasContainerHandler(msg: any) {
