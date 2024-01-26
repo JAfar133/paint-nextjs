@@ -1,5 +1,6 @@
 import {canvasSize, ToolName} from "@/lib/utils";
 import settingState from "@/store/settingState";
+import userState from "@/store/userState";
 
 export default abstract class Tool {
     protected canvas: HTMLCanvasElement;
@@ -37,6 +38,7 @@ export default abstract class Tool {
         this.socket.send(JSON.stringify({
             method: 'draw',
             id: this.id,
+            username: userState.user?.username,
             figure: {
                 type: 'finish',
             }

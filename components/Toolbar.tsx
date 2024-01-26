@@ -155,7 +155,9 @@ const Toolbar = observer(() => {
                     reader.onload = (event) => {
                         if (event.target) {
                             const dataUrl = event.target.result as string;
-                            canvasState.addCurrentContextToUndo();
+                            const {tempCtx, tempCanvas} = canvasState.createTempCanvas(canvasState.bufferCanvas.width, canvasState.bufferCanvas.height);
+                            tempCtx.drawImage(canvasState.bufferCanvas, 0,0)
+                            canvasState.addUndo(tempCanvas);
                             canvasState.drawByDataUrl(dataUrl, {clearRect: false, imageEdit: true});
                             canvasState.sendDataUrl(canvasState.bufferCanvas.toDataURL());
                             canvasState.saveCanvas();
@@ -488,7 +490,7 @@ const Toolbar = observer(() => {
                                     <video width="640" height="360" controls loop style={{display: 'none'}} id={id}>
                                       <source src={`/${id}.mp4`} type="video/mp4" />
                                     </video>
-                                    {(userState._isAuth || userState.canPlayVideo) &&<Button
+                                    {(userState._isAuth && userState.canPlayVideo || userState.isAdmin()) &&<Button
                                         className="w-full"
                                         variant={
                                       canvasState.currentVideoPlaying !== null

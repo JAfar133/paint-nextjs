@@ -77,7 +77,9 @@ export default class TextTool extends Tool {
             }
         }
         if (key.length === 1) {
-            canvasState.addUndo(canvasState.bufferCanvas.toDataURL());
+            const {tempCtx, tempCanvas} = canvasState.createTempCanvas(canvasState.bufferCanvas.width, canvasState.bufferCanvas.height);
+            tempCtx.drawImage(canvasState.bufferCanvas,0,0)
+            canvasState.addUndo(tempCanvas)
             this.print(key, this.startX, this.startY + Number(px) / 4)
             this.socket.send(JSON.stringify({
                 method: 'draw',

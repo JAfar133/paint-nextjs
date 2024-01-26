@@ -17,6 +17,7 @@ const DrawPage = observer(() => {
                 const user = response.data.user;
                 userState.setUser({_id: user._id, username: user.username, email: user.email, role: user.role})
                 userState.setIsAuth(true)
+                userState.canPlayVideo = true;
             })
             .catch(() => {
                 const user = userState.randomUser;
