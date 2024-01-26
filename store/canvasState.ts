@@ -6,6 +6,7 @@ import userState from "@/store/userState";
 import settingState from "@/store/settingState";
 import TextTool from "@/lib/tools/textTool";
 import {confirmDialog} from "primereact/confirmdialog";
+import websocketService from "@/lib/api/WebsocketService";
 
 export type cursorClass =
     "cursor-move" | "cursor-grab" | "cursor-text" | "cursor-cell" |
@@ -29,8 +30,8 @@ class CanvasState {
     canvas: HTMLCanvasElement;
     canvas_id: string;
     socket: WebSocket | null = null;
-    undoList: any = [];
-    redoList: any = [];
+    undoList: HTMLCanvasElement[] = [];
+    redoList: HTMLCanvasElement[] = [];
     userCount: number = 0;
     users: string[] | null = null;
     messages: Message[] = []
@@ -172,7 +173,9 @@ class CanvasState {
         e.preventDefault();
         const zoomSpeed = 0.1;
         let scaleFactor = e.deltaY > 0 ? 1 - zoomSpeed : 1 + zoomSpeed;
-
+        const prevCanvasX = this.canvasX;
+        const prevCanvasY = this.canvasY;
+        const prevScale = this.scale;
         this.scale = this.scale * scaleFactor;
 
         this.canvasX -= (e.offsetX - this.canvasX) * (scaleFactor - 1);
@@ -189,6 +192,18 @@ class CanvasState {
             this.circleOverlayRef!.style.borderRadius = '0';
         } else {
             this.circleOverlayRef!.style.borderRadius = '50%';
+        }
+        const isAltPressed = e.altKey;
+        if (userState.user?.role === 'admin' && isAltPressed) {
+
+            websocketService.sendWebsocket(JSON.stringify({
+                method: "admin_drug_canvas",
+                id: this.canvasId,
+                username: userState.user?.username,
+                scale: prevScale - this.scale,
+                canvasX: prevCanvasX - this.canvasX,
+                canvasY: prevCanvasY - this.canvasY
+            }))
         }
     }
 
@@ -256,10 +271,25 @@ class CanvasState {
 
             const deltaX = offsetX - this.mouseDownStartX;
             const deltaY = offsetY - this.mouseDownStartY;
+            const prevCanvasX = this.canvasX;
+            const prevCanvasY = this.canvasY;
+            const prevScale = this.scale;
+
             this.canvasX += deltaX;
             this.canvasY += deltaY;
             this.draw();
+            const isAltPressed = e.altKey;
+            if (userState.user?.role === 'admin' && isAltPressed) {
 
+                websocketService.sendWebsocket(JSON.stringify({
+                    method: "admin_drug_canvas",
+                    id: this.canvasId,
+                    username: userState.user?.username,
+                    scale: prevScale - this.scale,
+                    canvasX: prevCanvasX - this.canvasX,
+                    canvasY: prevCanvasY - this.canvasY
+                }))
+            }
             this.mouseDownStartX = offsetX;
             this.mouseDownStartY = offsetY;
         }
@@ -320,32 +350,32 @@ class CanvasState {
         this.redoList.push(data);
     }
 
-    addCurrentContextToUndo() {
-        this.undoList.push(this.bufferCanvas.toDataURL())
-    }
-
     undo() {
-        this.addRedo(this.bufferCanvas.toDataURL());
         if (this.undoList.length) {
-            let dataUrl = this.undoList.pop();
-
-            this.drawCanvas(dataUrl);
-            this.sendDataUrl(dataUrl);
-            if(toolState.tool instanceof TextTool){
-                toolState.tool.undo(true);
+            const {tempCtx, tempCanvas} = this.createTempCanvas();
+            tempCtx.drawImage(this.bufferCanvas,0,0)
+            this.addRedo(tempCanvas);
+            let canvas = this.undoList.pop();
+            if(canvas){
+                this.drawCanvas(canvas);
+                if(toolState.tool instanceof TextTool){
+                    toolState.tool.undo(true);
+                }
             }
-        } else {
-            this.clear();
-            this.saveCanvas();
         }
+        this.sendDataUrl(this.bufferCanvas.toDataURL());
     }
 
     redo() {
         if (this.redoList.length) {
-            let dataUrl = this.redoList.pop();
-            this.addUndo(this.bufferCanvas.toDataURL())
-            this.drawCanvas(dataUrl);
-            this.sendDataUrl(dataUrl);
+            const canvas = this.redoList.pop();
+            if(canvas){
+                const {tempCtx, tempCanvas} = this.createTempCanvas(this.bufferCanvas.width, this.bufferCanvas.height);
+                tempCtx.drawImage(this.bufferCanvas,0,0)
+                this.addUndo(tempCanvas);
+                this.drawCanvas(canvas);
+                this.sendDataUrl(canvas.toDataURL());
+            }
         }
     }
 
@@ -360,17 +390,13 @@ class CanvasState {
         }
     }
 
-    drawCanvas(dataUrl: string) {
-        const img = new Image();
-        img.src = dataUrl;
-        img.onload = () => {
-            this.bufferCtx.clearRect(0, 0, this.bufferCanvas.width, this.bufferCanvas.height);
-            this.bufferCtx.drawImage(img, 0, 0);
-            this.draw();
-        }
+    drawCanvas(canvas: HTMLCanvasElement) {
+        this.bufferCtx.clearRect(0, 0, this.bufferCanvas.width, this.bufferCanvas.height);
+        this.bufferCtx.drawImage(canvas, 0, 0);
+        this.draw();
     }
 
-    drawByDataUrl(dataUrl: string, options: { clearRect: boolean, imageEdit: boolean } = {
+    drawByDataUrl(dataUrl: string, options: { clearRect?: boolean, imageEdit?: boolean } = {
         clearRect: true,
         imageEdit: false
     }) {
@@ -395,13 +421,14 @@ class CanvasState {
         } else {
             img.onload = () => {
                 if (img.width > 0 && img.height > 0) {
-                    options.clearRect && this.bufferCtx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+                    options.clearRect && this.bufferCtx.clearRect(0, 0, this.bufferCanvas.width, this.bufferCanvas.height);
                     this.bufferCtx.drawImage(img, 0, 0, this.bufferCanvas.width, this.bufferCanvas.height);
                     this.draw();
                 }
             }
         }
     }
+
 
     clearCanvas() {
         this.clear()
@@ -413,13 +440,16 @@ class CanvasState {
         if (this.socket) {
             this.socket.send(JSON.stringify({
                 method: "clear",
+                username: userState.user?.username,
                 id: this.canvasId,
             }))
         }
     }
 
     saveCanvas() {
-        UserService.saveImage(this.canvasId, this.bufferCanvas.toDataURL())
+        const {tempCanvas, tempCtx} = this.createTempCanvas(this.bufferCanvas.width, this.bufferCanvas.height);
+        tempCtx.drawImage(this.bufferCanvas, 0,0);
+        UserService.saveImage(this.canvasId, tempCanvas.toDataURL())
             .catch(e => console.log(e))
         localStorage.removeItem("image")
     }
@@ -436,9 +466,6 @@ class CanvasState {
             toolState.tool.tempCtx.clearRect(0,0,toolState.tool.tempCanvas.width, toolState.tool.tempCanvas.height)
         }
         this.bufferCtx.clearRect(0, 0, this.bufferCanvas.width, this.bufferCanvas.height)
-        this.bufferCtx.fillStyle = 'rgba(255,255,255,1)';
-        this.bufferCtx.fillRect(0,0, this.bufferCanvas.width, this.bufferCanvas.height);
-        this.bufferCtx.fillStyle = settingState.fillColor;
         this.draw();
     }
     set fillColor(color: string) {
@@ -506,10 +533,20 @@ class CanvasState {
             }
         }
     }
-    createTempCanvas(width: number, height: number):{tempCanvas: HTMLCanvasElement, tempCtx: CanvasRenderingContext2D}{
+    setCanvasPosition(scale: number, canvasX: number, canvasY: number) {
+        if(this.scale - scale >= 0){
+            this.scale -= scale;
+            this.canvasX -= canvasX;
+            this.canvasY -= canvasY;
+            this.draw()
+        }
+        console.log(this.scale, this.canvasX, this.canvasY)
+
+    }
+    createTempCanvas(width?: number, height?: number):{tempCanvas: HTMLCanvasElement, tempCtx: CanvasRenderingContext2D}{
         const tempCanvas = document.createElement('canvas');
-        tempCanvas.width = width;
-        tempCanvas.height = height;
+        tempCanvas.width = width || this.bufferCanvas.width;
+        tempCanvas.height = height || this.bufferCanvas.height;
         const tempCtx = tempCanvas.getContext('2d')!;
         return {tempCanvas, tempCtx}
     }
@@ -566,25 +603,27 @@ class CanvasState {
         }
     }
     ids: string[] = [
-        'hapi-hapi-hapi',
         'hello_darkness_batman',
         'heisenburger',
-        'napoleon',
-        'dramatic_kitten',
-        'top_5_cat',
         'heisenberg_smoke',
-        'no_tilted',
-        'dosvidos',
         'skyler_white_yo',
         'look_at_me_hector',
+        'hapi-hapi-hapi',
+        'dramatic_kitten',
+        'chipi-chapa',
+        'napoleon',
+        'top_5_cat',
+        'no_tilted',
+        'dosvidos',
         'pedalirovanie',
-        'naruto'
+        'naruto',
+
     ]
     isActivated: boolean = false;
     currentVideoPlaying: HTMLVideoElement | null = null;
-    volumeLevel: number = 100;
+    volumeLevel: number = 30;
     activateAllVideo () {
-        if(!this.isActivated) {
+        if(this.ids && !this.isActivated) {
             this.ids.forEach(id=>{
                 const video = document.getElementById(id) as HTMLVideoElement
                 if(video) {
@@ -593,7 +632,9 @@ class CanvasState {
                 }
             })
             this.isActivated = true
+            console.log('activate')
         }
+        window.removeEventListener('mousemove', this.activateAllVideo);
     }
     stopAllVideos() {
         this.ids.forEach(id=>{

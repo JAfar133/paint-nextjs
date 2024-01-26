@@ -21,6 +21,8 @@ import settingState from "@/store/settingState";
 import RangeSlider from "react-bootstrap-range-slider";
 import {useTheme} from "next-themes";
 import {Toggle} from "@/components/ui/toggle";
+import PencilTool from "@/lib/tools/pencilTool";
+import TextTool from "@/lib/tools/textTool";
 
 const Canvas = observer(() => {
 
@@ -79,7 +81,11 @@ const Canvas = observer(() => {
     }, [mainCanvasRef, params.id]);
     useEffect(() => {
         const handleKeyDown = (e: KeyboardEvent) => {
-            if ((e.ctrlKey || e.metaKey) && (e.key === 'z' || e.key === 'я')) {
+            if ((e.ctrlKey || e.metaKey) && e.shiftKey && (e.key === 'Z' || e.key === 'Я')) {
+                e.preventDefault();
+                canvasState.redo();
+            }
+            else if ((e.ctrlKey || e.metaKey) && (e.key === 'z' || e.key === 'я')) {
                 e.preventDefault();
                 canvasState.undo();
             }
@@ -173,7 +179,11 @@ const Canvas = observer(() => {
         if ((e.nativeEvent instanceof MouseEvent && e.nativeEvent.button !== 1) || e.nativeEvent instanceof TouchEvent) {
             window.addEventListener('mouseup', mouseUpHandler);
             window.addEventListener('touchend', mouseUpHandler);
-            if (toolState.tool && toolState.tool.type !== "text") canvasState.addUndo(canvasState.bufferCanvas.toDataURL());
+            if (!(toolState.tool instanceof TextTool || toolState.tool instanceof PencilTool)) {
+                const {tempCtx, tempCanvas} = canvasState.createTempCanvas(canvasState.bufferCanvas.width, canvasState.bufferCanvas.height);
+                tempCtx.drawImage(canvasState.bufferCanvas,0,0)
+                canvasState.addUndo(tempCanvas);
+            }
         }
     }
     const mouseUpHandler = () => {
@@ -219,9 +229,10 @@ const Canvas = observer(() => {
         };
 
         window.addEventListener('click', handleWindowClick);
-
+        window.addEventListener('mousemove', canvasState.activateAllVideo);
         return () => {
             window.removeEventListener('click', handleWindowClick);
+            window.removeEventListener('mousemove', canvasState.activateAllVideo);
         };
     }, []);
     return (
@@ -247,7 +258,8 @@ const Canvas = observer(() => {
                 { canvasState.currentVideoPlaying !== null &&
                     <div className="absolute right-3 z-[500] flex items-center">
 
-                        {userState.canPauseVideo && <Toggle size="sm"
+                        {(userState.canPauseVideo || userState.isAdmin()) &&
+                            <Toggle size="sm"
                                 pressed={canvasState.animationFrameId === null}
                                 className="mr-4"
                                 onClick={() => {
@@ -276,7 +288,7 @@ const Canvas = observer(() => {
                             variant={useTheme().theme === "dark" ? "secondary" : "light"}
                         />
                     </div> }
-                {userState._isAuth && userState.user?.role == 'admin' &&
+                {userState.isAdmin() &&
                     <div className="absolute left-0 top-10 gap-2 p-2">
                         <Button className="relative" size='icon' variant="default"
                                 onClick={()=>setIsAdminPanelOpen(!isAdminPanelOpen)}>
@@ -318,6 +330,22 @@ const Canvas = observer(() => {
                                     color: userState.color
                                 }))
                             }}>Разрешить ставить на паузу</Button>
+                            {userState.user?.role === 'admin' && <><Button variant='destructive' size='sm' onClick={()=>{
+                                websocketService.sendWebsocket(JSON.stringify({
+                                    method: "give_admin_role",
+                                    id: canvasState.canvasId,
+                                    username: userState.user?.username,
+                                    color: userState.color
+                                }))
+                            }}>Дать временные админ парва</Button>
+                            <Button variant='destructive' size='sm' onClick={()=>{
+                                websocketService.sendWebsocket(JSON.stringify({
+                                    method: "giveaway_admin_role",
+                                    id: canvasState.canvasId,
+                                    username: userState.user?.username,
+                                    color: userState.color
+                                }))
+                            }}>Забрать временные админ парва</Button></>}
                         </div>
                     </div>
                 }

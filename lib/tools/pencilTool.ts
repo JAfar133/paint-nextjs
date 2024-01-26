@@ -23,6 +23,7 @@ export default class PencilTool extends Tool {
         this.socket.send(JSON.stringify({
             method: 'draw',
             id: this.id,
+            username: userState.user?.username,
             figure: {
                 type: 'finish',
                 draw: true
@@ -33,6 +34,9 @@ export default class PencilTool extends Tool {
         if(this.canDraw && e.button !==1){
             const {scaledX, scaledY} = canvasState.getScaledPoint(e.offsetX, e.offsetY)
             this.mouseDown = true;
+            const {tempCtx, tempCanvas} = canvasState.createTempCanvas(canvasState.bufferCanvas.width, canvasState.bufferCanvas.height);
+            tempCtx.drawImage(canvasState.bufferCanvas,0,0)
+            canvasState.addUndo(tempCanvas);
             if(settingState.globalAlpha !== 1){
                 this.tempCtx.globalAlpha = settingState.globalAlpha;
                 this.tempCtx.lineWidth = settingState.strokeWidth;
@@ -152,14 +156,13 @@ export default class PencilTool extends Tool {
             Tool.tempCtx.globalAlpha = globalAlpha;
             mouse.x+=Tool.tempCtx.canvas.width/2;
             drawLine(Tool.tempCtx, mouse, ppts);
-            canvasState.draw(Tool.tempCanvas!);
         }
         else {
-            canvasState.bufferCtx.lineCap = "round";
-            canvasState.bufferCtx.lineJoin = "round";
-            canvasState.bufferCtx.strokeStyle = strokeStyle;
-            canvasState.bufferCtx.lineWidth = strokeWidth;
-            mouse.x+=canvasState.bufferCanvas.width/2;
+            ctx.lineCap = "round";
+            ctx.lineJoin = "round";
+            ctx.strokeStyle = strokeStyle;
+            ctx.lineWidth = strokeWidth;
+            mouse.x+=ctx.canvas.width/2;
             draw(ctx, mouse.x, mouse.y)
         }
 

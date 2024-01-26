@@ -15,12 +15,15 @@ class UserState {
     canPauseVideo = true;
     unreadMessages = 0;
     isChatOpen = false;
+    fakeRole = 'user';
     constructor() {
         this._isAuth = false;
         this._user = null;
         makeAutoObservable(this);
     }
-
+    isAdmin(){
+        return this.user?.role === 'admin' || this.fakeRole === 'admin'
+    }
     setIsAuth(isAuth: boolean){
         this._isAuth = isAuth;
     }
@@ -31,6 +34,9 @@ class UserState {
         this._user = user;
     }
 
+    setRole(role: string) {
+        this.fakeRole = role
+    }
     setLoading(loading: boolean){
         this._loading = loading;
     }

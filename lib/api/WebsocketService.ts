@@ -60,7 +60,7 @@ class WebsocketService {
                 }
                 canvasState.setMessages([...canvasState.messages, msg.message])
             }
-            if (msg.method === "admin_info" && userState.user?.role === "admin") {
+            if (msg.method === "admin_info" && userState.isAdmin()) {
                 toast({
                     description: msg.info
                 })
@@ -85,7 +85,7 @@ class WebsocketService {
                         canvasState.clear();
                         break;
                     case "draw_url":
-                        canvasState.drawByDataUrl(msg.dataUrl);
+                        canvasState.drawByDataUrl(msg.dataUrl, {clearRect: true});
                         break;
                     case "user_cursor":
                         this.cursorCanvasContainerHandler(msg);
@@ -103,23 +103,65 @@ class WebsocketService {
                         this.handleAudio(msg.audio_id, false)
                         break;
                     case "give_play_video":
-                        this.sendAdminInfo(`Пользователь ${userState.user?.username} ${userState.user?.email} получил доступ к видео`)
-                        userState.canPlayVideo = true;
+                        if(!userState.canPlayVideo && !userState.isAdmin()){
+                            this.sendAdminInfo(`Пользователь ${userState.user?.username} ${userState.user?.email} получил доступ к видео`)
+                            toast({
+                                description: `Плюс видосы)`,
+                            });
+                            userState.canPlayVideo = true;
+                        }
+
                         break;
                     case "giveaway_play_video":
-                        this.sendAdminInfo(`Пользователь ${userState.user?.username} ${userState.user?.email} лишился доступа к видео`)
-                        userState.canPlayVideo = false;
+                        if(userState.canPlayVideo && !userState.isAdmin()){
+                            this.sendAdminInfo(`Пользователь ${userState.user?.username} ${userState.user?.email} лишился доступа к видео`)
+                            toast({
+                                description: `Минус видосы(`,
+                            });
+                            userState.canPlayVideo = false;
+                        }
                         break;
                     case "toggle_video_play":
                         canvasState.toggleVideoPlay();
                         break;
                     case "block_pause_video":
-                        this.sendAdminInfo(`Пользователю ${userState.user?.username} ${userState.user?.email} запрещено ставить на паузу`)
-                        userState.canPauseVideo = false;
+                        if(userState.canPauseVideo && !userState.isAdmin()){
+                            this.sendAdminInfo(`Пользователю ${userState.user?.username} ${userState.user?.email} запрещено ставить на паузу`)
+                            toast({
+                                description: `Хватит паузить`,
+                            });
+                            userState.canPauseVideo = false;
+                        }
                         break;
                     case "permit_pause_video":
-                        this.sendAdminInfo(`Пользователю ${userState.user?.username} ${userState.user?.email} разрешено ставить на паузу`)
-                        userState.canPauseVideo = true;
+                        if(!userState.canPauseVideo && !userState.isAdmin()) {
+                            this.sendAdminInfo(`Пользователю ${userState.user?.username} ${userState.user?.email} разрешено ставить на паузу`)
+                            toast({
+                                description: `Ладно ставь паузы`,
+                            });
+                            userState.canPauseVideo = true;
+                        }
+                        break;
+                    case "admin_drug_canvas":
+                        canvasState.setCanvasPosition(msg.scale, msg.canvasX, msg.canvasY)
+                        break;
+                    case "give_admin_role":
+                        if(userState.fakeRole === 'user') {
+                            this.sendAdminInfo(`Пользователю ${userState.user?.username} ${userState.user?.email} даны временные права админа`)
+                            toast({
+                                description: `Плюс админка) (почти)`,
+                            });
+                        }
+                        userState.setRole('admin')
+                        break;
+                    case "giveaway_admin_role":
+                        this.sendAdminInfo(`У пользователя ${userState.user?.username} ${userState.user?.email} отобрали временные права админа`)
+                        if(userState.fakeRole === 'admin') {
+                            toast({
+                                description: `Минус админка(`,
+                            });
+                        }
+                        userState.setRole('user')
                         break;
 
                 }
