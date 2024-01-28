@@ -68,7 +68,8 @@ class CanvasState {
     tempCanvas: HTMLCanvasElement | null = null;
     tempCtx: CanvasRenderingContext2D | null = null;
     animationFrameId: number | null = null;
-    showModal: boolean = false
+    showCanvas: boolean = true
+
     constructor() {
         this.canvas_id = `f${(+new Date).toString(16)}`;
         makeAutoObservable(this);
@@ -617,6 +618,7 @@ class CanvasState {
         'dosvidos',
         'pedalirovanie',
         'naruto',
+        'berserk_you_right'
 
     ]
     isActivated: boolean = false;
