@@ -3,7 +3,7 @@
 import React, {ChangeEvent, useEffect, useRef, useState} from 'react';
 import NavbarAvatar from "@/components/NavbarAvatar";
 import ThemeToggle from "@/components/theme-toggle";
-import {Download, Save, Upload, Users} from "lucide-react";
+import {Download, Paintbrush, Save, Umbrella, Upload, Users} from "lucide-react";
 import {Toggle} from "@/components/ui/toggle";
 import {Button} from "@/components/ui/button";
 import canvasState from "@/store/canvasState";
@@ -263,9 +263,15 @@ const Toolbar = observer(() => {
                                             className="h-6 w-6"/></Button>
                                         <label htmlFor="" style={{fontSize: 10}} className="m-auto">Вернуть</label>
                                     </div>
+
                                 </div>
                             </div>
                             <div className="flex gap-7 items-center">
+                                <div className={toolDivClass}>
+                                  <Button variant="ghost" size="sm" onClick={() => canvasState.showCanvas = !canvasState.showCanvas}>
+                                    {canvasState.showCanvas ? <Umbrella className="h-6 w-6"/> : <Paintbrush className="h-6 w-6"/> }
+                                  </Button>
+                                </div>
                                 <HoverCard>
                                     <HoverCardTrigger>
                                         <div className="flex gap-1">
