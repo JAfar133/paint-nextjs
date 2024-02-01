@@ -3,8 +3,9 @@
 import React, {useEffect, useState} from 'react';
 import {useTheme} from "next-themes";
 import {Moon, Sun} from "lucide-react";
+import {cn} from "@/lib/utils";
 
-const ThemeToggle = () => {
+const ThemeToggle = ({className}: {className?: string}) => {
     const [isLight,setIsLight] = useState(false);
     const { setTheme, resolvedTheme } = useTheme()
 
@@ -18,7 +19,7 @@ const ThemeToggle = () => {
     }, [resolvedTheme]);
 
     return (
-        <label className="relative inline-flex items-center cursor-pointer">
+        <label className={cn("relative inline-flex items-center cursor-pointer", className)}>
             <input type="checkbox"
                    checked={isLight}
                    onChange={handleToggle}

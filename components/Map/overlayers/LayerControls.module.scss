@@ -243,6 +243,7 @@
 
 @media (max-width:768px) {
   .rh_bottom {
+    position:fixed;
     width: 100%;
     bottom: 10px;
     left: 0;
@@ -261,6 +262,7 @@
     right: 10px;
   }
   .gradient_section {
+    position:fixed;
     bottom: 0;
     width: 100%;
     right: 0;
@@ -276,7 +278,7 @@
   }
 
   .select_wrap{
-    left: 20px;
+    right: 30px;
     top: 10px;
     width: auto;
     .default_option:before{
@@ -295,10 +297,11 @@
         }
       }
     }
-    //.select_ul {
-    //  top: auto;
-    //  bottom: 40px;
-    //}
+    .select_ul {
+      top: auto;
+      left: auto;
+      right: 0;
+    }
   }
 
 }

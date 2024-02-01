@@ -3,7 +3,7 @@
 import React, {ChangeEvent, useEffect, useRef, useState} from 'react';
 import NavbarAvatar from "@/components/NavbarAvatar";
 import ThemeToggle from "@/components/theme-toggle";
-import {Download, Paintbrush, Save, Umbrella, Upload, Users} from "lucide-react";
+import {ChevronLeft, ChevronRight, Download, Paintbrush, Save, Umbrella, Upload, Users} from "lucide-react";
 import {Toggle} from "@/components/ui/toggle";
 import {Button} from "@/components/ui/button";
 import canvasState from "@/store/canvasState";
@@ -217,13 +217,20 @@ const Toolbar = observer(() => {
                   setAudioPlay(false)
                 }
               }
+
             }
+            const [isRightPanelOpen, setIsRightPanelOpen] = useState(true)
+            useEffect(()=>{
+              if(window.innerWidth < 768) {
+                setIsRightPanelOpen(false)
+              }
+            },[])
             return (
                 <>
                     <div className="toolbar-top fixed bg-toolbar top-0 w-full z-[99] max-h-[155px]">
                         <div className="toolbar-menu w-full m-0 flex justify-between py-3 px-7 items-center z-[100]">
-                            <div className="flex items-center gap-10 flex-wrap">
-                                <div className="flex items-center ">
+                            <div className="flex items-center gap-10 flex-wrap overflow-auto">
+                                <div className="flex items-center">
                                     <div className={toolDivClass}>
                                         <Button variant="ghost" size="sm" onClick={() => download()}><Download
                                             className="h-6 w-6"/></Button>
@@ -266,7 +273,7 @@ const Toolbar = observer(() => {
 
                                 </div>
                             </div>
-                            <div className="flex gap-7 items-center">
+                            <div className="flex gap-7 items-center overflow-auto">
                                 <div className={toolDivClass}>
                                   <Button variant="ghost" size="sm" onClick={() => canvasState.showCanvas = !canvasState.showCanvas}>
                                     {canvasState.showCanvas ? <Umbrella className="h-6 w-6"/> : <Paintbrush className="h-6 w-6"/> }
@@ -295,8 +302,8 @@ const Toolbar = observer(() => {
                                 <NavbarAvatar/>
                             </div>
                         </div>
-                        <div className={"toolbar-tools border-t-2 w-full m-0 flex py-3 px-7 items-center"} style={{top: 75}}>
-                            <div className="items-center flex flex-wrap">
+                        <div className={"toolbar-tools border-t-2 w-full m-0 flex py-3 px-7 items-center overflow-auto"} style={{top: 75}}>
+                            <div className="items-center flex">
                                 {
                                     tools.map((tool) =>
                                         <div className={toolDivClass} key={tool.name}>
@@ -310,14 +317,18 @@ const Toolbar = observer(() => {
                                                 <tool.icon className="h-6 w-6"/>
                                             </Toggle>
                                             <label htmlFor={tool.name} style={{fontSize: 10}}
-                                                   className="m-auto">{tool.description}</label>
+                                                   className="m-auto w-max">{tool.description}</label>
                                         </div>
                                     )
                                 }
                             </div>
                         </div>
                     </div>
-                    <div className="toolbar-setting fixed w-[300px] right-0 top-[155px] h-full bg-toolbar p-7 pr-3">
+                    <Button className="md:hidden max-w-[100%] absolute right-0 top-[200px] z-[10001]" size='icon' variant="default"
+                            onClick={()=>setIsRightPanelOpen(!isRightPanelOpen)}>
+                      {!isRightPanelOpen ? <ChevronLeft/> : <ChevronRight/>}
+                    </Button>
+                    <div className={`toolbar-setting z-[1001] fixed w-[300px] right-0 top-[155px] h-full bg-toolbar p-7 pr-3 ${isRightPanelOpen ? 'open' : ''}`}>
                         <div className="flex flex-wrap justify-start flex-col gap-3 text-xs">
                             {toolPressed?.fillColor && <>
                               <div className={"flex gap-3 color-input text-xs"}>

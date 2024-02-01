@@ -5,6 +5,12 @@
   overflow: hidden;
   position: relative;
 }
+@media (max-width:768px) {
+  #canvas{
+    width: 100vw;
+    height: 100vh;
+  }
+}
 .canvas__container {
   position: relative;
   width: 100%;
@@ -168,7 +174,13 @@ input[type="color"] {
   transform: translateX(-100%);
   transition: transform 0.3s ease-out;
 }
-
+.toolbar-setting {
+  transform: translateX(100%);
+  transition: transform 0.3s ease-out;
+}
+.toolbar-setting.open {
+  transform: translateX(0);
+}
 .admin_panel.open {
   transform: translateX(0);
 }

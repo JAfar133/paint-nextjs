@@ -38,7 +38,7 @@ const Canvas = observer(() => {
     const [isAdminPanelOpen, setIsAdminPanelOpen] = useState(false);
     useEffect(() => {
         if(mainCanvasRef.current){
-            const width = window.innerWidth - 300;
+            const width = window.innerWidth >= 768 ? window.innerWidth - 300 : window.innerWidth;
             const height = window.innerHeight - 155;
             mainCanvasRef.current.width = width;
             mainCanvasRef.current.height = height;
@@ -217,9 +217,6 @@ const Canvas = observer(() => {
             userState.isChatOpen = true;
         }
     }
-    useEffect(()=>{
-        console.log(userState.isChatOpen);
-    }, [userState.isChatOpen])
     useEffect(() => {
         // @ts-ignore
         const handleWindowClick = (event) => {

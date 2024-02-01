@@ -207,6 +207,40 @@ class CanvasState {
             }))
         }
     }
+    initialDistance: number | null = null;
+    touchStartHandler(e: TouchEvent) {
+        if (e.touches.length === 2) {
+            const touch1 = e.touches[0];
+            const touch2 = e.touches[1];
+            this.initialDistance = Math.hypot(touch2.clientX - touch1.clientX, touch2.clientY - touch1.clientY);
+        }
+    }
+
+
+    touchMoveHandler(e: TouchEvent) {
+        if (this.initialDistance !== null && e.touches.length === 2) {
+            const touch1 = e.touches[0];
+            const touch2 = e.touches[1];
+
+            const midPoint = {
+                x: (touch1.clientX + touch2.clientX) / 2,
+                y: (touch1.clientY + touch2.clientY) / 2
+            };
+
+            const currentDistance = Math.hypot(touch2.clientX - touch1.clientX, touch2.clientY - touch1.clientY);
+            const scaleFactor = currentDistance / this.initialDistance;
+            this.scale = this.scale * scaleFactor;
+
+            this.canvasX = midPoint.x - (midPoint.x - this.canvasX) * scaleFactor;
+            this.canvasY = midPoint.y - (midPoint.y - this.canvasY) * scaleFactor;
+            this.draw();
+            this.initialDistance = currentDistance;
+        }
+    }
+
+    touchEndHandler() {
+        this.initialDistance = null;
+    }
 
     draw(canvas?: HTMLCanvasElement): void {
         const ctx = this.canvas.getContext('2d')
@@ -247,11 +281,15 @@ class CanvasState {
         this.bufferCanvas.height = this.rectHeight;
         this.savedCanvasWithoutImage.width = this.rectWidth;
         this.savedCanvasWithoutImage.height = this.rectHeight;
+        this.scale = this.canvas.width/this.rectWidth
         setTimeout(()=>{
             if(this.canvasMain){
                 this.canvasMain.onwheel = this.wheelHandler.bind(this);
                 this.canvasMain.onmousemove = this.mouseMoveHandler.bind(this)
                 this.canvasMain.onmousedown = this.mouseDownHandler.bind(this)
+                this.canvasMain.ontouchstart = this.touchStartHandler.bind(this)
+                this.canvasMain.ontouchend = this.touchEndHandler.bind(this)
+                this.canvasMain.ontouchmove = this.touchMoveHandler.bind(this)
                 window.onmouseup = this.mouseUpHandler.bind(this)
 
             }
@@ -541,7 +579,6 @@ class CanvasState {
             this.canvasY -= canvasY;
             this.draw()
         }
-        console.log(this.scale, this.canvasX, this.canvasY)
 
     }
     createTempCanvas(width?: number, height?: number):{tempCanvas: HTMLCanvasElement, tempCtx: CanvasRenderingContext2D}{
@@ -634,7 +671,6 @@ class CanvasState {
                 }
             })
             this.isActivated = true
-            console.log('activate')
         }
         window.removeEventListener('mousemove', this.activateAllVideo);
     }
