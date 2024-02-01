@@ -1,12 +1,23 @@
 .root {
   width: calc(100vw - 300px);
-  position: relative;
 }
 
 .map {
     margin: 155px 300px 0 0;
     width: calc(100vw - 300px);
     height: calc(100vh - 155px);
+}
+
+@media (max-width:768px) {
+  .root {
+    width: 100vw;
+  }
+
+  .map {
+    margin: 155px 0 0 0;
+    width: 100vw;
+    height: calc(100vh - 155px);
+  }
 }
 
 .location {

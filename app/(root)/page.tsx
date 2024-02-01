@@ -32,7 +32,25 @@ const RootPage = () => {
 
     return (
         <div className="h-full p-4 space-y-2 pt-20 flex justify-center">
-            <MapLazy/>
+            <div className="md:flex-nowrap flex-wrap flex w-2/3 h-full items-center gap-4">
+                <div className="w-full">
+                    <h1 className="md:text-4xl text-4xl">А я все ждал когда же ты появишься</h1>
+                    <Link href={`/draw/${canvasState.canvasId}`}>
+                        <Button
+                            variant={variant}
+                            onMouseEnter={handleMouseEnter}
+                            onMouseLeave={handleMouseLeave}
+                            style={{ width: 200 }}
+                            className="h-14 text-xl mt-14 text-white border-0"
+                        >
+                            Оп! Мизантроп!
+                        </Button>
+                    </Link>
+                </div>
+                <div className="w-full">
+                    <img style={{borderRadius: 40}} src="/gosling.webp" alt=""/>
+                </div>
+            </div>
         </div>
     );
 };

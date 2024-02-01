@@ -9,16 +9,6 @@ export default class PencilTool extends Tool {
     mouse:Point = {x: 0, y: 0};
 
     ppts: Point[] = [];
-    protected mouseUpHandler(e: MouseEvent) {
-        this.mouseDown = false;
-        this.sendSocketFinish();
-        if(canvasState.globalAlpha !==1){
-            canvasState.bufferCtx.drawImage(this.tempCanvas,0,0);
-            canvasState.draw();
-            this.tempCtx.clearRect(0,0, this.tempCanvas.width, this.tempCanvas.height);
-            this.ppts = [];
-        }
-    }
     protected sendSocketFinish(){
         this.socket.send(JSON.stringify({
             method: 'draw',
@@ -30,38 +20,38 @@ export default class PencilTool extends Tool {
             }
         }));
     }
-    protected mouseDownHandler(e: MouseEvent) {
-        if(this.canDraw && e.button !==1){
-            const {scaledX, scaledY} = canvasState.getScaledPoint(e.offsetX, e.offsetY)
-            this.mouseDown = true;
-            const {tempCtx, tempCanvas} = canvasState.createTempCanvas(canvasState.bufferCanvas.width, canvasState.bufferCanvas.height);
-            tempCtx.drawImage(canvasState.bufferCanvas,0,0)
-            canvasState.addUndo(tempCanvas);
-            if(settingState.globalAlpha !== 1){
-                this.tempCtx.globalAlpha = settingState.globalAlpha;
-                this.tempCtx.lineWidth = settingState.strokeWidth;
-                this.tempCtx.strokeStyle = settingState.strokeColor;
-                this.tempCtx.lineCap = "round";
-                this.tempCtx.lineJoin = "round";
+    private down(mouseX: number, mouseY: number, mouse: boolean = true){
+        const {scaledX, scaledY} = canvasState.getScaledPoint(mouseX, mouseY)
+        this.mouseDown = true;
+        const {tempCtx, tempCanvas} = canvasState.createTempCanvas(canvasState.bufferCanvas.width, canvasState.bufferCanvas.height);
+        tempCtx.drawImage(canvasState.bufferCanvas,0,0)
+        canvasState.addUndo(tempCanvas);
+        if(settingState.globalAlpha !== 1){
+            this.tempCtx.globalAlpha = settingState.globalAlpha;
+            this.tempCtx.lineWidth = settingState.strokeWidth;
+            this.tempCtx.strokeStyle = settingState.strokeColor;
+            this.tempCtx.lineCap = "round";
+            this.tempCtx.lineJoin = "round";
+            if(mouse){
                 this.ppts.push({x: this.mouse.x, y: this.mouse.y});
                 this.draw(scaledX, scaledY);
             }
-            else {
-                canvasState.bufferCtx.beginPath();
-                canvasState.bufferCtx.moveTo(scaledX, scaledY);
-                canvasState.bufferCtx.lineWidth = settingState.strokeWidth;
-                canvasState.bufferCtx.strokeStyle = settingState.strokeColor;
-                canvasState.bufferCtx.lineCap = "round";
-                canvasState.bufferCtx.lineJoin = "round";
+        }
+        else {
+            canvasState.bufferCtx.beginPath();
+            canvasState.bufferCtx.moveTo(scaledX, scaledY);
+            canvasState.bufferCtx.lineWidth = settingState.strokeWidth;
+            canvasState.bufferCtx.strokeStyle = settingState.strokeColor;
+            canvasState.bufferCtx.lineCap = "round";
+            canvasState.bufferCtx.lineJoin = "round";
+            if(mouse){
                 draw(canvasState.bufferCtx, this.mouse.x, this.mouse.y);
                 this.sendSocketDraw();
             }
-
         }
     }
-
-    protected mouseMoveHandler(e: MouseEvent) {
-        const {scaledX, scaledY} = canvasState.getScaledPoint(e.offsetX, e.offsetY)
+    private move(mouseX: number, mouseY: number) {
+        const {scaledX, scaledY} = canvasState.getScaledPoint(mouseX, mouseY)
         this.mouse.x = scaledX;
         this.mouse.y = scaledY;
         if (this.mouseDown && this.canDraw) {
@@ -75,36 +65,29 @@ export default class PencilTool extends Tool {
             }
         }
         document.onmousemove = null;
+        document.ontouchmove = null;
     }
-
-    protected handleGlobalMouseMove(e: MouseEvent) {
-        if (this.mouseDown && this.canDraw) {
-            let x;
-            let y;
-            if ((e.pageY < (this.offsetTop + this.canvas.height)) && e.pageY > this.offsetTop) {
-                x = e.offsetX - this.offsetLeft;
-                y = e.offsetY;
-            } else if (e.pageY < this.offsetTop) {
-                x = e.offsetX - this.offsetLeft;
-                y = e.offsetY - this.offsetTop;
-            } else {
-                x = e.offsetX - this.offsetLeft;
-                y = e.offsetY + this.offsetTop;
-            }
-            this.sendSocketDraw();
-            this.draw(x, y)
+    private up() {
+        this.mouseDown = false;
+        this.sendSocketFinish();
+        if(canvasState.globalAlpha !==1){
+            canvasState.bufferCtx.drawImage(this.tempCanvas,0,0);
+            canvasState.draw();
+            this.tempCtx.clearRect(0,0, this.tempCanvas.width, this.tempCanvas.height);
+            this.ppts = [];
+        }
+    }
+    protected mouseDownHandler(e: MouseEvent) {
+        if(this.canDraw && e.button !==1){
+            this.down(e.offsetX, e.offsetY)
         }
     }
 
-    protected touchMoveHandler(e: TouchEvent) {
-        if (this.mouseDown && this.canDraw) {
-            const touch = e.touches[0];
-            const x = touch.clientX - this.offsetLeft;
-            const y = touch.clientY - this.offsetTop;
-            this.sendSocketDraw();
-            this.draw(x, y);
-        }
-        e.preventDefault();
+    protected mouseMoveHandler(e: MouseEvent) {
+        this.move(e.offsetX, e.offsetY)
+    }
+    protected mouseUpHandler(e: MouseEvent) {
+        this.up();
     }
 
     private sendSocketDraw() {
@@ -122,22 +105,28 @@ export default class PencilTool extends Tool {
             }
         }));
     }
-
+    protected touchMoveHandler(e: TouchEvent) {
+        if(e.touches.length !== 2) {
+            const touch = e.touches[0];
+            const x = touch.clientX - this.offsetLeft;
+            const y = touch.clientY - this.offsetTop;
+            this.move(x, y)
+        }
+    }
 
     protected touchStartHandler(e: TouchEvent) {
-        const touch = e.touches[0];
-        const x = touch.clientX - this.offsetLeft;
-        const y = touch.clientY - this.offsetTop;
-        this.mouseDown = true;
-        this.ctx.beginPath();
-        this.ctx.moveTo(x, y);
-        e.preventDefault();
+        if(this.canDraw && e.touches.length !== 2) {
+            const touch = e.touches[0];
+            const x = touch.clientX - this.offsetLeft;
+            const y = touch.clientY - this.offsetTop;
+            this.down(x, y, false)
+        }
     }
 
     protected touchEndHandler(e: TouchEvent) {
-        this.mouseDown = false;
-        this.sendSocketFinish();
-        e.preventDefault();
+        if(e.touches.length !== 2){
+            this.up();
+        }
     }
 
 

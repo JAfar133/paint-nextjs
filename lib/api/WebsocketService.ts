@@ -333,7 +333,7 @@ class WebsocketService {
                     canvasState.draw();
                     Tool.tempCtx?.clearRect(0,0, Tool.tempCanvas.width, Tool.tempCanvas.height)
                 }
-                ctx.beginPath()
+                ctx.beginPath();
             },
         };
 
