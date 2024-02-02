@@ -5,34 +5,15 @@ import settingState from "@/store/settingState";
 
 export default class LineTool extends Shape {
 
-    protected mouseMoveHandler(e: MouseEvent) {
+    protected move(mouseX: number, mouseY: number) {
         if (this.mouseDown && this.canDraw) {
-            const {scaledX, scaledY} = canvasState.getScaledPoint(e.offsetX, e.offsetY)
+            const {scaledX, scaledY} = canvasState.getScaledPoint(mouseX, mouseY)
             this.width = scaledX;
             this.height = scaledY;
 
             this.draw(this.startX, this.startY, this.width, this.height)
         }
         document.onmousemove = null;
-    }
-    protected touchMoveHandler(e: TouchEvent) {
-        if (this.mouseDown && this.canDraw) {
-            const touch = e.touches[0];
-            this.width = touch.clientX - this.offsetLeft;
-            this.height = touch.clientY - this.offsetTop;
-            this.draw(this.startX, this.startY, this.width, this.height)
-        }
-        document.ontouchmove = null;
-    }
-
-    protected handleGlobalMouseMove(e: MouseEvent) {
-        if (this.mouseDown && this.canDraw && e.button !== 1) {
-
-            this.width = e.pageX - this.offsetLeft;
-            this.height = e.pageY - this.offsetTop;
-
-            this.draw(this.startX, this.startY, this.width, this.height)
-        }
     }
     protected sendSocketDraw(){
         if(this.startX > -1 && this.startY > -1 && this.width !== -1){

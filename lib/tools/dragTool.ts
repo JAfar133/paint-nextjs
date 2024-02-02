@@ -72,51 +72,51 @@ export default class DragTool extends Tool {
         canvasState.drawBorder();
     }
 
-    protected mouseDownHandler(e: MouseEvent): void {
-        if(this.canDraw){
-            const {scaledX, scaledY} = canvasState.getScaledPoint(e.offsetX, e.offsetY)
-            const mouseX = scaledX;
-            const mouseY = scaledY;
-            this.imageCenter = this.getImageCenter(this.image)
-            const dx = mouseX - this.imageCenter.centerX;
-            const dy = mouseY - this.imageCenter.centerY;
-            if (this.image.angle !== 0) {
-                this.startAngle = Math.atan2(dy, dx) - this.image.angle;
-            } else {
-                this.startAngle = Math.atan2(dy, dx);
-            }
-            this.startX = mouseX;
-            this.startY = mouseY;
-            const {x, y} = this.getNewPointPosition(this.image.imageX, this.image.imageY, this.imageCenter.centerX,this.imageCenter.centerY, this.image.angle)
-            this.startImageX = x;
-            this.startImageY = y;
-            this.startWidth = this.image.img.width;
-            this.startHeight = this.image.img.height;
-            const mouseResizePosition: resizePoint | null = this.getMouseResizePosition(mouseX, mouseY);
-            if (mouseResizePosition) {
-                this.resizePoint = mouseResizePosition;
-                this.image.isResizing = true;
-                this.mouseDown = true;
-                this.image.offsetX = mouseX - this.image.imageX;
-                this.image.offsetY = mouseY - this.image.imageY;
-            } else if (this.isMouseOnImage(mouseX, mouseY)) {
-                this.image.isDragging = true;
-                this.image.offsetX = mouseX - this.image.imageX;
-                this.image.offsetY = mouseY - this.image.imageY;
-                canvasState.setCursor('cursor-grabbing');
-                this.mouseDown = true;
-            } else {
-                this.image.isRotating = true;
-                this.mouseDown = true;
-                this.image.offsetX = mouseX - this.image.imageX;
-                this.image.offsetY = mouseY - this.image.imageY;
-                canvasState.setCursor('cursor-alias');
-            }
+    protected down(mX: number, mY: number) {
+        console.log('down???')
+        const {scaledX, scaledY} = canvasState.getScaledPoint(mX, mY)
+        const mouseX = scaledX;
+        const mouseY = scaledY;
+        this.imageCenter = this.getImageCenter(this.image)
+        const dx = mouseX - this.imageCenter.centerX;
+        const dy = mouseY - this.imageCenter.centerY;
+        if (this.image.angle !== 0) {
+            this.startAngle = Math.atan2(dy, dx) - this.image.angle;
+        } else {
+            this.startAngle = Math.atan2(dy, dx);
+        }
+        this.startX = mouseX;
+        this.startY = mouseY;
+        const {x, y} = this.getNewPointPosition(this.image.imageX, this.image.imageY, this.imageCenter.centerX,this.imageCenter.centerY, this.image.angle)
+        this.startImageX = x;
+        this.startImageY = y;
+        this.startWidth = this.image.img.width;
+        this.startHeight = this.image.img.height;
+        const mouseResizePosition: resizePoint | null = this.getMouseResizePosition(mouseX, mouseY);
+
+        if (mouseResizePosition) {
+            this.resizePoint = mouseResizePosition;
+            this.image.isResizing = true;
+            this.mouseDown = true;
+            this.image.offsetX = mouseX - this.image.imageX;
+            this.image.offsetY = mouseY - this.image.imageY;
+        } else if (this.isMouseOnImage(mouseX, mouseY)) {
+            console.log('here?')
+            this.image.isDragging = true;
+            this.image.offsetX = mouseX - this.image.imageX;
+            this.image.offsetY = mouseY - this.image.imageY;
+            canvasState.setCursor('cursor-grabbing');
+            this.mouseDown = true;
+        } else {
+            this.image.isRotating = true;
+            this.mouseDown = true;
+            this.image.offsetX = mouseX - this.image.imageX;
+            this.image.offsetY = mouseY - this.image.imageY;
+            canvasState.setCursor('cursor-alias');
         }
     }
 
-    protected mouseUpHandler(e: MouseEvent) {
-        super.mouseUpHandler(e);
+    protected up(mX: number, mY: number) {
         this.image.isDragging = false;
 
         if (this.image.isResizing) {
@@ -129,51 +129,49 @@ export default class DragTool extends Tool {
         canvasState.sendDataUrl(canvasState.bufferCanvas.toDataURL());
     }
 
-    protected mouseMoveHandler(e: MouseEvent): void {
-        if(this.canDraw){
-            const {scaledX, scaledY} = canvasState.getScaledPoint(e.offsetX, e.offsetY)
-            const mouseX = scaledX;
-            const mouseY = scaledY;
-            if (this.image.isResizing) {
-                this.drugResize(mouseX, mouseY);
-            } else if (this.image.isDragging) {
-                this.drugImage(mouseX, mouseY)
-            } else if (this.image.isRotating) {
-                this.drugRotate(mouseX, mouseY)
-            }
-            const cursor = this.getMouseMoveCursor(mouseX, mouseY);
-            canvasState.setCursor(cursor);
+    protected move(mX: number, mY: number): void {
+        const {scaledX, scaledY} = canvasState.getScaledPoint(mX, mY)
+        const mouseX = scaledX;
+        const mouseY = scaledY;
+        if (this.image.isResizing) {
+            this.drugResize(mouseX, mouseY);
+        } else if (this.image.isDragging) {
+            this.drugImage(mouseX, mouseY)
+        } else if (this.image.isRotating) {
+            this.drugRotate(mouseX, mouseY)
         }
+        const cursor = this.getMouseMoveCursor(mouseX, mouseY);
+        canvasState.setCursor(cursor);
     }
 
     private drugRotate(mouseX: number, mouseY: number) {
-            if (this.image.isRotating) {
-                this.imageCenter = this.getImageCenter(this.image);
-                const dx = mouseX - this.imageCenter.centerX;
-                const dy = mouseY - this.imageCenter.centerY;
-                this.image.angle = Math.atan2(dy, dx) - this.startAngle;
-                if (this.tempCtx) {
-                    this.tempCtx.save();
-                    this.tempCtx.clearRect(0, 0, this.tempCanvas.width, this.tempCanvas.height)
-                    this.tempCtx.translate(this.imageCenter.centerX, this.imageCenter.centerY);
-                    this.tempCtx.rotate(this.image.angle);
-                    this.tempCtx.drawImage(
-                        this.imageCanvas,
-                        -this.image.img.width / 2,
-                        -this.image.img.height / 2,
-                        this.image.img.width,
-                        this.image.img.height);
-                    this.tempCtx.restore();
-
-                }
-                if(canvasState.savedCanvasWithoutImage){
-                    canvasState.bufferCtx.clearRect(0, 0, canvasState.bufferCanvas.width, canvasState.bufferCanvas.height)
-                    canvasState.bufferCtx.drawImage(canvasState.savedCanvasWithoutImage, 0, 0);
-                    canvasState.bufferCtx.drawImage(this.tempCanvas, 0, 0);
-                    canvasState.draw();
-                }
+        if (this.image.isRotating) {
+            this.imageCenter = this.getImageCenter(this.image);
+            const dx = mouseX - this.imageCenter.centerX;
+            const dy = mouseY - this.imageCenter.centerY;
+            this.image.angle = Math.atan2(dy, dx) - this.startAngle;
+            if (this.tempCtx) {
+                this.tempCtx.save();
+                this.tempCtx.clearRect(0, 0, this.tempCanvas.width, this.tempCanvas.height)
+                this.tempCtx.translate(this.imageCenter.centerX, this.imageCenter.centerY);
+                this.tempCtx.rotate(this.image.angle);
+                this.tempCtx.drawImage(
+                    this.imageCanvas,
+                    -this.image.img.width / 2,
+                    -this.image.img.height / 2,
+                    this.image.img.width,
+                    this.image.img.height);
+                this.tempCtx.restore();
 
             }
+            if(canvasState.savedCanvasWithoutImage){
+                canvasState.bufferCtx.clearRect(0, 0, canvasState.bufferCanvas.width, canvasState.bufferCanvas.height)
+                canvasState.bufferCtx.drawImage(canvasState.savedCanvasWithoutImage, 0, 0);
+                canvasState.bufferCtx.drawImage(this.tempCanvas, 0, 0);
+                canvasState.draw();
+            }
+
+        }
     }
 
     private drugResize(mouseX: number, mouseY: number) {
@@ -229,6 +227,7 @@ export default class DragTool extends Tool {
     }
 
     private drugImage(mouseX: number, mouseY: number) {
+        console.log(mouseX, mouseY)
         if (this.image.isDragging) {
             if (this.tempCtx) {
                 this.tempCtx.save();
@@ -389,15 +388,6 @@ export default class DragTool extends Tool {
         } else {
             return 'cursor-alias';
         }
-    }
-
-    protected touchEndHandler(e: TouchEvent): void {
-    }
-
-    protected touchMoveHandler(e: TouchEvent): void {
-    }
-
-    protected touchStartHandler(e: TouchEvent): void {
     }
     private getImageCenter(image: ImageForEdit):ImageCenter {
         const centerX = image.imageX + image.img.width / 2;

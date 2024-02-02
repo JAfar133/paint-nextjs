@@ -12,56 +12,27 @@ export default class EraserTool extends Tool {
         ctx.lineJoin = "round";
         drawLine(ctx, x + ctx.canvas.width/2, y);
     }
-    mouseUpHandler(e: MouseEvent) {
+    up(mouseX: number, mouseY: number) {
         this.mouseDown = false;
         this.sendSocketFinish();
-
     }
 
-    mouseDownHandler(e: MouseEvent) {
+    down(mouseX: number, mouseY: number) {
         if(this.canDraw && canvasState.bufferCtx){
             this.mouseDown = true;
-            const {scaledX, scaledY} = canvasState.getScaledPoint(e.offsetX, e.offsetY)
+            const {scaledX, scaledY} = canvasState.getScaledPoint(mouseX, mouseY)
             canvasState.bufferCtx.beginPath();
             canvasState.bufferCtx.moveTo(scaledX, scaledY);
             this.draw(scaledX, scaledY);
         }
     }
 
-    mouseMoveHandler(e: MouseEvent) {
+    move(mouseX: number, mouseY: number) {
         if (this.mouseDown && this.canDraw) {
-            const {scaledX, scaledY} = canvasState.getScaledPoint(e.offsetX, e.offsetY)
+            const {scaledX, scaledY} = canvasState.getScaledPoint(mouseX, mouseY)
             this.draw(scaledX, scaledY);
         }
         document.onmousemove = null;
-    }
-
-    handleGlobalMouseMove(e: MouseEvent) {
-        if (this.mouseDown && this.canDraw) {
-            let x;
-            let y;
-            if ((e.pageY < (this.offsetTop + this.canvas.height)) && e.pageY > this.offsetTop) {
-                x = e.offsetX - this.offsetLeft;
-                y = e.offsetY;
-            } else if (e.pageY < this.offsetTop) {
-                x = e.offsetX - this.offsetLeft;
-                y = e.offsetY - this.offsetTop;
-            } else {
-                x = e.offsetX - this.offsetLeft;
-                y = e.offsetY + this.offsetTop;
-            }
-            this.draw(x, y)
-        }
-    }
-
-    touchMoveHandler(e: TouchEvent) {
-        if (this.mouseDown && this.canDraw) {
-            const touch = e.touches[0];
-            const x = touch.clientX - this.offsetLeft;
-            const y = touch.clientY - this.offsetTop;
-            this.draw(x, y);
-        }
-        e.preventDefault();
     }
 
     sendSocketDraw(x: number, y: number) {
@@ -78,23 +49,6 @@ export default class EraserTool extends Tool {
                 y: y
             }
         }));
-    }
-
-
-    touchStartHandler(e: TouchEvent) {
-        const touch = e.touches[0];
-        const x = touch.clientX - this.offsetLeft;
-        const y = touch.clientY - this.offsetTop;
-        this.mouseDown = true;
-        this.ctx.beginPath();
-        this.ctx.moveTo(x, y);
-        e.preventDefault();
-    }
-
-    touchEndHandler(e: TouchEvent) {
-        this.mouseDown = false;
-        this.sendSocketFinish();
-        e.preventDefault();
     }
 
     draw(x: number, y: number) {

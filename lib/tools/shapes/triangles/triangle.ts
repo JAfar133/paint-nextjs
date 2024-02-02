@@ -2,25 +2,15 @@ import Shape from "@/lib/tools/shapes/Shape";
 import canvasState from "@/store/canvasState";
 
 export default abstract class Triangle extends Shape {
-    protected mouseMoveHandler(e: MouseEvent) {
+
+    protected move(mouseX: number, mouseY: number) {
         if (this.mouseDown && this.canDraw) {
-            const {scaledX, scaledY} = canvasState.getScaledPoint(e.offsetX, e.offsetY)
+            const {scaledX, scaledY} = canvasState.getScaledPoint(mouseX, mouseY)
             this.width = scaledX;
             this.height = scaledY;
             this.draw(this.startX, this.startY, this.width, this.height)
         }
         document.onmousemove = null;
-    }
-    protected touchMoveHandler(e: TouchEvent) {
-        if (this.mouseDown && this.canDraw) {
-            const touch = e.touches[0];
-            const x = touch.clientX - this.offsetLeft;
-            const y = touch.clientY - this.offsetTop;
-            this.width = x;
-            this.height = y;
-            this.draw(this.startX, this.startY, this.width, this.height);
-        }
-        document.ontouchmove = null;
     }
 
     protected handleGlobalMouseMove(e: MouseEvent) {

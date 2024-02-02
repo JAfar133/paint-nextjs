@@ -3,33 +3,15 @@ import canvasState from "@/store/canvasState";
 import settingState from "@/store/settingState";
 
 export default class SquareTool extends Shape {
-
-    protected mouseMoveHandler(e: MouseEvent) {
+    protected move(mouseX: number, mouseY: number) {
         if (this.mouseDown && this.canDraw) {
-            const {scaledX, scaledY} = canvasState.getScaledPoint(e.offsetX, e.offsetY)
+            const {scaledX, scaledY} = canvasState.getScaledPoint(mouseX, mouseY)
             this.width = scaledX - this.startX;
             this.height = scaledY - this.startY;
 
             this.draw(this.startX, this.startY, this.width, this.height);
         }
         document.onmousemove = null;
-    }
-
-    protected handleGlobalMouseMove(e: MouseEvent) {
-        if (this.mouseDown && this.canDraw) {
-
-            this.width = e.offsetX - this.startX - this.offsetLeft;
-            if ((e.pageY < (this.offsetTop + this.canvas.height)) && e.pageY > this.offsetTop) {
-                this.height = e.offsetY - this.startY;
-            } else if (e.pageY < this.offsetTop) {
-                this.height = e.pageY - this.startY - this.offsetTop;
-            } else {
-                this.width = e.pageX - this.startX - this.offsetLeft;
-                this.height = e.pageY - this.startY - this.offsetTop;
-            }
-
-            this.draw(this.startX, this.startY, this.width, this.height);
-        }
     }
 
     protected draw(x: number, y: number, w: number, h: number) {

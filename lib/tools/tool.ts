@@ -55,20 +55,53 @@ export default abstract class Tool {
         this.canvas.ontouchend = this.touchEndHandler.bind(this);
     }
 
+    protected touchMoveHandler(e: TouchEvent): void {
+        if(e.touches.length !== 2) {
+            const touch = e.touches[0];
+            const x = touch.clientX - this.offsetLeft;
+            const y = touch.clientY - this.offsetTop;
+            this.move(x, y)
+        }
+    };
+
+    protected touchStartHandler(e: TouchEvent): void {
+        if(e.touches.length !== 2) {
+            document.onmousemove = null;
+            document.onmouseup = null;
+            const touch = e.touches[0];
+            const x = touch.clientX - this.offsetLeft;
+            const y = touch.clientY - this.offsetTop;
+            this.down(x, y, false)
+        }
+    };
+
+    protected touchEndHandler(e: TouchEvent): void {
+        if(e.changedTouches.length !== 2) {
+            const touch = e.changedTouches[0];
+            const x = touch.clientX - this.offsetLeft;
+            const y = touch.clientY - this.offsetTop;
+            this.up(x, y)
+        }
+    };
+
+    protected mouseDownHandler(e: MouseEvent): void {
+        if(e.button !== 1){
+            this.down(e.offsetX, e.offsetY, true)
+        }
+    };
+
+    protected mouseMoveHandler(e: MouseEvent): void {
+        this.move(e.offsetX, e.offsetY)
+    };
     protected mouseUpHandler(e: MouseEvent) {
         document.onmousemove = null;
         document.onmouseup = null;
+        this.up(e.offsetX, e.offsetY)
     }
 
-    protected abstract touchMoveHandler(e: TouchEvent): void;
-
-    protected abstract touchStartHandler(e: TouchEvent): void;
-
-    protected abstract touchEndHandler(e: TouchEvent): void;
-
-    protected abstract mouseDownHandler(e: MouseEvent): void;
-
-    protected abstract mouseMoveHandler(e: MouseEvent): void;
+    protected abstract move(mouseX: number, mouseY: number): void;
+    protected abstract down(mouseX: number, mouseY: number, mouse?: boolean): void;
+    protected abstract up(mouseX: number, mouseY: number): void;
 
     protected handleGlobalMouseMove(e: MouseEvent) {
         if (this.mouseDown) {
