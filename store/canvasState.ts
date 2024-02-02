@@ -281,7 +281,12 @@ class CanvasState {
         this.bufferCanvas.height = this.rectHeight;
         this.savedCanvasWithoutImage.width = this.rectWidth;
         this.savedCanvasWithoutImage.height = this.rectHeight;
-        this.scale = this.canvas.width/this.rectWidth
+        if(this.rectHeight * (this.canvas.width / this.rectWidth) > this.canvas.height) {
+            this.scale = this.canvas.height / this.rectHeight
+        } else {
+            this.scale = this.canvas.width / this.rectWidth
+        }
+
         setTimeout(()=>{
             if(this.canvasMain){
                 this.canvasMain.onwheel = this.wheelHandler.bind(this);
@@ -296,7 +301,7 @@ class CanvasState {
         },100)
         this.canvas.onwheel = this.wheelHandler.bind(this);
         this.canvasX = this.canvas.width /2 - this.rectWidth/2*this.scale
-        this.canvasY = 50;
+        this.canvasY = this.canvas.width < 700 ? 50 : 0;
         this.centerX =  this.canvas.width / 2;
         this.centerY =  this.canvas.height / 2 + this.canvasY + 50;
         this.draw();

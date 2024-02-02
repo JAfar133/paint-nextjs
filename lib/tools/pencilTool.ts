@@ -20,7 +20,7 @@ export default class PencilTool extends Tool {
             }
         }));
     }
-    private down(mouseX: number, mouseY: number, mouse: boolean = true){
+    protected down(mouseX: number, mouseY: number, mouse: boolean = true){
         const {scaledX, scaledY} = canvasState.getScaledPoint(mouseX, mouseY)
         this.mouseDown = true;
         const {tempCtx, tempCanvas} = canvasState.createTempCanvas(canvasState.bufferCanvas.width, canvasState.bufferCanvas.height);
@@ -50,7 +50,7 @@ export default class PencilTool extends Tool {
             }
         }
     }
-    private move(mouseX: number, mouseY: number) {
+    protected move(mouseX: number, mouseY: number) {
         const {scaledX, scaledY} = canvasState.getScaledPoint(mouseX, mouseY)
         this.mouse.x = scaledX;
         this.mouse.y = scaledY;
@@ -67,7 +67,7 @@ export default class PencilTool extends Tool {
         document.onmousemove = null;
         document.ontouchmove = null;
     }
-    private up() {
+    protected up() {
         this.mouseDown = false;
         this.sendSocketFinish();
         if(canvasState.globalAlpha !==1){
@@ -76,18 +76,6 @@ export default class PencilTool extends Tool {
             this.tempCtx.clearRect(0,0, this.tempCanvas.width, this.tempCanvas.height);
             this.ppts = [];
         }
-    }
-    protected mouseDownHandler(e: MouseEvent) {
-        if(this.canDraw && e.button !==1){
-            this.down(e.offsetX, e.offsetY)
-        }
-    }
-
-    protected mouseMoveHandler(e: MouseEvent) {
-        this.move(e.offsetX, e.offsetY)
-    }
-    protected mouseUpHandler(e: MouseEvent) {
-        this.up();
     }
 
     private sendSocketDraw() {
@@ -105,30 +93,6 @@ export default class PencilTool extends Tool {
             }
         }));
     }
-    protected touchMoveHandler(e: TouchEvent) {
-        if(e.touches.length !== 2) {
-            const touch = e.touches[0];
-            const x = touch.clientX - this.offsetLeft;
-            const y = touch.clientY - this.offsetTop;
-            this.move(x, y)
-        }
-    }
-
-    protected touchStartHandler(e: TouchEvent) {
-        if(this.canDraw && e.touches.length !== 2) {
-            const touch = e.touches[0];
-            const x = touch.clientX - this.offsetLeft;
-            const y = touch.clientY - this.offsetTop;
-            this.down(x, y, false)
-        }
-    }
-
-    protected touchEndHandler(e: TouchEvent) {
-        if(e.touches.length !== 2){
-            this.up();
-        }
-    }
-
 
     static draw(ctx: CanvasRenderingContext2D, mouse: Point, ppts: Point[], strokeStyle: string, strokeWidth: number, globalAlpha: number) {
         if(globalAlpha !== 1){

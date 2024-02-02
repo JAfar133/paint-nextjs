@@ -40,6 +40,9 @@ class UserState {
     setLoading(loading: boolean){
         this._loading = loading;
     }
+    setIsChatOpen(isOpen: boolean) {
+        this.isChatOpen = isOpen
+    }
 
     get isAuth(){
         return this._isAuth;

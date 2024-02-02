@@ -13,51 +13,43 @@ export default class ArcTool extends Tool {
     private startPoint: Point | null = null;
     private controlPoint: Point | null = null;
     private endPoint: Point | null = null;
-    protected mouseDownHandler(e: MouseEvent) {
-        if(this.canDraw && this.canDraw && e.button !== 1){
-            this.mouseDown = true;
-            canvasState.bufferCtx.beginPath();
-            const {scaledX, scaledY} = canvasState.getScaledPoint(e.offsetX, e.offsetY)
-            if(!this.startPoint){
-                this.tempCtx.drawImage(canvasState.bufferCanvas, 0, 0);
-                this.startPoint = {x: scaledX, y: scaledY}
-            } else if(!this.endPoint){
-                this.endPoint = {x: scaledX, y: scaledY}
-            }
+
+    protected down(mouseX: number, mouseY: number) {
+        this.mouseDown = true;
+        // canvasState.bufferCtx.beginPath();
+        const {scaledX, scaledY} = canvasState.getScaledPoint(mouseX, mouseY)
+        if(!this.startPoint){
+            this.tempCtx.drawImage(canvasState.bufferCanvas, 0, 0);
+            this.startPoint = {x: scaledX, y: scaledY}
+        } else if(!this.endPoint){
+            this.endPoint = {x: scaledX, y: scaledY}
         }
     }
-    protected mouseMoveHandler(e: MouseEvent) {
-        if (this.mouseDown && this.canDraw && e.button !== 1) {
-            const {scaledX, scaledY} = canvasState.getScaledPoint(e.offsetX, e.offsetY)
-            if(this.startPoint && !this.controlPoint ){
-                canvasState.bufferCtx.clearRect(0, 0, canvasState.bufferCanvas.width, canvasState.bufferCanvas.height);
-                canvasState.bufferCtx.drawImage(this.tempCanvas, 0, 0);
-                canvasState.bufferCtx.globalAlpha = settingState.globalAlpha;
-                drawLine(canvasState.bufferCtx, this.startPoint.x, this.startPoint.y, scaledX, scaledY)
-            }else if(this.endPoint && this.startPoint && this.controlPoint){
-                this.endPoint = {x: scaledX,y: scaledY};
-                canvasState.bufferCtx.clearRect(0, 0, canvasState.bufferCanvas.width, canvasState.bufferCanvas.height);
-                canvasState.bufferCtx.drawImage(this.tempCanvas, 0, 0);
-                canvasState.bufferCtx.globalAlpha = settingState.globalAlpha;
-                drawCurve(canvasState.bufferCtx, this.startPoint, this.controlPoint, this.endPoint)
-            }
-
+    protected move(mouseX: number, mouseY: number) {
+        const {scaledX, scaledY} = canvasState.getScaledPoint(mouseX, mouseY)
+        if(this.startPoint && !this.controlPoint ){
+            canvasState.bufferCtx.clearRect(0, 0, canvasState.bufferCanvas.width, canvasState.bufferCanvas.height);
+            canvasState.bufferCtx.drawImage(this.tempCanvas, 0, 0);
+            canvasState.bufferCtx.globalAlpha = settingState.globalAlpha;
+            drawLine(canvasState.bufferCtx, this.startPoint.x, this.startPoint.y, scaledX, scaledY)
+        }else if(this.endPoint && this.startPoint && this.controlPoint){
+            this.endPoint = {x: scaledX,y: scaledY};
+            canvasState.bufferCtx.clearRect(0, 0, canvasState.bufferCanvas.width, canvasState.bufferCanvas.height);
+            canvasState.bufferCtx.drawImage(this.tempCanvas, 0, 0);
+            canvasState.bufferCtx.globalAlpha = settingState.globalAlpha;
+            drawCurve(canvasState.bufferCtx, this.startPoint, this.controlPoint, this.endPoint)
         }
         document.onmousemove = null;
     }
-
-    protected mouseUpHandler(e: MouseEvent) {
-        if(e.button !== 1){
-            super.mouseUpHandler(e);
-            const {scaledX, scaledY} = canvasState.getScaledPoint(e.offsetX, e.offsetY)
-
-            if(!this.controlPoint){
-                this.controlPoint = {x: scaledX, y: scaledY};
-            }
-            else {
-                this.sendWebSocket();
-                this.tempCtx.clearRect(0,0, this.tempCanvas.width, this.tempCanvas.height);
-            }
+    protected up(mouseX: number, mouseY: number) {
+        const {scaledX, scaledY} = canvasState.getScaledPoint(mouseX, mouseY)
+        console.log(this.controlPoint)
+        if(!this.controlPoint){
+            this.controlPoint = {x: scaledX, y: scaledY};
+        }
+        else {
+            this.sendWebSocket();
+            this.tempCtx.clearRect(0,0, this.tempCanvas.width, this.tempCanvas.height);
         }
         this.mouseDown = false;
     }
@@ -98,14 +90,6 @@ export default class ArcTool extends Tool {
         drawCurve(ctx, startPoint, controlPoint,endPoint)
     }
 
-    touchEndHandler(e: TouchEvent): void {
-    }
-
-    touchMoveHandler(e: TouchEvent): void {
-    }
-
-    touchStartHandler(e: TouchEvent): void {
-    }
 }
 function drawCurve(ctx: CanvasRenderingContext2D, startPoint: Point, endPoint: Point, controlPoint: Point){
     ctx.beginPath();

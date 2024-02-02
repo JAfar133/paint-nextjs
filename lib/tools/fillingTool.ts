@@ -4,18 +4,10 @@ import settingState from "@/store/settingState";
 import canvasState from "@/store/canvasState";
 
 export default class FillingTool extends Tool {
-    protected mouseDownHandler(e: MouseEvent): void {
 
-    }
-    protected touchStartHandler(e: TouchEvent): void {
-        if(this.canDraw) {
-            const touch = e.touches[0];
-            const x = touch.clientX - this.offsetLeft;
-            const y = touch.clientY - this.offsetTop;
-            this.draw(x, y, this.ctx.fillStyle.toString())
-            this.sendDrawWebsocket(x, y)
-        }
-    }
+    protected down(mouseX: number, mouseY: number): void {}
+    protected move(mouseX: number, mouseY: number): void {}
+
     private sendDrawWebsocket(x: number, y: number){
         this.socket.send(JSON.stringify({
             method: 'draw',
@@ -32,24 +24,12 @@ export default class FillingTool extends Tool {
         }));
     }
 
-    protected mouseUpHandler(e: MouseEvent) {
-        if(this.canDraw && e.button !== 1){
-            super.mouseUpHandler(e);
-            const {scaledX, scaledY} = canvasState.getScaledPoint(e.offsetX, e.offsetY)
-            const x = Math.floor(scaledX),
-                y = Math.floor(scaledY);
-            floodFill(canvasState.bufferCtx,x, y, settingState.fillColor, settingState.fillingTolerance, settingState.globalAlpha)
-            this.sendDrawWebsocket(x, y)
-        }
-    }
-
-    protected mouseMoveHandler(e: MouseEvent): void {
-    }
-
-    protected touchEndHandler(e: TouchEvent): void {
-    }
-
-    protected touchMoveHandler(e: TouchEvent): void {
+    protected up(mouseX: number, mouseY: number) {
+        const {scaledX, scaledY} = canvasState.getScaledPoint(mouseX, mouseY)
+        const x = Math.floor(scaledX),
+            y = Math.floor(scaledY);
+        floodFill(canvasState.bufferCtx,x, y, settingState.fillColor, settingState.fillingTolerance, settingState.globalAlpha)
+        this.sendDrawWebsocket(x, y)
     }
 
     protected draw(x: number, y: number, fillColor: string) {
@@ -59,7 +39,6 @@ export default class FillingTool extends Tool {
     static draw(ctx: CanvasRenderingContext2D, x: number, y: number, fillColor: string, tolerance: number = 5, globalAlpha: number) {
         floodFill(ctx,x + ctx.canvas.width/2, y, fillColor, tolerance, globalAlpha)
     }
-
 }
 
 

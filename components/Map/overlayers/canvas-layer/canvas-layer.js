@@ -313,7 +313,6 @@ L.TileLayer.Canvas = L.TileLayer.extend({
     return g > 127 ? 1 : 0;
   },
   getSnowDepth: function (pixel) {
-    console.log(pixel)
     const [r, g, b] = pixel;
     return b * 200 / 255;
   },

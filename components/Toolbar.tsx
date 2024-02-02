@@ -3,7 +3,17 @@
 import React, {ChangeEvent, useEffect, useRef, useState} from 'react';
 import NavbarAvatar from "@/components/NavbarAvatar";
 import ThemeToggle from "@/components/theme-toggle";
-import {ChevronLeft, ChevronRight, Download, Paintbrush, Save, Umbrella, Upload, Users} from "lucide-react";
+import {
+  ChevronLeft,
+  ChevronRight,
+  Download,
+  MoreHorizontal,
+  Paintbrush,
+  Save,
+  Umbrella,
+  Upload,
+  Users
+} from "lucide-react";
 import {Toggle} from "@/components/ui/toggle";
 import {Button} from "@/components/ui/button";
 import canvasState from "@/store/canvasState";
@@ -24,8 +34,11 @@ import {HoverCard, HoverCardContent, HoverCardTrigger} from "@/components/ui/hov
 import websocketService from "@/lib/api/WebsocketService";
 import {Modal} from "react-bootstrap";
 import {ConfirmDialog} from "primereact/confirmdialog";
+import DropdownMenu from "@restart/ui/DropdownMenu";
+import {DropdownMenuContent, DropdownMenuTrigger} from "@/components/ui/dropdown-menu";
 
 const toolDivClass = "ml-3 flex flex-col content-center";
+const optionDivClass = "md:ml-3 flex md:flex-col content-center";
 
 const Toolbar = observer(() => {
 
@@ -36,6 +49,7 @@ const Toolbar = observer(() => {
             const [videoPlaying, setVideoPlaying] = useState<HTMLVideoElement | null>(null)
             const [audioPlaying, setAudioPlaying] = useState<HTMLAudioElement | null>(null)
             const [toolPressed, setToolPressed] = useState<ClientTool>(tools[1])
+            const [optionsOpen, setOptionsOpen] = useState(false)
             const findToolByName = (name: ToolName): ClientTool => {
                 const tool = _.find(tools, {name: name})
                 return tool || tools[1];
@@ -227,56 +241,62 @@ const Toolbar = observer(() => {
             },[])
             return (
                 <>
-                    <div className="toolbar-top fixed bg-toolbar top-0 w-full z-[99] max-h-[155px]">
+                    <div className="toolbar-top fixed bg-toolbar top-0 w-full z-[201] max-h-[155px]">
                         <div className="toolbar-menu w-full m-0 flex justify-between py-3 px-7 items-center z-[100]">
-                            <div className="flex items-center gap-10 flex-wrap overflow-auto">
-                                <div className="flex items-center">
-                                    <div className={toolDivClass}>
+
+                          <div className="flex items-center flex-wrap overflow-auto">
+                            <Button variant="ghost" className={"md:hidden"} size="sm" onClick={()=>setOptionsOpen(!optionsOpen)}>
+                              <MoreHorizontal className="h-6 w-6"/>
+                            </Button>
+                            <div className={`md:flex items-center ${optionsOpen ? 'z-[201] absolute top-[50px] left-[24px] bg-toolbar' : 'hidden'}`}
+                              style={{borderRadius: '10px'}}
+                            >
+                                    <div className={optionDivClass}>
                                         <Button variant="ghost" size="sm" onClick={() => download()}><Download
                                             className="h-6 w-6"/></Button>
-                                        <label htmlFor="" style={{fontSize: 10}} className="m-auto">Скачать</label>
+                                        <label htmlFor="" style={{fontSize: 10}} className="m-auto md:block hidden">Скачать</label>
                                     </div>
-                                    <div className={toolDivClass}>
+                                    <div className={optionDivClass}>
                                         <input id="picture" type="file" onChange={imageUpload} accept="image/*,.png"/>
-                                        <label htmlFor="picture" className="upload_label">
+                                        <label htmlFor="picture" className="upload_label h-9 w-6">
                                             <Upload className="text-center h-6 w-6"/>
                                         </label>
-                                        <label style={{fontSize: 10}} className="m-auto ">Загрузить</label>
+                                        <label style={{fontSize: 10}} className="m-auto md:block hidden ">Загрузить</label>
                                     </div>
-                                    <div className={toolDivClass}>
+                                    <div className={optionDivClass}>
                                         <Button variant="ghost" size="sm" onClick={() => saveOnServer()}><Save
                                             className="h-6 w-6"/></Button>
-                                        <label htmlFor="" style={{fontSize: 10}} className="m-auto">Сохранить</label>
+                                        <label htmlFor="" style={{fontSize: 10}} className="m-auto md:block hidden">Сохранить</label>
                                     </div>
-                                    <div className={toolDivClass}>
+                                    <div className={optionDivClass}>
                                         <Button variant="ghost" size="sm" onClick={() => savetoUser()}><AiOutlinePlusSquare
                                             className="h-6 w-6"/></Button>
-                                        <label htmlFor="" style={{fontSize: 10}} className="m-auto">Добавить к себе</label>
+                                        <label htmlFor="" style={{fontSize: 10}} className="m-auto md:block hidden">Добавить к себе</label>
                                     </div>
-                                    <div className={toolDivClass}>
+                                    <div className={optionDivClass}>
                                         <Button variant="ghost" size="sm"
                                                 onClick={() => canvasState.clearCanvas()}><AiOutlineClear
                                             className="h-6 w-6"/></Button>
-                                        <label htmlFor="" style={{fontSize: 10}} className="m-auto">Очистить</label>
+                                        <label htmlFor="" style={{fontSize: 10}} className="m-auto md:block hidden">Очистить</label>
                                     </div>
-                                    <div className={toolDivClass}>
+                                    <div className={optionDivClass}>
                                         <Button variant="ghost" size="sm"
                                                 onClick={() => canvasState.undo()}><IoReturnUpBackOutline
                                             className="h-6 w-6"/></Button>
-                                        <label htmlFor="" style={{fontSize: 10}} className="m-auto">Отменить</label>
+                                        <label htmlFor="" style={{fontSize: 10}} className="m-auto md:block hidden">Отменить</label>
                                     </div>
-                                    <div className={toolDivClass}>
+                                    <div className={optionDivClass}>
                                         <Button variant="ghost" size="sm" onClick={() => canvasState.redo()}><IoReturnUpForward
                                             className="h-6 w-6"/></Button>
-                                        <label htmlFor="" style={{fontSize: 10}} className="m-auto">Вернуть</label>
+                                        <label htmlFor="" style={{fontSize: 10}} className="m-auto md:block hidden">Вернуть</label>
                                     </div>
 
                                 </div>
                             </div>
-                            <div className="flex gap-7 items-center overflow-auto">
+                            <div className="flex md:gap-5 gap-2 items-center overflow-auto">
                                 <div className={toolDivClass}>
                                   <Button variant="ghost" size="sm" onClick={() => canvasState.showCanvas = !canvasState.showCanvas}>
-                                    {canvasState.showCanvas ? <Umbrella className="h-6 w-6"/> : <Paintbrush className="h-6 w-6"/> }
+                                    {canvasState.showCanvas ? <Umbrella /> : <Paintbrush /> }
                                   </Button>
                                 </div>
                                 <HoverCard>

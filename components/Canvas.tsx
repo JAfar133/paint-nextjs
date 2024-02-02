@@ -54,8 +54,12 @@ const Canvas = observer(() => {
         }
     };
     useEffect(() => {
-        scrollToBottom();
-    }, [canvasState.messages]);
+        if(userState.isChatOpen){
+            setTimeout(()=>{
+                scrollToBottom();
+            },10)
+        }
+    }, [canvasState.messages, userState.isChatOpen, messagesRef.current]);
     useEffect(() => {
         if (mainCanvasRef.current) {
             const canvas = mainCanvasRef.current;
@@ -211,17 +215,17 @@ const Canvas = observer(() => {
     }
     const handleChatOpen = () => {
         if(userState.isChatOpen) {
-            userState.isChatOpen = false;
+            userState.setIsChatOpen(false);
         } else {
             userState.unreadMessages = 0;
-            userState.isChatOpen = true;
+            userState.setIsChatOpen(true);
         }
     }
     useEffect(() => {
         // @ts-ignore
         const handleWindowClick = (event) => {
             if (chatRef.current && !chatRef.current.contains(event.target) && chatBtnRef.current && !chatBtnRef.current.contains(event.target)) {
-                userState.isChatOpen = false;
+                userState.setIsChatOpen(false);
             }
         };
 
@@ -237,7 +241,7 @@ const Canvas = observer(() => {
             className="relative">
 
             <div className="grid-container" id="grid-container"></div>
-            <div className="absolute left-0 z-[500] p-1 flex gap-1">
+            <div className="absolute left-0 z-[200] p-1 flex gap-1">
                 <Search width={16} color="gray"></Search>
                 <span className="text-gray-400">{Math.floor(canvasState.scale*100)}%</span>
             </div>
@@ -365,12 +369,12 @@ const Canvas = observer(() => {
 
                     </PopoverTrigger>
                     <PopoverContent className="w-80 bg-transparent" ref={chatRef}>
-                        <Card className="w-[350px] right-10 absolute border-black bottom-0 bg-transparent">
+                        <Card className="md:w-[350px] w-[280px] md:right-10 absolute border-black bottom-0 bg-transparent">
                             <CardHeader className="bg-card">
                                 <CardTitle>Чат</CardTitle>
                                 <CardDescription>Напиши что-нибудь!</CardDescription>
                             </CardHeader>
-                            <CardContent className="h-[360px] gap-3 flex flex-col overflow-auto py-5 backdrop-blur-md"
+                            <CardContent className="md:h-[360px] h-[320px] gap-3 flex flex-col overflow-auto py-5 backdrop-blur-md"
                                          ref={messagesRef}>
                                 {
                                     canvasState.messages.map(message =>
@@ -378,7 +382,7 @@ const Canvas = observer(() => {
                                             className={cn("w-full flex justify-end ",
                                                 message.username === userState.user?.username ? "justify-end" : "justify-start")}
                                             key={message.id}>
-                                            <Alert className="max-w-[230px] border-none"
+                                            <Alert className="md:max-w-[230px] max-w-[160px] border-none"
                                                    variant={message.username === userState.user?.username ? "test" : "toolbar"}>
                                                 <Terminal className="h-4 w-4"/>
                                                 <AlertTitle>{message.text}</AlertTitle>
@@ -395,6 +399,7 @@ const Canvas = observer(() => {
                             <CardFooter className="flex flex-col gap-6 py-4 end bg-card">
                                 <Input
                                     id="name"
+                                    autoComplete="off"
                                     value={message}
                                     onChange={(e) => {
                                         setMessage(e.target.value)

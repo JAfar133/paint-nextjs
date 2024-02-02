@@ -7,19 +7,6 @@ export default class CircleTool extends Shape {
 
     private radius: number = -1;
 
-    protected touchMoveHandler(e: TouchEvent) {
-        if (this.mouseDown && this.canDraw) {
-            const touch = e.touches[0];
-            const x = touch.clientX - this.offsetLeft;
-            const y = touch.clientY - this.offsetTop;
-            let width = x - this.startX;
-            let height = y - this.startY;
-            this.radius = Math.sqrt(width ** 2 + height ** 2)
-            this.draw(this.startX, this.startY, this.radius)
-        }
-        document.onmousemove = null;
-    }
-
     protected sendSocketDraw() {
         if (this.startX !== -1 && this.startY !== -1 && this.radius !== -1) {
             this.socket.send(JSON.stringify({
@@ -43,25 +30,15 @@ export default class CircleTool extends Shape {
         }
     }
 
-    protected mouseMoveHandler(e: MouseEvent) {
+    protected move(mouseX: number, mouseY: number) {
         if (this.mouseDown && this.canDraw) {
-            const {scaledX, scaledY} = canvasState.getScaledPoint(e.offsetX, e.offsetY)
+            const {scaledX, scaledY} = canvasState.getScaledPoint(mouseX, mouseY)
             let width = scaledX - this.startX;
             let height = scaledY - this.startY;
             this.radius = Math.sqrt(width ** 2 + height ** 2)
             this.draw(this.startX, this.startY, this.radius)
         }
         document.onmousemove = null;
-    }
-
-    protected handleGlobalMouseMove(e: MouseEvent) {
-        if (this.mouseDown && this.canDraw) {
-            const width = e.pageX - this.startX - this.offsetLeft;
-            const height = e.offsetY - this.startY - this.offsetTop;
-
-            this.radius = Math.sqrt(width ** 2 + height ** 2)
-            this.draw(this.startX, this.startY, this.radius)
-        }
     }
 
     protected draw(x: number, y: number, r: number) {

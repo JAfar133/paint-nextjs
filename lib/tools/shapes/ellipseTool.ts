@@ -4,9 +4,9 @@ import settingState from "@/store/settingState";
 
 export default class EllipseTool extends Shape {
 
-    protected mouseMoveHandler(e: MouseEvent) {
+    protected move(mouseX: number, mouseY: number) {
         if (this.mouseDown && this.canDraw) {
-            const {scaledX, scaledY} = canvasState.getScaledPoint(e.offsetX, e.offsetY)
+            const {scaledX, scaledY} = canvasState.getScaledPoint(mouseX, mouseY)
             let width = scaledX - this.startX;
             let height = scaledY - this.startY;
             this.width = Math.abs(width);
@@ -14,27 +14,6 @@ export default class EllipseTool extends Shape {
             this.draw(this.startX, this.startY, this.width, this.height);
         }
         document.onmousemove = null;
-    }
-    protected touchMoveHandler(e: TouchEvent) {
-        if (this.mouseDown && this.canDraw) {
-            const touch = e.touches[0];
-            const x = touch.clientX - this.offsetLeft;
-            const y = touch.clientY - this.offsetTop;
-            let width = x - this.startX;
-            let height = y - this.startY;
-            this.width = Math.abs(width);
-            this.height = Math.abs(height);
-            this.draw(this.startX, this.startY, this.width, this.height);
-        }
-        document.onmousemove = null;
-    }
-
-    protected handleGlobalMouseMove(e: MouseEvent) {
-        if (this.mouseDown && this.canDraw) {
-            this.width = Math.abs(e.pageX - this.startX - this.offsetLeft);
-            this.height = Math.abs(e.offsetY - this.startY - this.offsetTop);
-            this.draw(this.startX, this.startY, this.width, this.height)
-        }
     }
 
     protected draw(x: number, y: number, w: number, h: number) {
