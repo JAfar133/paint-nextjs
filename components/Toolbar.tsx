@@ -46,8 +46,6 @@ const Toolbar = observer(() => {
             const audioTestRef = useRef<HTMLAudioElement | null>(null);
             const [videoPlay, setVideoPlay] = useState<boolean>(false)
             const [audioPlay, setAudioPlay] = useState<boolean>(false)
-            const [videoPlaying, setVideoPlaying] = useState<HTMLVideoElement | null>(null)
-            const [audioPlaying, setAudioPlaying] = useState<HTMLAudioElement | null>(null)
             const [toolPressed, setToolPressed] = useState<ClientTool>(tools[1])
             const [optionsOpen, setOptionsOpen] = useState(false)
             const findToolByName = (name: ToolName): ClientTool => {

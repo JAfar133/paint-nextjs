@@ -35,10 +35,10 @@ const Page = observer(() => {
             .finally(()=>setLoading(false));
     }, []);
 
-    const redirectToDraw = (image: string) => {
-        localStorage.setItem("image", image)
-        router.push(`/draw/${canvasState.canvasId}`)
-    }
+    // const redirectToDraw = (image: string) => {
+    //     localStorage.setItem("image", image)
+    //     router.push(`/draw/${canvasState.canvasId}`)
+    // }
 
     return (
         <div>
@@ -53,7 +53,7 @@ const Page = observer(() => {
                         < div className="m-5 max-w-md" key={image.image_name}>
                             <div
                                 className="border-2 w-[450px] h-[250px] h border-primary hover:bg-gray-400 transition duration-300 cursor-pointer"
-                                onClick={() => redirectToDraw(image.image_name)}
+                                // onClick={() => redirectToDraw(image.image_name)}
                             >
                                 <NextImage style={{height: '100%', width: '100%'}} width={320} height={200} src={image.src} alt=""/>
                             </div>

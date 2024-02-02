@@ -12,6 +12,7 @@ import {
     Type
 } from "lucide-react";
 import {MdOutlineRectangle, MdOutlineTimeline} from "react-icons/md";
+import Tool from "@/lib/tools/tool";
 import PencilTool from "@/lib/tools/pencilTool";
 import SquareTool from "@/lib/tools/shapes/squareTool";
 import CircleTool from "@/lib/tools/shapes/circleTool";
@@ -21,7 +22,6 @@ import LineTool from "@/lib/tools/shapes/lineTool";
 import EraserTool from "@/lib/tools/eraserTool";
 import TextTool from "@/lib/tools/textTool";
 import ArcTool from "@/lib/tools/shapes/arcTool";
-import Tool from "@/lib/tools/tool";
 import {BsArrowUpRight} from "react-icons/bs";
 import ArrowTool from "@/lib/tools/shapes/arrowTool";
 import {FiveStarTool} from "@/lib/tools/shapes/stars/fiveStarTool";
