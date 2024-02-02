@@ -55,7 +55,7 @@ const Page = observer(() => {
                                 className="border-2 w-[450px] h-[250px] h border-primary hover:bg-gray-400 transition duration-300 cursor-pointer"
                                 onClick={() => redirectToDraw(image.image_name)}
                             >
-                                <img style={{height: '100%', width: '100%'}} src={image.src} alt=""/>
+                                <NextImage style={{height: '100%', width: '100%'}} width={320} height={200} src={image.src} alt=""/>
                             </div>
                         </div>
                     ))
