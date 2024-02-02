@@ -21,11 +21,10 @@ export default class TextTool extends Tool {
         this.prevKeyArray = []
     }
 
-    protected mouseUpHandler(e: MouseEvent) {
+    protected up(mouseX: number, mouseY: number) {
         if (this.mouseDown) {
-            e.preventDefault();
             this.mouseDown = false;
-            const {scaledX, scaledY} = canvasState.getScaledPoint(e.offsetX, e.offsetY)
+            const {scaledX, scaledY} = canvasState.getScaledPoint(mouseX, mouseY)
             this.startX = scaledX;
             this.startY = scaledY;
             this.prevKeyArray = [];
@@ -130,20 +129,16 @@ export default class TextTool extends Tool {
         canvasState.bufferCtx.beginPath();
     }
 
-    protected mouseDownHandler(e: MouseEvent) {
-        if (this.canDraw && e.button !== 1) {
-            this.mouseDown = true;
-            this.prevKey.key = "";
-            const {scaledX, scaledY} = canvasState.getScaledPoint(e.offsetX, e.offsetY)
-            canvasState.bufferCtx.font = settingState.font;
-            canvasState.bufferCtx.beginPath();
-            canvasState.bufferCtx.moveTo(scaledX, scaledY - settingState.textSize / 2);
-        }
+    protected down(mouseX: number, mouseY: number) {
+        this.mouseDown = true;
+        this.prevKey.key = "";
+        const {scaledX, scaledY} = canvasState.getScaledPoint(mouseX, mouseY)
+        canvasState.bufferCtx.font = settingState.font;
+        canvasState.bufferCtx.beginPath();
+        canvasState.bufferCtx.moveTo(scaledX, scaledY - settingState.textSize / 2);
     }
 
-    protected mouseMoveHandler(e: MouseEvent) {
-
-    }
+    protected move(mouseX: number, mouseY: number) {}
 
     static draw(ctx: CanvasRenderingContext2D, text: string, startX: number, startY: number,
                 fillStyle: string, font: string, globalAlpha: number) {
