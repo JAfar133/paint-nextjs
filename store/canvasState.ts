@@ -69,8 +69,9 @@ class CanvasState {
     tempCanvas: HTMLCanvasElement | null = null;
     tempCtx: CanvasRenderingContext2D | null = null;
     animationFrameId: number | null = null;
-    showCanvas: boolean = true
-
+    showCanvas: boolean = true;
+    offsetTop: number = 0
+    offsetLeft: number = 0
     constructor() {
         this.canvas_id = `f${(+new Date).toString(16)}`;
         makeAutoObservable(this);
@@ -232,8 +233,12 @@ class CanvasState {
             const scaleFactor = currentDistance / this.initialDistance;
             this.scale = this.scale * scaleFactor;
 
-            this.canvasX = midPoint.x - (midPoint.x - this.canvasX) * scaleFactor;
-            this.canvasY = midPoint.y - (midPoint.y - this.canvasY) * scaleFactor;
+            const deltaX = midPoint.x - this.canvasX - this.offsetLeft;
+            const deltaY = midPoint.y - this.canvasY - this.offsetTop;
+
+            this.canvasX += deltaX * (1 - scaleFactor);
+            this.canvasY += deltaY * (1 - scaleFactor);
+
             this.draw();
             this.initialDistance = currentDistance;
         }
@@ -273,6 +278,8 @@ class CanvasState {
     }
     setCanvas(canvas: HTMLCanvasElement) {
         this.canvas = canvas;
+        this.offsetTop = canvas.getBoundingClientRect().top;
+        this.offsetLeft = canvas.getBoundingClientRect().left;
         this.bufferCanvas = document.createElement('canvas');
         this.savedCanvasWithoutImage = document.createElement('canvas');
         this.bufferCtx = this.bufferCanvas.getContext('2d')!;
