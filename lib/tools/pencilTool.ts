@@ -23,7 +23,7 @@ export default class PencilTool extends Tool {
     protected down(mouseX: number, mouseY: number, mouse: boolean = true){
         const {scaledX, scaledY} = canvasState.getScaledPoint(mouseX, mouseY)
         this.mouseDown = true;
-        const {tempCtx, tempCanvas} = canvasState.createTempCanvas(canvasState.bufferCanvas.width, canvasState.bufferCanvas.height);
+        const {tempCtx, tempCanvas} = canvasState.createTempCanvas();
         tempCtx.drawImage(canvasState.bufferCanvas,0,0)
         canvasState.addUndo(tempCanvas);
         if(settingState.globalAlpha !== 1){
@@ -33,19 +33,19 @@ export default class PencilTool extends Tool {
             this.tempCtx.lineCap = "round";
             this.tempCtx.lineJoin = "round";
             if(mouse){
-                this.ppts.push({x: this.mouse.x, y: this.mouse.y});
+                this.ppts.push({x: scaledX, y: scaledY});
                 this.draw(scaledX, scaledY);
             }
         }
         else {
-            canvasState.bufferCtx.beginPath();
-            canvasState.bufferCtx.moveTo(scaledX, scaledY);
-            canvasState.bufferCtx.lineWidth = settingState.strokeWidth;
-            canvasState.bufferCtx.strokeStyle = settingState.strokeColor;
-            canvasState.bufferCtx.lineCap = "round";
-            canvasState.bufferCtx.lineJoin = "round";
+            this.tempCtx.beginPath();
+            this.tempCtx.moveTo(scaledX, scaledY);
+            this.tempCtx.lineWidth = settingState.strokeWidth;
+            this.tempCtx.strokeStyle = settingState.strokeColor;
+            this.tempCtx.lineCap = "round";
+            this.tempCtx.lineJoin = "round";
             if(mouse){
-                draw(canvasState.bufferCtx, this.mouse.x, this.mouse.y);
+                draw(this.tempCtx, scaledX, scaledY);
                 this.sendSocketDraw();
             }
         }
@@ -61,7 +61,7 @@ export default class PencilTool extends Tool {
                 this.draw(scaledX, scaledY);
             }
             else {
-                draw(canvasState.bufferCtx, this.mouse.x, this.mouse.y);
+                draw(this.tempCtx, scaledX, scaledY);
             }
         }
         document.onmousemove = null;
@@ -131,7 +131,7 @@ export default class PencilTool extends Tool {
 function draw(ctx: CanvasRenderingContext2D, x: number, y: number) {
     ctx.lineTo(x, y);
     ctx.stroke();
-    canvasState.draw();
+    canvasState.draw(ctx.canvas);
 }
 
 function drawLine(tempCtx: CanvasRenderingContext2D, mouse: Point, ppts: Point[]) {

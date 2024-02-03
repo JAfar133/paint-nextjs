@@ -262,10 +262,11 @@ export default class DragTool extends Tool {
             mouse.y <= image.y + this.image.img.height
     }
 
+    resizeConst = 15
     private isMouseOnResizingLeftTop(mouseX: number, mouseY: number) {
         const {x, y} = this.getNewPointPosition(this.image.imageX, this.image.imageY, this.imageCenter.centerX, this.imageCenter.centerY, this.image.angle)
-        return Math.abs(mouseX - x) <= Math.min(Math.max(this.image.img.width*0.03/canvasState.scale,2), 10) &&
-            Math.abs(mouseY - y) <= Math.min(Math.max(this.image.img.height*0.03/canvasState.scale,2), 10)
+        return Math.abs(mouseX - x) <= Math.min(Math.max(this.image.img.width*0.03/canvasState.scale,2), this.resizeConst) &&
+            Math.abs(mouseY - y) <= Math.min(Math.max(this.image.img.height*0.03/canvasState.scale,2), this.resizeConst)
     }
 
     private isMouseOnResizingRightTop(mouseX: number, mouseY: number) {
@@ -273,8 +274,8 @@ export default class DragTool extends Tool {
             this.image.imageX + this.image.img.width,
             this.image.imageY,
             this.imageCenter.centerX, this.imageCenter.centerY, this.image.angle)
-        return Math.abs(mouseX - x) <= 10/canvasState.scale &&
-            Math.abs(mouseY - y) <= 10/canvasState.scale
+        return Math.abs(mouseX - x) <= this.resizeConst/canvasState.scale &&
+            Math.abs(mouseY - y) <= this.resizeConst/canvasState.scale
     }
 
     private isMouseOnResizingRightBottom(mouseX: number, mouseY: number) {
@@ -282,8 +283,8 @@ export default class DragTool extends Tool {
             this.image.imageX + this.image.img.width,
             this.image.imageY + this.image.img.height,
             this.imageCenter.centerX, this.imageCenter.centerY, this.image.angle)
-        return Math.abs(mouseX - x) <= 10/canvasState.scale &&
-            Math.abs(mouseY - y) <= 10/canvasState.scale
+        return Math.abs(mouseX - x) <= this.resizeConst/canvasState.scale &&
+            Math.abs(mouseY - y) <= this.resizeConst/canvasState.scale
     }
 
     private isMouseOnResizingLeftBottom(mouseX: number, mouseY: number) {
@@ -291,21 +292,21 @@ export default class DragTool extends Tool {
             this.image.imageX,
             this.image.imageY + this.image.img.height,
             this.imageCenter.centerX, this.imageCenter.centerY, this.image.angle)
-        return Math.abs(mouseX - x) <= 5 &&
-            Math.abs(mouseY - y) <= 5
+        return Math.abs(mouseX - x) <= this.resizeConst &&
+            Math.abs(mouseY - y) <= this.resizeConst
     }
 
     private isMouseOnResizingLeftSide(mouseX: number, mouseY: number) {
         const {x, y} = this.getNewPointPosition(mouseX, mouseY, this.imageCenter.centerX, this.imageCenter.centerY, -this.image.angle)
 
-        return Math.abs(x - this.image.imageX) <= 5 &&
+        return Math.abs(x - this.image.imageX) <= this.resizeConst &&
             Math.abs(y - this.image.imageY - this.image.img.height / 2) <= this.image.img.height / 2
     }
 
     private isMouseOnResizingRightSide(mouseX: number, mouseY: number) {
         const {x, y} = this.getNewPointPosition(mouseX, mouseY, this.imageCenter.centerX, this.imageCenter.centerY, -this.image.angle)
 
-        return Math.abs(x - this.image.imageX - this.image.img.width) <= 5 &&
+        return Math.abs(x - this.image.imageX - this.image.img.width) <= this.resizeConst &&
             Math.abs(y - this.image.imageY - this.image.img.height / 2) <= this.image.img.height / 2
     }
 
@@ -313,14 +314,14 @@ export default class DragTool extends Tool {
         const {x, y} = this.getNewPointPosition(mouseX, mouseY, this.imageCenter.centerX, this.imageCenter.centerY, -this.image.angle)
 
         return Math.abs(x - this.image.imageX - this.image.img.width / 2) <= this.image.img.width / 2 &&
-            Math.abs(y - this.image.imageY) <= 5
+            Math.abs(y - this.image.imageY) <= this.resizeConst
     }
 
     private isMouseOnResizingBottomSide(mouseX: number, mouseY: number) {
         const {x, y} = this.getNewPointPosition(mouseX, mouseY, this.imageCenter.centerX, this.imageCenter.centerY, -this.image.angle)
 
         return Math.abs(x - this.image.imageX - this.image.img.width / 2) <= this.image.img.width / 2 &&
-            Math.abs(y - this.image.imageY - this.image.img.height) <= 5
+            Math.abs(y - this.image.imageY - this.image.img.height) <= this.resizeConst
     }
 
     private getMouseResizePosition(mouseX: number, mouseY: number): resizePoint | null {
