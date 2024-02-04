@@ -8,6 +8,7 @@ import settingState from "@/store/settingState";
 import TextTool from "@/lib/tools/textTool";
 import {confirmDialog} from "primereact/confirmdialog";
 import websocketService from "@/lib/api/WebsocketService";
+import {Point} from "@/lib/tools/shapes/arcTool";
 
 export type cursorClass =
     "cursor-move" | "cursor-grab" | "cursor-text" | "cursor-cell" |
@@ -209,44 +210,7 @@ class CanvasState {
             }))
         }
     }
-    initialDistance: number | null = null;
-    touchStartHandler(e: TouchEvent) {
-        if (e.touches.length === 2) {
-            const touch1 = e.touches[0];
-            const touch2 = e.touches[1];
-            this.initialDistance = Math.hypot(touch2.clientX - touch1.clientX, touch2.clientY - touch1.clientY);
-        }
-    }
 
-
-    touchMoveHandler(e: TouchEvent) {
-        if (this.initialDistance !== null && e.touches.length === 2) {
-            const touch1 = e.touches[0];
-            const touch2 = e.touches[1];
-
-            const midPoint = {
-                x: (touch1.clientX + touch2.clientX) / 2,
-                y: (touch1.clientY + touch2.clientY) / 2
-            };
-
-            const currentDistance = Math.hypot(touch2.clientX - touch1.clientX, touch2.clientY - touch1.clientY);
-            const scaleFactor = currentDistance / this.initialDistance;
-            this.scale = this.scale * scaleFactor;
-
-            const deltaX = midPoint.x - this.canvasX - this.offsetLeft;
-            const deltaY = midPoint.y - this.canvasY - this.offsetTop;
-
-            this.canvasX += deltaX * (1 - scaleFactor);
-            this.canvasY += deltaY * (1 - scaleFactor);
-
-            this.draw();
-            this.initialDistance = currentDistance;
-        }
-    }
-
-    touchEndHandler() {
-        this.initialDistance = null;
-    }
 
     draw(canvas?: HTMLCanvasElement): void {
         const ctx = this.canvas.getContext('2d')
@@ -367,7 +331,55 @@ class CanvasState {
             this.setCursor(this.savedCursor);
             this.savedCursor = null;
         }
+    }
 
+    initialDistance: number | null = null;
+    startMidPoint: Point | null = null;
+    touchStartHandler(e: TouchEvent) {
+        if (e.touches.length === 2) {
+            const touch1 = e.touches[0];
+            const touch2 = e.touches[1];
+            this.initialDistance = Math.hypot(touch2.clientX - touch1.clientX, touch2.clientY - touch1.clientY);
+            this.startMidPoint = {
+                x: (touch1.clientX + touch2.clientX) / 2,
+                y: (touch1.clientY + touch2.clientY) / 2
+            };
+        }
+    }
+
+
+    touchMoveHandler(e: TouchEvent) {
+        if (this.initialDistance !== null && e.touches.length === 2) {
+            const touch1 = e.touches[0];
+            const touch2 = e.touches[1];
+
+            const midPoint = {
+                x: (touch1.clientX + touch2.clientX) / 2,
+                y: (touch1.clientY + touch2.clientY) / 2
+            };
+
+            const currentDistance = Math.hypot(touch2.clientX - touch1.clientX, touch2.clientY - touch1.clientY);
+            const scaleFactor = currentDistance / this.initialDistance;
+            this.scale = this.scale * scaleFactor;
+
+            if(this.startMidPoint) {
+                const deltaX = midPoint.x - this.startMidPoint.x
+                const deltaY = midPoint.y - this.startMidPoint.y
+
+                this.canvasX += deltaX + (midPoint.x - this.canvasX - this.offsetLeft) * (1 - scaleFactor);
+                this.canvasY += deltaY + (midPoint.y - this.canvasY - this.offsetTop) * (1 - scaleFactor);
+            }
+
+
+            this.draw();
+            this.initialDistance = currentDistance;
+
+            this.startMidPoint = midPoint
+        }
+    }
+
+    touchEndHandler() {
+        this.initialDistance = null;
     }
 
     get canvasId() {
@@ -675,6 +687,7 @@ class CanvasState {
     currentVideoPlaying: HTMLVideoElement | null = null;
     volumeLevel: number = 30;
     activateAllVideo () {
+        console.log('activate')
         if(this.ids && !this.isActivated) {
             this.ids.forEach(id=>{
                 const video = document.getElementById(id) as HTMLVideoElement
