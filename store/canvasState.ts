@@ -370,7 +370,6 @@ class CanvasState {
                 this.canvasY += deltaY + (midPoint.y - this.canvasY - this.offsetTop) * (1 - scaleFactor);
             }
 
-
             this.draw();
             this.initialDistance = currentDistance;
 
@@ -687,7 +686,6 @@ class CanvasState {
     currentVideoPlaying: HTMLVideoElement | null = null;
     volumeLevel: number = 30;
     activateAllVideo () {
-        console.log('activate')
         if(this.ids && !this.isActivated) {
             this.ids.forEach(id=>{
                 const video = document.getElementById(id) as HTMLVideoElement
@@ -698,7 +696,6 @@ class CanvasState {
             })
             this.isActivated = true
         }
-        window.removeEventListener('mousemove', this.activateAllVideo);
     }
     stopAllVideos() {
         this.ids.forEach(id=>{
@@ -749,7 +746,6 @@ class CanvasState {
 
     }
     playVideo(video: HTMLVideoElement) {
-        this.activateAllVideo()
         if (this.currentVideoPlaying !== null) {
             this.stopVideo(this.currentVideoPlaying)
         }

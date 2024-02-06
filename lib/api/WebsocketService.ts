@@ -171,7 +171,6 @@ class WebsocketService {
 
     handleAudio(id: string, start: boolean) {
         const audio = document.getElementById(id) as HTMLAudioElement
-        console.log(id, start)
         if(audio) {
             if(start) {
                 const promise = audio.play();

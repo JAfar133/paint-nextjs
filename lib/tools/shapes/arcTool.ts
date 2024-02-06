@@ -43,7 +43,6 @@ export default class ArcTool extends Tool {
     }
     protected up(mouseX: number, mouseY: number) {
         const {scaledX, scaledY} = canvasState.getScaledPoint(mouseX, mouseY)
-        console.log(this.controlPoint)
         if(!this.controlPoint){
             this.controlPoint = {x: scaledX, y: scaledY};
         }

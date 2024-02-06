@@ -180,7 +180,7 @@ const Canvas = observer(() => {
         }
     }
     const mouseDownHandler = (e: React.MouseEvent<HTMLCanvasElement, MouseEvent> | React.TouchEvent<HTMLCanvasElement>) => {
-        if ((e.nativeEvent instanceof MouseEvent && e.nativeEvent.button !== 1) || e.nativeEvent instanceof TouchEvent) {
+        if ((e.nativeEvent instanceof MouseEvent && e.nativeEvent.button !== 1) || (e.nativeEvent instanceof TouchEvent && e.nativeEvent.touches.length == 1)) {
             window.addEventListener('mouseup', mouseUpHandler);
             window.addEventListener('touchend', mouseUpHandler);
             if (!(toolState.tool instanceof TextTool || toolState.tool instanceof PencilTool)) {
@@ -230,10 +230,8 @@ const Canvas = observer(() => {
         };
 
         window.addEventListener('click', handleWindowClick);
-        window.addEventListener('mousemove', canvasState.activateAllVideo);
         return () => {
             window.removeEventListener('click', handleWindowClick);
-            window.removeEventListener('mousemove', canvasState.activateAllVideo);
         };
     }, []);
     return (

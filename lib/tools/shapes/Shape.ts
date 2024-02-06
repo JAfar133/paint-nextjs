@@ -11,7 +11,6 @@ export default abstract class Shape extends Tool {
     protected height: number = -1;
 
     protected down(mouseX: number, mouseY: number) {
-        console.log('down')
         this.mouseDown = true;
         canvasState.bufferCtx.beginPath();
         const {scaledX, scaledY} = canvasState.getScaledPoint(mouseX, mouseY)

@@ -73,7 +73,6 @@ export default class DragTool extends Tool {
     }
 
     protected down(mX: number, mY: number) {
-        console.log('down???')
         const {scaledX, scaledY} = canvasState.getScaledPoint(mX, mY)
         const mouseX = scaledX;
         const mouseY = scaledY;
@@ -101,7 +100,6 @@ export default class DragTool extends Tool {
             this.image.offsetX = mouseX - this.image.imageX;
             this.image.offsetY = mouseY - this.image.imageY;
         } else if (this.isMouseOnImage(mouseX, mouseY)) {
-            console.log('here?')
             this.image.isDragging = true;
             this.image.offsetX = mouseX - this.image.imageX;
             this.image.offsetY = mouseY - this.image.imageY;
@@ -227,7 +225,6 @@ export default class DragTool extends Tool {
     }
 
     private drugImage(mouseX: number, mouseY: number) {
-        console.log(mouseX, mouseY)
         if (this.image.isDragging) {
             if (this.tempCtx) {
                 this.tempCtx.save();
