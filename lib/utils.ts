@@ -1,5 +1,4 @@
 import {type ClassValue, clsx} from "clsx"
-import {twMerge} from "tailwind-merge"
 import {
     ArrowUpRightFromCircle,
     Circle,
@@ -36,7 +35,7 @@ import FillingTool from "@/lib/tools/fillingTool";
 import DragTool from "@/lib/tools/dragTool";
 
 export function cn(...inputs: ClassValue[]) {
-    return twMerge(clsx(inputs))
+    return clsx(...inputs);
 }
 
 export type ButtonVariant =
