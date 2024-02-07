@@ -94,9 +94,11 @@ export default abstract class Tool {
         this.move(e.offsetX, e.offsetY)
     };
     protected mouseUpHandler(e: MouseEvent) {
-        document.onmousemove = null;
-        document.onmouseup = null;
-        this.up(e.offsetX, e.offsetY)
+        if(e.button !== 1) {
+            document.onmousemove = null;
+            document.onmouseup = null;
+            this.up(e.offsetX, e.offsetY)
+        }
     }
 
     protected abstract move(mouseX: number, mouseY: number): void;
