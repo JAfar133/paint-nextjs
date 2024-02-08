@@ -36,6 +36,7 @@ import {Modal} from "react-bootstrap";
 import {ConfirmDialog} from "primereact/confirmdialog";
 import DropdownMenu from "@restart/ui/DropdownMenu";
 import {DropdownMenuContent, DropdownMenuTrigger} from "@/components/ui/dropdown-menu";
+import Link from "next/link";
 
 const toolDivClass = "ml-3 flex flex-col content-center";
 const optionDivClass = "md:ml-3 flex md:flex-col content-center";
@@ -293,9 +294,9 @@ const Toolbar = observer(() => {
                             </div>
                             <div className="flex md:gap-5 gap-2 items-center overflow-auto">
                                 <div className={toolDivClass}>
-                                  <Button variant="ghost" size="sm" onClick={() => canvasState.showCanvas = !canvasState.showCanvas}>
-                                    {canvasState.showCanvas ? <Umbrella /> : <Paintbrush /> }
-                                  </Button>
+                                  <Link href={"/weather"}>
+                                      <Umbrella />
+                                  </Link>
                                 </div>
                                 <HoverCard>
                                     <HoverCardTrigger>

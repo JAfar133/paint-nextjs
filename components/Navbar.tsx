@@ -2,7 +2,7 @@
 
 import React from 'react';
 import Link from "next/link";
-import {Flame, Menu as MenuIcon} from "lucide-react";
+import {Flame, Menu as MenuIcon, Umbrella} from "lucide-react";
 import {Button} from "@/components/ui/button";
 import ThemeToggle from "@/components/theme-toggle";
 import NavbarAvatar from "@/components/NavbarAvatar";
@@ -12,9 +12,8 @@ import canvasState from "@/store/canvasState";
 import {Menu, Popover, Position} from "evergreen-ui";
 
 const Navbar = observer(() => {
-
     return (
-        <div className="w-full fixed py-2 items-center px-6 flex justify-between bg-secondary border-b border-primary/10 shadow-gray-500 shadow-md">
+        <div className="w-full fixed z-[500] py-2 items-center px-6 flex justify-between bg-secondary border-b border-primary/10 shadow-gray-500 shadow-md">
             <div className="logo hidden md:flex">
                 <Link href="/">Logo</Link>
             </div>
@@ -24,6 +23,9 @@ const Navbar = observer(() => {
                 </Link>
                 <Link href={`/gallery`}>
                     <Button variant="ghost" className="pl-5">Галлерея</Button>
+                </Link>
+                <Link href={"/weather"}>
+                  <Umbrella />
                 </Link>
                     <ThemeToggle />
                 { !userState._isAuth ?  <>
