@@ -30,6 +30,7 @@ export interface Message {
 class CanvasState {
     // @ts-ignore
     canvas: HTMLCanvasElement;
+    canvasCtx: CanvasRenderingContext2D | null = null;
     canvas_id: string;
     socket: WebSocket | null = null;
     undoList: HTMLCanvasElement[] = [];
@@ -80,7 +81,7 @@ class CanvasState {
 
 
     drawBorder() {
-        const ctx = this.canvas.getContext('2d')
+        const ctx = this.getCanvasCtx();
         this.deleteBorder();
 
         this.imageContainer = document.createElement('div');
@@ -211,9 +212,14 @@ class CanvasState {
         }
     }
 
-
+    getCanvasCtx(){
+        if (!this.canvasCtx) {
+            this.canvasCtx = this.canvas.getContext('2d')
+        }
+        return this.canvasCtx;
+    }
     draw(canvas?: HTMLCanvasElement): void {
-        const ctx = this.canvas.getContext('2d')
+        const ctx = this.getCanvasCtx();
         if(toolState.tool?.type === "text"){
             if(this.textX && this.textY)
             this.drawTextLine(this.textX, this.textY)
@@ -573,29 +579,6 @@ class CanvasState {
 
         return {scaledX, scaledY}
     }
-    grid(){
-        const gridContainer = document.getElementById('grid-container');
-        if(gridContainer){
-            gridContainer.style.position = 'absolute';
-            gridContainer.style.left = `0`
-            gridContainer.style.top = `0`
-            gridContainer.style.transform = `scale(${this.scale})`
-            gridContainer.style.width = `${this.bufferCanvas.width}px`
-            gridContainer.style.height = `${this.bufferCanvas.height}px`
-            gridContainer.style.gridTemplateColumns = `repeat(${this.bufferCanvas.width},1px)`
-            gridContainer.style.zIndex = '1000'
-        }
-    }
-    drawGrid(canvas: HTMLCanvasElement, ctx: CanvasRenderingContext2D){
-        const pixelSize = 2; // Размер пикселя (ширина и высота)
-        ctx.strokeStyle = 'gray'
-        // Рисуем сетку из пикселей
-        for (let x = 0; x < canvas.width; x += pixelSize) {
-            for (let y = 0; y < canvas.height; y += pixelSize) {
-                ctx.strokeRect(x+0.5, y+0.5, pixelSize, pixelSize);
-            }
-        }
-    }
     setCanvasPosition(scale: number, canvasX: number, canvasY: number) {
         if(this.scale - scale >= 0){
             this.scale -= scale;
@@ -612,44 +595,6 @@ class CanvasState {
         const tempCtx = tempCanvas.getContext('2d')!;
         return {tempCanvas, tempCtx}
     }
-    fix_dpi() {
-        const canvas = this.canvas;
-        let style = {
-            height() {
-                return + getComputedStyle(canvas).getPropertyValue('height').slice(0,-2);
-            },
-            width() {
-                return + getComputedStyle(canvas).getPropertyValue('width').slice(0,-2);
-            }
-        }
-        const width = (style.width() * window.devicePixelRatio).toString();
-        const height = (style.height() * window.devicePixelRatio).toString();
-        canvas.setAttribute('width', width);
-        canvas.setAttribute('height', height);
-
-
-    }
-    fit(contains:boolean) {
-        return (parentWidth: number, parentHeight: number, childWidth: number, childHeight: number, scale = 1, offsetX = 0.5, offsetY = 0.5) => {
-            const childRatio = childWidth / childHeight
-            const parentRatio = parentWidth / parentHeight
-            let width = parentWidth * scale
-            let height = parentHeight * scale
-
-            if (contains ? (childRatio > parentRatio) : (childRatio < parentRatio)) {
-                height = width / childRatio
-            } else {
-                width = height * childRatio
-            }
-
-            return {
-                width,
-                height,
-                offsetX: (parentWidth - width) * offsetX,
-                offsetY: (parentHeight - height) * offsetY
-            }
-        }
-    }
 
     async playVideoById(id: string) {
         const video = document.getElementById(id) as HTMLVideoElement
@@ -664,7 +609,7 @@ class CanvasState {
             this.stopVideo(video)
         }
     }
-    ids: string[] = [
+    videos_id: string[] = [
         'hello_darkness_batman',
         'heisenburger',
         'heisenberg_smoke',
@@ -680,14 +625,13 @@ class CanvasState {
         'pedalirovanie',
         'naruto',
         'berserk_you_right'
-
     ]
     isActivated: boolean = false;
     currentVideoPlaying: HTMLVideoElement | null = null;
     volumeLevel: number = 30;
     activateAllVideo () {
-        if(this.ids && !this.isActivated) {
-            this.ids.forEach(id=>{
+        if(this.videos_id && !this.isActivated) {
+            this.videos_id.forEach(id=>{
                 const video = document.getElementById(id) as HTMLVideoElement
                 if(video) {
                     video.play()
@@ -698,7 +642,7 @@ class CanvasState {
         }
     }
     stopAllVideos() {
-        this.ids.forEach(id=>{
+        this.videos_id.forEach(id=>{
             const video = document.getElementById(id) as HTMLVideoElement
             if(video) {
                 this.stopVideo(video)

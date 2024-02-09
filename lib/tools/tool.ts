@@ -49,7 +49,6 @@ export default abstract class Tool {
         this.canvas.onmousedown = this.mouseDownHandler.bind(this);
         this.canvas.onmouseup = this.mouseUpHandler.bind(this);
         this.canvas.onmouseout = this.mouseOutHandler.bind(this);
-        // Добавьте обработчики событий касания
         this.canvas.ontouchmove = this.touchMoveHandler.bind(this);
         this.canvas.ontouchstart = this.touchStartHandler.bind(this);
         this.canvas.ontouchend = this.touchEndHandler.bind(this);

@@ -38,14 +38,14 @@ export default class PencilTool extends Tool {
             }
         }
         else {
-            this.tempCtx.beginPath();
-            this.tempCtx.moveTo(scaledX, scaledY);
-            this.tempCtx.lineWidth = settingState.strokeWidth;
-            this.tempCtx.strokeStyle = settingState.strokeColor;
-            this.tempCtx.lineCap = "round";
-            this.tempCtx.lineJoin = "round";
+            canvasState.bufferCtx.beginPath();
+            canvasState.bufferCtx.moveTo(scaledX, scaledY);
+            canvasState.bufferCtx.lineWidth = settingState.strokeWidth;
+            canvasState.bufferCtx.strokeStyle = settingState.strokeColor;
+            canvasState.bufferCtx.lineCap = "round";
+            canvasState.bufferCtx.lineJoin = "round";
             if(mouse){
-                draw(this.tempCtx, scaledX, scaledY);
+                draw(canvasState.bufferCtx, scaledX, scaledY);
                 this.sendSocketDraw();
             }
         }
@@ -61,7 +61,7 @@ export default class PencilTool extends Tool {
                 this.draw(scaledX, scaledY);
             }
             else {
-                draw(this.tempCtx, scaledX, scaledY);
+                draw(canvasState.bufferCtx, scaledX, scaledY);
             }
         }
         document.onmousemove = null;

@@ -34,7 +34,7 @@ const RootPage = () => {
         <div className="h-full p-4 space-y-2 pt-20 flex justify-center">
             <div className="md:flex-nowrap flex-wrap flex w-2/3 h-full items-center gap-4">
                 <div className="w-full">
-                    <h1 className="md:text-4xl text-4xl">А я все ждал когда же ты появишься</h1>
+                    <h1 className="md:text-4xl text-4xl">А я все думал когда же ты появишься</h1>
                     <Link href={`/draw/${canvasState.canvasId}`}>
                         <Button
                             variant={variant}
@@ -43,7 +43,7 @@ const RootPage = () => {
                             style={{ width: 200 }}
                             className="h-14 text-xl mt-14 text-white border-0"
                         >
-                            Оп! Мизантроп!
+                            Не нажимай!
                         </Button>
                     </Link>
                 </div>
