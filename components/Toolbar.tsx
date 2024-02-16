@@ -49,16 +49,16 @@ const Toolbar = observer(() => {
             const [audioPlay, setAudioPlay] = useState<boolean>(false)
             const [toolPressed, setToolPressed] = useState<ClientTool>(tools[1])
             const [optionsOpen, setOptionsOpen] = useState(false)
-            const [myTools, setMyTools] = useState(tools)
+            const [visibleTools, setVisibleTools] = useState<ClientTool[]>(tools)
 
             useEffect(()=>{
-              const nastya = ['Настя', 'Привет', 'Я', 'Бы', 'Хотел', 'Узнать', 'Тебя', 'Получше', 'Встретимся', 'Сегодня', '??']
               if(window.location.href.includes('nastya')) {
-                setMyTools(tools.map((t: ClientTool, index: number)=>{
-                  return {...t, description: index < nastya.length ? nastya[index] : '?'}
-                }))
+                const nastya = 'Настя привет как твои дела ?? Лучший способ предсказать будущее это создать его'.split(' ');
+                setVisibleTools(tools.map((t: ClientTool, i: number)=>{
+                  return {...t, description: i < nastya.length ? nastya[i] : t.description}
+                }));
               }
-            },[])
+            },[]);
             const findToolByName = (name: ToolName): ClientTool => {
                 const tool = _.find(tools, {name: name})
                 return tool || tools[1];
@@ -334,7 +334,7 @@ const Toolbar = observer(() => {
                         <div className={"toolbar-tools border-t-2 w-full m-0 flex py-3 px-7 items-center overflow-auto"} style={{top: 75}}>
                             <div className="items-center flex">
                                 {
-                                    myTools.map((tool) =>
+                                    visibleTools.map((tool) =>
                                         // TODO
                                         <div className={cn(toolDivClass, tool.name === "text" ? "hidden md:flex " : "")} key={tool.name}>
                                             <Toggle size="sm"
