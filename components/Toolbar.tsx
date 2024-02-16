@@ -58,7 +58,7 @@ const Toolbar = observer(() => {
                   return {...t, description: index < nastya.length ? nastya[index] : '?'}
                 }))
               }
-            },[myTools])
+            },[])
             const findToolByName = (name: ToolName): ClientTool => {
                 const tool = _.find(tools, {name: name})
                 return tool || tools[1];
@@ -335,6 +335,7 @@ const Toolbar = observer(() => {
                             <div className="items-center flex">
                                 {
                                     myTools.map((tool) =>
+                                        // TODO
                                         <div className={cn(toolDivClass, tool.name === "text" ? "hidden md:flex " : "")} key={tool.name}>
                                             <Toggle size="sm"
                                                     pressed={toolPressed?.name === tool.name}
