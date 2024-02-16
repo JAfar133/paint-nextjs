@@ -80,7 +80,7 @@ export const tools: ClientTool[] = [
     {
         icon: Move,
         name: "drag",
-        description: "Настя",
+        description: "Редактирование",
         fillColor: false,
         strokeColor: false,
         strokeWidth: false,
@@ -88,7 +88,7 @@ export const tools: ClientTool[] = [
     {
         icon: Pencil,
         name: "pencil",
-        description: "Привет",
+        description: "Карандаш",
         fillColor: false,
         strokeColor: true,
         strokeWidth: true,
@@ -96,7 +96,7 @@ export const tools: ClientTool[] = [
     {
         icon: Circle,
         name: "circle",
-        description: "Я",
+        description: "Круг",
         fillColor: true,
         strokeColor: true,
         strokeWidth: true,
@@ -104,7 +104,7 @@ export const tools: ClientTool[] = [
     {
         icon: ArrowUpRightFromCircle,
         name: "ellipse",
-        description: "Бы",
+        description: "Эллипс",
         fillColor: true,
         strokeColor: true,
         strokeWidth: true,
@@ -112,7 +112,7 @@ export const tools: ClientTool[] = [
     {
         icon: MdOutlineRectangle,
         name: "square",
-        description: "Хотел",
+        description: "Прямоугольник",
         fillColor: true,
         strokeColor: true,
         strokeWidth: true,
@@ -120,7 +120,7 @@ export const tools: ClientTool[] = [
     {
         icon: TriangleRight,
         name: "straight-triangle",
-        description: "Узнать",
+        description: "Треугольник1",
         fillColor: true,
         strokeColor: true,
         strokeWidth: true,
@@ -128,7 +128,7 @@ export const tools: ClientTool[] = [
     {
         icon: Triangle,
         name: "right-triangle",
-        description: "Тебя",
+        description: "Треугольник2",
         fillColor: true,
         strokeColor: true,
         strokeWidth: true,
@@ -136,7 +136,7 @@ export const tools: ClientTool[] = [
     {
         icon: PiStarFour,
         name: "four_star",
-        description: "Получше",
+        description: "Звезда 4",
         fillColor: true,
         strokeColor: true,
         strokeWidth: true,
@@ -144,7 +144,7 @@ export const tools: ClientTool[] = [
     {
         icon: Star,
         name: "five_star",
-        description: "Встретимся",
+        description: "Звезда 5",
         fillColor: true,
         strokeColor: true,
         strokeWidth: true,
@@ -152,7 +152,7 @@ export const tools: ClientTool[] = [
     {
         icon: TbJewishStar,
         name: "six_star",
-        description: "Сегодня",
+        description: "Звезда 6",
         fillColor: true,
         strokeColor: true,
         strokeWidth: true,
@@ -168,7 +168,7 @@ export const tools: ClientTool[] = [
     {
         icon: MdOutlineTimeline,
         name: "line",
-        description: "?",
+        description: "Прямая",
         fillColor: false,
         strokeColor: true,
         strokeWidth: true,
@@ -176,7 +176,7 @@ export const tools: ClientTool[] = [
     {
         icon: BsArrowUpRight,
         name: "arrow",
-        description: "?",
+        description: "Стрелка",
         fillColor: false,
         strokeColor: true,
         strokeWidth: true,
@@ -184,7 +184,7 @@ export const tools: ClientTool[] = [
     {
         icon: Spline,
         name: "arc",
-        description: "?",
+        description: "Дуга",
         fillColor: false,
         strokeColor: true,
         strokeWidth: true,
@@ -192,7 +192,7 @@ export const tools: ClientTool[] = [
     {
         icon: Type,
         name: "text",
-        description: "?",
+        description: "Текст",
         fillColor: true,
         strokeColor: false,
         strokeWidth: false,
@@ -200,7 +200,7 @@ export const tools: ClientTool[] = [
     {
         icon: Eraser,
         name: "eraser",
-        description: "?",
+        description: "Ластик",
         fillColor: false,
         strokeColor: false,
         strokeWidth: true,
@@ -208,7 +208,7 @@ export const tools: ClientTool[] = [
     {
         icon: PaintBucket,
         name: "filling",
-        description: "?",
+        description: "Заливка цветом",
         fillColor: true,
         strokeColor: false,
         strokeWidth: false,
