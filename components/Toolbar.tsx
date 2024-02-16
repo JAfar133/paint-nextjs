@@ -325,7 +325,7 @@ const Toolbar = observer(() => {
                             <div className="items-center flex">
                                 {
                                     tools.map((tool) =>
-                                        <div className={toolDivClass} key={tool.name}>
+                                        <div className={cn(toolDivClass, tool.name === "text" ? "hidden md:flex " : "")} key={tool.name}>
                                             <Toggle size="sm"
                                                     pressed={toolPressed?.name === tool.name}
                                                     id={tool.name}
