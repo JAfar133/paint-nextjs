@@ -54,7 +54,7 @@ const Toolbar = observer(() => {
             useEffect(()=>{
               const nastya = ['Настя', 'Привет', 'Я', 'Бы', 'Хотел', 'Узнать', 'Тебя', 'Получше', 'Встретимся', 'Сегодня', '??']
               if(window.location.href.includes('nastya')) {
-                setMyTools(tools.map((t, index)=>{
+                setMyTools(tools.map((t: ClientTool, index: number)=>{
                   return {...t, description: index < nastya.length ? nastya[index] : '?'}
                 }))
               }

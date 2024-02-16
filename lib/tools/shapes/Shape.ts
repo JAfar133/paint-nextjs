@@ -21,6 +21,7 @@ export default abstract class Shape extends Tool {
     }
     protected up() {
         this.mouseDown = false;
+        canvasState.bufferCtx.beginPath();
         this.sendSocketDraw();
     }
     protected sendSocketDraw(){

@@ -1,6 +1,7 @@
 import {canvasSize, ToolName} from "@/lib/utils";
 import settingState from "@/store/settingState";
 import userState from "@/store/userState";
+import canvasState from "@/store/canvasState";
 
 export default abstract class Tool {
     protected canvas: HTMLCanvasElement;
@@ -76,6 +77,7 @@ export default abstract class Tool {
 
     protected touchEndHandler(e: TouchEvent): void {
         if(e.changedTouches.length !== 2) {
+            this.tempCtx.beginPath();
             const touch = e.changedTouches[0];
             const x = touch.clientX - this.offsetLeft;
             const y = touch.clientY - this.offsetTop;
@@ -94,6 +96,7 @@ export default abstract class Tool {
     };
     protected mouseUpHandler(e: MouseEvent) {
         if(e.button !== 1) {
+            this.tempCtx.beginPath();
             document.onmousemove = null;
             document.onmouseup = null;
             this.up(e.offsetX, e.offsetY)

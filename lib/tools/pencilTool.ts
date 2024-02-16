@@ -38,14 +38,14 @@ export default class PencilTool extends Tool {
             }
         }
         else {
-            canvasState.bufferCtx.beginPath();
-            canvasState.bufferCtx.moveTo(scaledX, scaledY);
-            canvasState.bufferCtx.lineWidth = settingState.strokeWidth;
-            canvasState.bufferCtx.strokeStyle = settingState.strokeColor;
-            canvasState.bufferCtx.lineCap = "round";
-            canvasState.bufferCtx.lineJoin = "round";
+            this.tempCtx.beginPath();
+            this.tempCtx.moveTo(scaledX, scaledY);
+            this.tempCtx.lineWidth = settingState.strokeWidth;
+            this.tempCtx.strokeStyle = settingState.strokeColor;
+            this.tempCtx.lineCap = "round";
+            this.tempCtx.lineJoin = "round";
             if(mouse){
-                draw(canvasState.bufferCtx, scaledX, scaledY);
+                draw(this.tempCtx, scaledX, scaledY);
                 this.sendSocketDraw();
             }
         }
@@ -61,7 +61,7 @@ export default class PencilTool extends Tool {
                 this.draw(scaledX, scaledY);
             }
             else {
-                draw(canvasState.bufferCtx, scaledX, scaledY);
+                draw(this.tempCtx, scaledX, scaledY);
             }
         }
         document.onmousemove = null;
@@ -70,12 +70,10 @@ export default class PencilTool extends Tool {
     protected up() {
         this.mouseDown = false;
         this.sendSocketFinish();
-        if(canvasState.globalAlpha !==1){
-            canvasState.bufferCtx.drawImage(this.tempCanvas,0,0);
-            canvasState.draw();
-            this.tempCtx.clearRect(0,0, this.tempCanvas.width, this.tempCanvas.height);
-            this.ppts = [];
-        }
+        canvasState.bufferCtx.drawImage(this.tempCanvas,0,0);
+        canvasState.draw();
+        this.tempCtx.clearRect(0,0, this.tempCanvas.width, this.tempCanvas.height);
+        this.ppts = [];
     }
 
     private sendSocketDraw() {
