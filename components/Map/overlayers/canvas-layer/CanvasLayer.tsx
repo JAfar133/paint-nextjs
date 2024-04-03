@@ -203,7 +203,7 @@ const CanvasLayer: React.FC<CustomLayerProps> = ({url, options}) => {
       return renderToString(
           <div>
             {React.cloneElement(icon)}
-            {`${value1.toString()} ${!isSnow ? units[layer.options.data] : 'см'}`}
+            {`${value1.toString()} ${!isSnow ? units[layer.options.data] || '%' : 'см'}`}
             <div>{secondMsg !== null ? secondMsg : ''}</div>
           </div>
       );
@@ -223,7 +223,7 @@ const CanvasLayer: React.FC<CustomLayerProps> = ({url, options}) => {
     const value = data.value1;
 
     if (value !== null && layer.options.data) {
-      const newMsg = `${value.toString()} ${units[layer.options.data]}`;
+      const newMsg = `${value.toString()} ${units[layer.options.data] || '%'}`;
       updateMarker(position, getIcon(layer.options.data), layer, data.value2, value);
     }
   }

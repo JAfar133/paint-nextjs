@@ -99,4 +99,5 @@ export const units: {[key: string]: string} = {
     tmp: '°C',
     pres: 'гПа',
     rh: '%',
+    tcdc: '%'
 }
