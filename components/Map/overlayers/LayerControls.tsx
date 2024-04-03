@@ -18,7 +18,7 @@ import {
   reformatDateTime
 } from "../utils/dateFunctionss";
 import {RainIcon, TemperatureIcon, WindIcon} from "evergreen-ui";
-import {Droplets, Gauge, Umbrella} from "lucide-react";
+import {Cloud, Droplets, Gauge, Umbrella} from "lucide-react";
 import {FORECAST_STEP, LayersName, MAX_FORECAST_HOURS, WEATHER_CYCLE_STEP} from "./config";
 import {gradient, GradientData, units} from "./canvas-layer/gradient";
 import Switch from "./components/Switch";
@@ -44,6 +44,7 @@ export const layers: LayerSelect[] = [
   {value: "tmp", name: "Температура", icon: <TemperatureIcon/>},
   {value: "pres", name: "Давление", icon: <Gauge/>},
   {value: "rh", name: "Влажность", icon: <Droplets/>},
+  {value: "tcdc", name: "Облачность", icon: <Cloud/>},
 ]
 
 const LayerControls: React.FC<LayerControlsProps> = (

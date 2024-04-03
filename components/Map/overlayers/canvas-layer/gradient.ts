@@ -82,6 +82,14 @@ export const gradient: Gradient = {
         {value: 93, data: [56, 123, 173]},
         {value: 97, data: [56, 98, 157]},
         {value: 100, data: [56, 70, 114]}
+    ],
+    tcdc: [
+        {value: 0, data: [146, 130, 70]},
+        {value: 10, data: [132, 119, 70]},
+        {value: 50, data: [116, 116, 116]},
+        {value: 95, data: [171, 180, 179]},
+        {value: 98, data: [198, 201, 201]},
+        {value: 100, data: [213, 213, 205]}
     ]
 }
 

@@ -1,55 +1,42 @@
-.switch {
-  position: relative;
-  display: inline-flex;
-  width: 30px;
-  height: 16px;
-  pointer-events: auto;
-  input {
-    width: 0;
-    height: 0;
-  }
-}
-
-.slider {
-  box-shadow: 0 0 2px #000;
+.react_switch_checkbox {
   position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  cursor: pointer;
-  z-index: 1001;
-  background-color: rgba(255,255,255,0.4);
-  transition: 0.2s;
-  &:before {
-    position: absolute;
-    content: '';
-    height: 14px;
-    width: 14px;
-    left: 1px;
-    bottom: 1px;
-    background-color: #3a3a3a;
-    box-shadow: 0 0 4px #000;
-    transition: 0.4s;
-  }
+  left: -9999px;
+  top: -9999px;
 }
 
-.switch input:checked + .slider {
+.react_switch_label {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  cursor: pointer;
+  width: 35px;
+  height: 16px;
+  background-color: rgba(255,255,255,0.4);
+  border-radius: 100px;
+  box-shadow: 0 0 2px #000;
+}
+
+.react_switch_button {
+  content: "";
+  position: absolute;
+  width: 16px;
+  height: 16px;
+  border-radius: 45px;
+  transition: 0.4s;
+  background-color: #4a5059;
+  box-shadow: 0 0 4px #000;
+}
+
+.react_switch_checkbox:checked + .react_switch_label {
   background-color: rgba(255,255,255,0.9);
   box-shadow: 0 0 2px #fff;
+
 }
 
-.switch input:checked + .slider:before {
-  -webkit-transform: translateX(15px);
-  -ms-transform: translateX(15px);
-  transform: translateX(15px);
-  background-color: #000000;
-}
-
-.slider.rounded {
-  border-radius: 16px;
-}
-
-.slider.rounded:before {
-  border-radius: 50%;
+.react_switch_checkbox:checked + .react_switch_label .react_switch_button {
+  -webkit-transform: translateX(19px);
+  -ms-transform: translateX(19px);
+  transform: translateX(19px);
+  background-color: #040505;
 }

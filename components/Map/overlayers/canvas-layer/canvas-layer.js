@@ -305,6 +305,8 @@ L.TileLayer.Canvas = L.TileLayer.extend({
       data = r * 100 / 255
     } else if (this.options.data === "pres") {
       data = r * 150 / 255 + 900
+    } else if (this.options.data === "tcdc") {
+      data = r * 100 / 255;
     }
     return data
   },

@@ -53,7 +53,8 @@ const Toolbar = observer(() => {
 
             useEffect(()=>{
               if(window.location.href.includes('nastya')) {
-                const nastya = 'Настя привет как твои дела ?? Лучший способ предсказать будущее это создать его'.split(' ');
+                const nastya =
+                    'Настя привет как твои дела ?? Лучший способ предсказать будущее это создать его'.split(' ');
                 setVisibleTools(tools.map((t: ClientTool, i: number)=>{
                   return {...t, description: i < nastya.length ? nastya[i] : t.description}
                 }));

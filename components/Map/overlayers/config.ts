@@ -1,4 +1,4 @@
-export type LayersName = "wind" | "tmp" | "apcp" | "rh" | "pres";
+export type LayersName = "wind" | "tmp" | "apcp" | "rh" | "pres" | "tcdc" ;
 export const defaultLayer: LayersName = 'wind'
 export const MAX_FORECAST_HOURS = 90
 export const FORECAST_STEP = 6

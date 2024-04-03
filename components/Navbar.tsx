@@ -22,7 +22,7 @@ const Navbar = observer(() => {
                     <Button variant="premium" className="pl-5">Начать рисовать<Flame className="ml-2 w-5 text-amber-500 fill-amber-300"/></Button>
                 </Link>
                 <Link href={`/gallery`}>
-                    <Button variant="ghost" className="pl-5">Галлерея</Button>
+                    <Button variant="ghost" className="pl-5">Галерея</Button>
                 </Link>
                 <Link href={"/weather"}>
                   <Umbrella />
@@ -48,7 +48,7 @@ const Navbar = observer(() => {
                     </Menu.Item>
                     <Menu.Item>
                       <Link href={`/gallery`}>
-                        Галлерея
+                        Галерея
                       </Link>
                     </Menu.Item>
                   </Menu.Group>

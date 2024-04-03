@@ -42,7 +42,7 @@ const Page = observer(() => {
 
     return (
         <div>
-            <h1 className="pt-28 text-center text-3xl">Галлерея</h1>
+            <h1 className="pt-28 text-center text-3xl">Галерея</h1>
             <p className="text-center text-amber-300 pt-2">by Mikhail Golovach</p>
             <div className="w-full pt-14 pl-10 flex flex-wrap justify-center">
                 {loading && <div className="absolute top-1/2 left-1/2 translate-x-[-50%]">
@@ -60,7 +60,7 @@ const Page = observer(() => {
                         </div>
                     ))
                 }
-                {!loading && !drawings && <div className="text-center">Галлерея пуста</div>
+                {!loading && !drawings && <div className="text-center">Галерея пуста</div>
 
                 }
 

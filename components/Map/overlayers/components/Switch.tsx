@@ -8,9 +8,12 @@ interface SwitchProps {
 const Switch = ({value, onChange, rounded}: SwitchProps) => {
   return (
       <>
-        <label className={s.switch}>
-          <input type='checkbox' checked={value} onChange={onChange} />
-          <span className={`${s.slider} ${rounded ? s.rounded : ''}`}></span>
+        <input className={s.react_switch_checkbox} id={`react-switch-new`} type='checkbox' checked={value} onChange={onChange} />
+        <label
+            className={s.react_switch_label}
+            htmlFor={`react-switch-new`}
+        >
+          <span className={s.react_switch_button} />
         </label>
       </>
   );
