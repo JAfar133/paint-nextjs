@@ -3,18 +3,20 @@ import enableWebGLCanvas from "./Canvas2DtoWebGL"
 import {gradient} from "./gradient"
 import {requestAnimFrame} from "leaflet/src/core/Util";
 import {setPosition} from "leaflet/src/dom/DomUtil";
+import {getWindDataFromPixel} from "../windy-layer/wind";
 
-let MAX_ZOOM = 3;
 L.TileLayer.Canvas = L.TileLayer.extend({
   setData(data) {
     this.options.data = data
   },
+  MAX_ZOOM: 3,
   frozen_percent: 0,
   rain_mm: 0.1,
   getTileByCoords: function (coords) {
     return this._tiles[this._tileCoordsToKey(coords)]
   },
   setUrl: function (newUrl) {
+    this._tileCache = {}
     this._url = newUrl;
     for (const key in this._tiles) {
       const tile = this._tiles[key];
@@ -45,6 +47,14 @@ L.TileLayer.Canvas = L.TileLayer.extend({
   },
   _delays: {},
   _delaysForZoom: null,
+  setMaxZoom: function () {
+    const tileZoom = this._getZoomForUrl();
+    // Нужно выбирать оптимальный зум {z} тайлов для разного диапазана фактического зума
+    if (tileZoom < 2) this.MAX_ZOOM = 0
+    else if (tileZoom < 4) this.MAX_ZOOM = 1
+    else if (tileZoom < 8) this.MAX_ZOOM = 2
+    else this.MAX_ZOOM = 3
+  },
   createCanvas: function (tile, coords, done, unwrapCoords) {
     const {doubleSize} = this.options;
     const {x: width, y: height} = this.getTileSize();
@@ -53,10 +63,7 @@ L.TileLayer.Canvas = L.TileLayer.extend({
 
     const img = new Image();
     const tileZoom = this._getZoomForUrl();
-    if (tileZoom < 2) MAX_ZOOM = 0
-    else if (tileZoom < 4) MAX_ZOOM = 1
-    else if (tileZoom < 8) MAX_ZOOM = 2
-    else MAX_ZOOM = 3
+    this.setMaxZoom();
     img.onload = () => {
       tile.width = img.width;
       tile.height = img.height;
@@ -77,11 +84,11 @@ L.TileLayer.Canvas = L.TileLayer.extend({
     const {x, y} = coords;
     const {subdomains} = this.options;
     const tileZoom = this._getZoomForUrl();
-    if (tileZoom > MAX_ZOOM) {
+    if (tileZoom > this.MAX_ZOOM) {
       let scaledCoords = {
-        x: x >> (tileZoom - MAX_ZOOM),
-        y: y >> (tileZoom - MAX_ZOOM),
-        z: MAX_ZOOM,
+        x: x >> (tileZoom - this.MAX_ZOOM),
+        y: y >> (tileZoom - this.MAX_ZOOM),
+        z: this.MAX_ZOOM,
       };
       return L.Util.template(this._url, L.extend({
         s: this._getSubdomain(scaledCoords, subdomains),
@@ -110,46 +117,12 @@ L.TileLayer.Canvas = L.TileLayer.extend({
     ctx.drawImage(img, 0, 0)
     return canvas
   },
-  fillTile: function name(imgData) {
-    const data = imgData.data
-    let k = 0;
-    for (let i = 0; i < data.length; i += 4) {
-      const red = data[i];
-      const green = data[i + 1];
-      const blue = data[i + 2];
-      const value = this.getValueFromPixel([red, green, blue])
-      let frozen = null;
-      if(this.options.data === 'apcp') {
-        frozen = this.getFrozenPrecipitation([red, green, blue])
-      }
-      if (value !== null) {
-        const color = this.interpolateColor(value, this.getGradient())
-        if(frozen && frozen > this.frozen_percent) {
-          k++;
-        }
-        if (frozen && frozen > this.frozen_percent && k === 0) {
-          data[i] = 89
-          data[i + 1] = 89
-          data[i + 2] = 89
-        }
-        else {
-          data[i] = color[0]
-          data[i + 1] = color[1]
-          data[i + 2] = color[2]
-        }
-        if (frozen && frozen > this.frozen_percent && k===5) {
-          k = 0;
-        }
-
-      }
-
-    }
-  },
   fillAndReverseTile: function (imgData) {
     const data = imgData.data;
     const width = imgData.width;
     const height = imgData.height;
-    const squareSize = 2;
+    // Размер точки для снега
+    const FROZEN_SQUARE_SIZE = 2;
     const reversedData = new Uint8ClampedArray(data.length);
     let k = 0;
 
@@ -176,9 +149,10 @@ L.TileLayer.Canvas = L.TileLayer.extend({
             k = 0;
           }
           if (frozen && frozen > this.frozen_percent && k === 0) {
-            for (let i = 0; i < squareSize; i++) {
-              for (let j = -squareSize + 1; j < 1; j++) {
+            for (let i = 0; i < FROZEN_SQUARE_SIZE; i++) {
+              for (let j = -FROZEN_SQUARE_SIZE + 1; j < 1; j++) {
                 const squarePixelIndex = ((rowIndex + i) * width + x + j) * 4;
+                // Закрашиваем в белый
                 reversedData[squarePixelIndex] = 255;
                 reversedData[squarePixelIndex + 1] = 255;
                 reversedData[squarePixelIndex + 2] = 255;
@@ -205,36 +179,49 @@ L.TileLayer.Canvas = L.TileLayer.extend({
     }
     return new ImageData(reversedData, width, height);
   },
+  _tileCache: {},
   drawTile(imageCanvas, coords, tile, done, unwrapCoords) {
+    const cacheKey = this._tileCoordsToKey(coords);
+
+    // Проверяем, есть ли тайл в кеше
+    if (this._tileCache[cacheKey]) {
+      // Извлекаем данные из кеша и рисуем тайл
+      const cachedImgData = this._tileCache[cacheKey];
+      const tileCtx = tile.getContext('2d');
+      tileCtx.putImageData(cachedImgData, 0, 0);
+      tile.complete = true;
+      done(null, tile);
+      return;
+    }
     const canvas = document.createElement('canvas')
     canvas.width = tile.width;
     canvas.height = tile.height;
     const ctx = this.getWebGLContext(canvas);
     ctx.imageSmoothingEnabled = 'false'
     const zoom = this._getZoomForUrl();
-    if (zoom <= MAX_ZOOM) {
+    if (zoom <= this.MAX_ZOOM) {
       ctx.drawImage(imageCanvas, 0, 0);
     } else {
       const {x, y, z} = coords;
       const scaledCoords = {
-        x: x >> (zoom - MAX_ZOOM),
-        y: y >> (zoom - MAX_ZOOM),
-        z: MAX_ZOOM,
+        x: x >> (zoom - this.MAX_ZOOM),
+        y: y >> (zoom - this.MAX_ZOOM),
+        z: this.MAX_ZOOM,
       };
       const imageWidth = tile.width / 2 ** (zoom - scaledCoords.z);
       const imageHeight = tile.height / 2 ** (zoom - scaledCoords.z);
       const imageX = (coords.x - scaledCoords.x * 2 ** (zoom - scaledCoords.z)) * imageWidth
       const imageY = (coords.y - scaledCoords.y * 2 ** (zoom - scaledCoords.z)) * imageHeight
       ctx.drawImage(
-        imageCanvas,
-        imageX,
-        imageY,
-        imageWidth,
-        imageHeight,
-        0,
-        0,
-        tile.width,
-        tile.height);
+          imageCanvas,
+          imageX,
+          imageY,
+          imageWidth,
+          imageHeight,
+          0,
+          0,
+          tile.width,
+          tile.height);
     }
 
 
@@ -249,6 +236,8 @@ L.TileLayer.Canvas = L.TileLayer.extend({
     const tileCtx = tile.getContext('2d')
     tileCtx.imageSmoothingEnabled = 'false'
     tileCtx.putImageData(reversedImgData, 0, 0)
+
+    this._tileCache[cacheKey] = reversedImgData;
 
     tile.complete = true;
     done(null, tile);
@@ -294,22 +283,31 @@ L.TileLayer.Canvas = L.TileLayer.extend({
       Math.max(0, Math.round(gradient[lowerIndex].data[2] + fraction * (gradient[upperIndex].data[2] - gradient[lowerIndex].data[2]))),
     ];
   },
-
+  // Декодируем значения для параметра. Логика кодирования задается на сервере.
   getValueFromPixel: function (pixel) {
+    const WIND_MULTIPLIER = 40;
+    const TMP_MULTIPLIER = 120;
+    const TMP_OFFSET = 200;
+    const APCP_MULTIPLIER = 35;
+    const RH_MULTIPLIER = 100;
+    const CLOUD_MULTIPLIER = 100;
+    const PRES_MULTIPLIER = 150;
+    const PRES_OFFSET = 900;
+
     const [r, g, b] = pixel;
     let data = null;
     if (this.options.data === "wind") {
-      data = b * 40 / 255
+      data = b * WIND_MULTIPLIER / 255;
     } else if (this.options.data === "tmp") {
-      data = r * 120 / 255 + 200
+      data = r * TMP_MULTIPLIER / 255 + TMP_OFFSET;
     } else if (this.options.data === "apcp") {
-      data = r * 35 / 255
+      data = r * APCP_MULTIPLIER / 255;
     } else if (this.options.data === "rh") {
-      data = r * 100 / 255
+      data = r * RH_MULTIPLIER / 255;
     } else if (this.options.data === "pres") {
-      data = r * 150 / 255 + 900
+      data = r * PRES_MULTIPLIER / 255 + PRES_OFFSET;
     } else if (this.options.data === "tcdc") {
-      data = r * 100 / 255;
+      data = r * CLOUD_MULTIPLIER / 255;
     }
     return data
   },
@@ -317,16 +315,8 @@ L.TileLayer.Canvas = L.TileLayer.extend({
     const [r, g, b] = pixel;
     return g > 127 ? 1 : 0;
   },
-  getSnowDepth: function (pixel) {
-    const [r, g, b] = pixel;
-    return b * 200 / 255;
-  },
   getWindyDirection: function (pixel) {
-    const [r, g, b] = pixel;
-    let wind_direction = g / 255 * Math.PI
-    if (r < 65) {
-      wind_direction *= -1
-    }
+    const {wind_speed, wind_direction} = getWindDataFromPixel(pixel)
     return wind_direction
   },
   createTile: function (coords, done, unwrapCoords) {
@@ -353,7 +343,7 @@ L.TileLayer.Canvas = L.TileLayer.extend({
   },
   _addTile: function (coords, container) {
     const tilePos = this._getTilePos(coords),
-      key = this._tileCoordsToKey(coords);
+        key = this._tileCoordsToKey(coords);
 
     const tile = this.createTile(this._wrapCoords(coords), bind(this._tileReady, this, coords), coords);
     this._initTile(tile);
