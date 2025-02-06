@@ -624,7 +624,8 @@ class CanvasState {
         'dosvidos',
         'pedalirovanie',
         'naruto',
-        'berserk_you_right'
+        'berserk_you_right',
+        '1_skill_i_3'
     ]
     isActivated: boolean = false;
     currentVideoPlaying: HTMLVideoElement | null = null;
