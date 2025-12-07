@@ -1,6 +1,6 @@
 /** @type {import('next').NextConfig} */
 const path = require("path");
-const server="https://real-paint.ru/"
+const server="https://paint-backend.smartyalta.ru/"
 const nextConfig = {
   sassOptions: {
     includePaths: [path.join(__dirname, 'styles')],
